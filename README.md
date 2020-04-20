@@ -4,10 +4,10 @@ This is a repository for one week project. A robot carries dishes
 I referred to B4 student repositories, thank you. I'm a beginner student, so if you have some advise, please tell me!
 
 ## demoの流れ
-皿を認識
-皿を掴む
-棚に皿を運ぶ
-棚に置く
+- 皿を認識
+- 皿を掴む
+- 棚に皿を運ぶ
+- 棚に置く
 
 ## additional future task
 掴むのを失敗したとき(失敗しそうなとき)
