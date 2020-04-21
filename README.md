@@ -2,6 +2,16 @@
 This is a repository for one week project. A robot carries dishes
 ## Attention
 I referred to B4 student repositories, thank you. I'm a beginner student, so if you have some advise, please tell me!
+## Start now
+ROS 環境で EusLisp をインストールする.
+```
+$ sudo apt-get install ros-melodic-jskeus
+```
+また,実行ファイルへのパス (PATH) や, EusLisp 言語に必要な環境変数 (EUSDIR, ARCHDIR) 等をセットする。
+```
+$ source /opt/ros/melodic/setup.bash
+```
+
 
 ## demoの流れ
 - 皿を認識
