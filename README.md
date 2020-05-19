@@ -19,6 +19,7 @@ $ source /opt/ros/melodic/setup.bash
 - 棚に皿を運ぶ
 - 棚に置く
 
+
 ## additional future task
 掴むのを失敗したとき(失敗しそうなとき)
 - 壁を使いながら皿を持ち上げる。
@@ -27,3 +28,28 @@ $ source /opt/ros/melodic/setup.bash
 - 人の声で割り込みの制御を行う。
   - 人の声をトリガーとして、緊急停止ではなくお皿を安全な位置に置こうとする行動に切り替える。
   - 人の声で簡単な指示を出して、行動決定の参考とする。
+
+
+## Example
+
+- irt-viewerのdemo
+```
+roseus irt-demo.l
+```
+
+- kinematics simulatorのdemo
+```
+roseus kinematics-demo.l
+```
+
+- gazeboの皿を掴むdemo
+```
+roslaunch common.launch`
+```
+common.launch 
+	- pr2_tabletop_scene.launch
+		- empty_world.launch
+		- tabletop.world
+	- pr2_tabletop.launch
+		- tabletop_object_detector.launch
+
