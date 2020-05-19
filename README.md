@@ -46,10 +46,10 @@ roseus kinematics-demo.l
 ```
 roslaunch common.launch`
 ```
-common.launch 
-	- pr2_tabletop_scene.launch
-		- empty_world.launch
-		- tabletop.world
-	- pr2_tabletop.launch
-		- tabletop_object_detector.launch
+  - common.launch 
+    - pr2_tabletop_scene.launch
+      - empty_world.launch
+      - tabletop.world
+    - pr2_tabletop.launch
+      - tabletop_object_detector.launch
 
