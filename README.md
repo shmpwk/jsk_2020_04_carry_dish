@@ -42,10 +42,11 @@ roseus irt-demo.l
 roseus kinematics-demo.l
 ```
 
-- gazeboの皿を掴むdemo
+- gazeboで皿を掴むdemo
 ```
 roslaunch common.launch`
 ```
+
   - common.launch 
     - pr2_tabletop_scene.launch
       - empty_world.launch
