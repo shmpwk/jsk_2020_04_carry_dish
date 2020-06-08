@@ -1,0 +1,16 @@
+<launch>
+  <arg name="gui" default="true"/>
+  
+  <node name="pcd_to_pointcloud"
+        pkg="pcl_ros" type="pcd_to_pointcloud"
+        args="$(find jsk_2020_4_carry_dish)/data/room73b2_dish.pcd 0.1">
+    <remap from="cloud_pcd" to="~output"/>
+
+  </node>
+
+  <group if="$(arg gui)">
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find jsk_2020_4_carry_dish)/config/icp_uncolor.rviz"/>
+  </group>
+</launch>
