@@ -1,0 +1,26 @@
+<launch>
+
+  <arg name="gui" default="true"/>
+
+  <!-- include file="$(find jsk_pcl_ros)/sample/include/play_rosbag_pr2_sink.xml" / -->
+
+  <include file="$(find jsk_pcl_ros)/sample/sample_primitive_shape_classifier.launch" >
+    <arg name="cloud_input" value="/head_camera/depth_registered/points" />
+    <arg name="sensor_frame_id" value="/head_camera_rgb_optical_frame" />
+  </include>
+
+  <node pkg="jsk_rviz_plugins"
+        type="classification_result_visualizer.py"
+        name="classification_result_visualizer">
+    <remap from="~input/classes" to="primitive_shape_classifier/primitive_shape_classifier/output" />
+    <remap from="~input/boxes" to="primitive_shape_classifier/euclidean_segmentation_decomposer/boxes" />
+    <rosparam>
+      text_offset_z: -0.3
+      text_size: 0.05
+    </rosparam>
+  </node>
+
+  <node if="$(arg gui)" name="rviz" pkg="rviz" type="rviz"
+        args="-d $(find jsk_2020_4_carry_dish)/config/sample_primitive_shape_classifier.rviz" />
+
+</launch>
