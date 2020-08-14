@@ -53,4 +53,4 @@ roslaunch common.launch`
       - tabletop.world
     - pr2_tabletop.launch
       - tabletop_object_detector.launch
-
+```
