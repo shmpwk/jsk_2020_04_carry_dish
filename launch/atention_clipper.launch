@@ -1,0 +1,34 @@
+<launch>
+
+  <arg name="gui" default="true" />
+
+  <arg name="INPUT_CLOUD" value="/kinect_head/depth_registered/throttled/points" />
+
+  <node name="attention_clipper"
+        pkg="nodelet" type="nodelet"
+        args="standalone jsk_pcl/AttentionClipper">
+    <remap from="~input/points" to="$(arg INPUT_CLOUD)" />
+    <rosparam>
+      initial_pos: [0, 0, 1.5]
+      initial_rot: [0, 0, 0]
+      dimension_x: 1.0
+      dimension_y: 1.0
+      dimension_z: 0.3
+      frame_id: head_mount_kinect_rgb_optical_frame
+    </rosparam>
+  </node>
+
+  <node name="extract_indices"
+        pkg="jsk_pcl_ros" type="extract_indices">
+    <remap from="~input" to="$(arg INPUT_CLOUD)" />
+    <remap from="~indices" to="attention_clipper/output/point_indices" />
+  </node>
+
+  <group if="$(arg gui)">
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find jsk_2020_4_carry_dish)/config/sample_attention_clipper.rviz">
+    </node>
+  </group>
+
+</launch>
