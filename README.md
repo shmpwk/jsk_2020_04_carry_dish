@@ -44,7 +44,8 @@ roseus kinematics-demo.l
 
 - gazeboで皿を掴むdemo
 ```
-roslaunch common.launch`
+roslaunch common.launch
+roseus pr2-tabletop-object-grasp-dual-success.l
 ```
 
   - common.launch 
@@ -53,4 +54,4 @@ roslaunch common.launch`
       - tabletop.world
     - pr2_tabletop.launch
       - tabletop_object_detector.launch
-```
+
