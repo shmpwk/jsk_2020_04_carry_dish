@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# We don't use this because node AttentionClipper cannot get rosparam from this file
 
 import rospy
 import rosparam #not need
