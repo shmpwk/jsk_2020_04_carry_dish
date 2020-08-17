@@ -1,0 +1,40 @@
+<launch>
+
+  <arg name="gui" default="true" />
+
+  <arg name="INPUT_CLOUD" value="/kinect_head/depth_registered/throttled/points" />
+
+  <node name="attention_clipper"
+        pkg="nodelet" type="nodelet"
+        args="standalone jsk_pcl/AttentionClipper">
+    <remap from="~input/points" to="$(arg INPUT_CLOUD)" />
+    <remap from="~input/box_array" to="/segmentation_decomposer/boxes" />
+    <rosparam>
+      use_multiple_attention: true
+    </rosparam>
+  </node>
+
+  <node name="sample_point_publisher_from_pointcloud"
+        pkg="jsk_2020_4_carry_dish" type="sample_point_publisher_from_pointcloud.py">
+    <remap from="~input" to="/kinect_head/depth_registered/throttled/points" />
+    <rosparam>
+      x: 0
+      y: 0.3
+      z: 0.98
+    </rosparam>
+  </node>
+
+  <node name="extract_indices" pkg="jsk_pcl_ros" type="extract_indices">
+    <remap from="~input" to="/kinect_head/depth_registered/throttled/points" />
+    <remap from="~indices" to="/attention_clipper/output/point_indices" />
+    <remap from="~output" to="/extract/points" />
+  </node>
+
+  <node name="hinted_handle_estimator"
+        pkg="nodelet" type="nodelet"
+        args="standalone jsk_pcl/HintedHandleEstimator">
+    <remap from="~cloud" to="/extract/points" />
+    <remap from="~point" to="sample_point_publisher_from_pointcloud/output"/>
+  </node>
+
+</launch>
