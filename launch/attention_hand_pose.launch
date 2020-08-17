@@ -37,4 +37,10 @@
     <remap from="~point" to="sample_point_publisher_from_pointcloud/output"/>
   </node>
 
+  <group if="$(arg gui)">
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find jsk_2020_4_carry_dish)/config/attention_hand_pose.rviz"/>
+  </group>
+
 </launch>
