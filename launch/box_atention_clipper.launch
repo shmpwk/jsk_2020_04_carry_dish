@@ -1,0 +1,31 @@
+<launch>
+
+  <arg name="gui" default="true" />
+
+  <arg name="INPUT_CLOUD" value="/kinect_head/depth_registered/throttled/points" />
+  
+  <!-- attention clipper にbounding boxのpos, rot, dimentionを渡す -->
+
+
+  <node name="sub_box"
+      pkg="jsk_2020_4_carry_dish" type="subscribe_box.py" />
+  <node name="attention_clipper"
+      pkg="jsk_2020_4_carry_dish" type="nodelet"
+      args="standalone jsk_pcl/AttentionClipper" >
+    <remap from="~input/points" to="$(arg INPUT_CLOUD)" />
+  </node>
+
+  <node name="extract_indices"
+        pkg="jsk_pcl_ros" type="extract_indices">
+    <remap from="~input" to="$(arg INPUT_CLOUD)" />
+    <remap from="~indices" to="attention_clipper/output/point_indices" />
+  </node>
+
+  <group if="$(arg gui)">
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find jsk_2020_4_carry_dish)/config/sample_attention_clipper.rviz">
+    </node>
+  </group>
+
+</launch>

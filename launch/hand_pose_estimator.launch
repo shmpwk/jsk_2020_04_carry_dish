@@ -1,13 +1,11 @@
 <launch>
   <arg name="gui" default="true"/>
-
-
   <node name="sample_point_publisher_from_pointcloud"
         pkg="jsk_2020_4_carry_dish" type="sample_point_publisher_from_pointcloud.py">
     <remap from="~input" to="/kinect_head/depth_registered/throttled/points"/>
     <rosparam>
-      x: -0.3
-      y: -0.2
+      x: -0.3 
+      y: -0.2 
       z: 0.98
     </rosparam>
   </node>
