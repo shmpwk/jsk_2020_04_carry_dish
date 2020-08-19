@@ -204,7 +204,7 @@
   (publish-info "click tabletop object!"))
 
 (defun publish-grasp-state ()
-  (ros::publish "/grasp_state" (instance std_msgs::String :init :data *grasp-state*)))
+  (ros::publish "grasp_state" (instance std_msgs::String :init :data *grasp-state*))) ;change from "/grasp_state" to "grasp_state"
 
 (defun demo ()
   (setq *grasping-object-p* nil)
@@ -212,7 +212,7 @@
   (setq *larm* :larm)
   (setq *tfl* (instance ros::transform-listener :init))
   (setq *tfb* (instance ros::transform-broadcaster :init))
-  (ros::advertise "/grasp_state" std_msgs::String 1)
+  (ros::advertise "grasp_state" std_msgs::String 1) ;;change from "/grasp_state" to "grasp_state"
   (setq *grasp-state* "waiting")
   (pr2-init)
   (pr2-pregrasp-pose)
