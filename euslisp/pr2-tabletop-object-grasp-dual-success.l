@@ -76,10 +76,6 @@
       (print d)
       (setq *d_xyz* d)
       (print cds)
-      (print (send (apply #'make-cube d)
-          :transform
-          (send (send base->parent :copy-worldcoords)
-                :transform cds)))
       (send (apply #'make-cube d)
             :transform
             (send (send base->parent :copy-worldcoords)
