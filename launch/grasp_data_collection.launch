@@ -1,0 +1,15 @@
+<!-- data_collection_server is useful when making png or yaml from picture, parameter or topic -->
+<launch>
+    <arg name="collect_data" default="true" />
+
+    <node name="timer_grasp_data_collection"
+        pkg="jsk_data" type="data_collection_server.py"
+        output="screen" if="$(arg collect_data)">
+        <rosparam>
+            slop: 1.0
+            method: timer
+            hz: 1.0
+            topics:
+        </rosparam>
+    </node>
+</launch>
