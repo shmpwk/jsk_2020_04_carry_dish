@@ -9,6 +9,9 @@
 # - select simulation or real robot
 
 import torch 
+import torch.nn as nn
+import torch.nn.functional as F
+
 
 LOG_FILES = ['../log/log-by-logger/log-by-loggerpy1_0.log',
              '../log/log-by-logger/log-by-loggerpy1_1.log',
@@ -19,9 +22,12 @@ LOG_FILES = ['../log/log-by-logger/log-by-loggerpy1_0.log',
              '../log/log-by-logger/log-by-loggerpy1_6.log',
              '../log/log-by-logger/log-by-loggerpy1_3.log']
 
-class Net(nn.modle):
+class Net(nn.module):
     def __init__(self):
-        pass
+        super(Net, self).__init__()
+        self.conv1 = nn.Conv2d(1, 6, 5)   # 入力のチャネル数は1，出力のチャネル数は6，5x5の畳み込み層
+        self.conv2 = nn.Conv2d(6, 16, 5)  # 入力のチャネル数は6，出力のチャネル数は16，5x5の畳み込み層
+
 
 class GraspSystem():
     def __init__(self):
