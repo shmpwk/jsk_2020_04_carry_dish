@@ -25,8 +25,19 @@ LOG_FILES = ['../log/log-by-logger/log-by-loggerpy1_0.log',
 class Net(nn.module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(1, 6, 5)   # 入力のチャネル数は1，出力のチャネル数は6，5x5の畳み込み層
-        self.conv2 = nn.Conv2d(6, 16, 5)  # 入力のチャネル数は6，出力のチャネル数は16，5x5の畳み込み層
+        self.f1 = nn.Liner(16, 4)  
+        self.f2 = nn.Liner(4,4)
+        
+
+    def encord(self, x):
+        h1 = F.relu(self.fc1(x))
+        return self.fc2(h1)
+
+    def forward(self, x):
+        output = self.encord(x.view(-1, 784)) #????
+         
+        return output
+
 
 
 class GraspSystem():
@@ -39,10 +50,37 @@ class GraspSystem():
 
     # make Net class model
     def make_model(self):
-        pass
+        self.model = Net()
+        self.criterion = nn.CrossEntropyLoss()
+        optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
     def get_batch_train():
         pass
+        for epoch in range(2):  # 訓練データを複数回(2周分)学習する
+            running_loss = 0.0
+            for i, data in enumerate(trainloader, 0):
+                # ローダからデータを取得する; データは [inputs, labels] の形で取得される
+                # イテレータを使用していないように見えますが for の内部で使用されています。
+                inputs, labels = data
+
+                # 勾配を0に初期化する(逆伝播に備える)
+                optimizer.zero_grad()
+
+                # 順伝播 + 逆伝播 + 最適化(訓練)
+                outputs = net(inputs)
+                loss = criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
+
+                # 統計を表示する
+                running_loss += loss.item()
+                if i % 2000 == 1999:    # 2000 ミニバッチ毎に表示する
+                    print('[%d, %5d] loss: %.3f' %
+                          (epoch + 1, i + 1, running_loss / 2000))
+                    running_loss = 0.0
+
+        print('Finished Training')
+
 
     def get_test():
         pass
@@ -60,7 +98,6 @@ class GraspSystem():
 
     def test(self):
         pass
-
 
 
 if __name__ == '__main__':
