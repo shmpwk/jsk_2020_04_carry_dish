@@ -50,7 +50,9 @@ class GraspSystem():
         Args:
             dataset_path (str): example
                 /home/Data
-        """       
+        
+        """
+        """
         data_file_prefixes = []
         key = '.pkl'
         for die_name, sub_dirs file in os.walk(dataset_path):
@@ -58,6 +60,12 @@ class GraspSystem():
                 if key == f[-len(key):]:
                     data_file_prefixes.append(
                             os.path.join(dir_name, f[:-len(key)]))
+        """
+        data=np.loadtxt("data.csv",  # 読み込みたいファイルのパス
+                  delimiter=",",    # ファイルの区切り文字
+                  skiprows=0,       # 先頭の何行を無視するか（指定した行数までは読み込まない）
+                  #usecols=(1,2,3,4,5,6,7,8,9,10) # 読み込みたい列番号。5匹の場合はx,y座標が交互に出力されるので合計10個。x1,y1,x2,y2,......
+                )
 
 
     # make Net class model
