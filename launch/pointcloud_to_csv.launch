@@ -1,0 +1,9 @@
+<launch>
+
+  <arg name="gui" default="true" />
+  <node name="pointcloud_to_csv"
+        pkg="jsk_2020_4_carry_dish" type="pointcloud_to_csv.py">
+    <remap from="~input" to="/camera/depth_registered/points"/>
+  </node>
+</launch>
+
