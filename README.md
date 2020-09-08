@@ -55,3 +55,9 @@ roseus pr2-tabletop-object-grasp-dual-success.l
     - pr2_tabletop.launch
       - tabletop_object_detector.launch
 
+## grasp learning
+
+scripts/grasp_system.py : learning system
+scripts/pub_grasp_point.py
+scripts/pointcloud_to_csv.py
+euslisp/grasp_sequence.l
