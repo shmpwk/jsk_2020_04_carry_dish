@@ -44,9 +44,21 @@ class GraspSystem():
     def __init__(self):
         pass
 
-    # load current state data
+    # load depth_image and grasp_pos_rot data
     def load_data(self, log_files):
-        pass
+        """
+        Args:
+            dataset_path (str): example
+                /home/Data
+        """       
+        data_file_prefixes = []
+        key = '.pkl'
+        for die_name, sub_dirs file in os.walk(dataset_path):
+            for f in files:
+                if key == f[-len(key):]:
+                    data_file_prefixes.append(
+                            os.path.join(dir_name, f[:-len(key)]))
+
 
     # make Net class model
     def make_model(self):
