@@ -2,6 +2,7 @@
 ;; -*- coding: utf-8 -*-
 
 (load "package://pr2eus/pr2-interface.l")
+(require "package://jsk_2020_4_carry_dish/euslisp/lib/util.l")
 
 (setq *ri* (instance pr2-interface :init))
 (setq *robot* (pr2))
@@ -23,8 +24,8 @@
   )
 
 
-(defun data-collection ()
-  (setq is-bimanual false)
+(defun data-collection (&key bimanual)
+  (setq is-bimanual bimanual)
 
   ;;data collection configs
   (setq localtime (unix::localtime))
@@ -41,7 +42,7 @@
 
 
    (if (send
-         (ros::service-call (format nil "/timer_grasp_data_collection/start_request")
+         (ros::service-call (format nil "/data_collection/start_request")
                              (instance std_srvs::TriggerRequest :init))
           :success)
       (ros::ros-info "[collect-data-before-grasp] success to start collecting data")
@@ -49,4 +50,4 @@
    )
 (warn "~% Commands ~%")
 (warn "(pr2-pregrasp-pose)~%")
-(warn "(data-collection t)~%")
+(warn "(data-collection)~%")
