@@ -18,7 +18,9 @@
 (defun pr2-pregrasp-pose ()
   (send *pr2* :reset-manip-pose)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
-  (send *ri* :wait-interpolation))
+  (send *ri* :wait-interpolation) 
+  (objects (list *pr2*))
+  )
 
 
 (defun data-collection ()
@@ -39,10 +41,12 @@
 
 
    (if (send
-         (ros::service-call (format nil "/data_collection/start_request")
+         (ros::service-call (format nil "/timer_grasp_data_collection/start_request")
                              (instance std_srvs::TriggerRequest :init))
           :success)
       (ros::ros-info "[collect-data-before-grasp] success to start collecting data")
       (ros::ros-error "[collect-data-before-grasp] failed to start collecting data"))
    )
-
+(warn "~% Commands ~%")
+(warn "(pr2-pregrasp-pose)~%")
+(warn "(data-collection t)~%")
