@@ -1,6 +1,6 @@
 #!/usr/bin/env roseus
 ;; -*- coding: utf-8 -*-
-
+;; currentry, fail but now we don't need because just save the data not considering topic"
 (load "package://pr2eus/pr2-interface.l")
 (require "package://jsk_2020_4_carry_dish/euslisp/lib/util.l")
 
