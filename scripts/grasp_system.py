@@ -14,12 +14,6 @@ import torch.nn.functional as F
 
 
 LOG_FILES = ['../log/log-by-logger/log-by-loggerpy1_0.log',
-             '../log/log-by-logger/log-by-loggerpy1_1.log',
-             '../log/log-by-logger/log-by-loggerpy1_2.log',
-             '../log/log-by-logger/log-by-loggerpy1_4.log',
-             '../log/log-by-logger/log-by-loggerpy1_5.log',
-             '../log/log-by-logger/log-by-loggerpy1_7.log',
-             '../log/log-by-logger/log-by-loggerpy1_6.log',
              '../log/log-by-logger/log-by-loggerpy1_3.log']
 
 class Net(nn.module):
@@ -45,7 +39,7 @@ class GraspSystem():
         pass
 
     # load depth_image and grasp_pos_rot data
-    def load_data(self, log_files):
+    def load_input_depth_data(self, log_files):
         """
         Args:
             dataset_path (str): example
@@ -70,7 +64,14 @@ class GraspSystem():
          """
          data=np.genfromtxt("sample_writer.csv", filling_values=0) #nanÇ0Ç…íuÇ´ä∑Ç¶ÇÈÅBdata.shape(480,)
 
+    def load_edge_pointcloud_data(self, log_files):
+        pass
 
+    def select_grasp_point(self):
+        point = np.loadtxt()
+        grasp_xyz = np.randomchoice(point) #grasp_point is (x,y,z,y,p?)
+        rotate = #select angle from 0, 45, 90
+        # return xyz rotation
 
 
     # make Net class model
