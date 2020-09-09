@@ -23,9 +23,12 @@
 ;; service callでdepthをcsvに落とす,把持点を得る。
 (defun get-depth (msg)
   (ros::wait-for-service "get-depth")
-  (setq req (instance roseus::GetDepthRequest :init))
+  (setq req (instance roseus::GetGraspPoint :init))
+  (send req :box msg)
   (setq before (ros::time-now))
   (setq res (ros::service-call "get-depth" req))
+  ;;geometry_msgのpointを使おうかな
+
   (setq after (ros::time-now))
   )
 
@@ -96,7 +99,10 @@
     (send (apply #'make-cube d)
           :transform
           (send (send base->parent :copy-worldcoords)
-                :transform cds))))
+                :transform cds))
+    (get-depth msg)
+    )
+  )
 
 (defun grasp-target-callback (msg)
   (let ((target-point (bounding-box->cube msg)))
