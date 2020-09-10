@@ -23,8 +23,6 @@ def callback_pointcloud(data):
     with open('pointcloudxyz.csv', 'w') as f:
         writer = csv.writer(f)
         writer.writerows(gen) #shape(64751, 3)
-
-
     #for p in gen:
     #  print p 
 
