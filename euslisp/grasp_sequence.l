@@ -21,26 +21,22 @@
   )
 
 ;; service callでdepthをcsvに落とす,把持点を得る。
-(defun get-grasp-point (msg)
-  (ros::wait-for-service "get-grasp-point")
-  (setq req (instance roseus::GetGraspPoint :init))
-  (send req :box msg)
-  (setq before (ros::time-now))
-  (setq res (ros::service-call "get-grasp-point" req))
-  ;;geometry_msgのpointを使おうかな
-
-  (setq after (ros::time-now))
-  )
+;;(defun get-depth (msg)
+;;  (ros::wait-for-service "get-depth")
+;;  (setq req (instance roseus::GetDepthRequest :init))
+;;  (setq before (ros::time-now))
+;;  (setq res (ros::service-call "get-depth" req))
+;;  (setq after (ros::time-now))
+;;  )
 
 ;; service callで把持候補のpclをcsvに落とす
-(defun pass()
+(defun grasp-point-cb (msg)
+  (print (send msg: position))
   )
 
 ;; 把持点をsubし、graspする
 (defun sub-grasp-point()
-
-
-  
+  (ros::subscribe "grasp-point" geometry_msgs::pose #’grasp-point-cb)
   )
 
 ;; 対象物を持ち上げられたか否か判断する
@@ -102,14 +98,11 @@
     (send (apply #'make-cube d)
           :transform
           (send (send base->parent :copy-worldcoords)
-                :transform cds))
-    (get-grasp-point msg)
-    )
-  )
+                :transform cds))))
 
 (defun grasp-target-callback (msg)
   (let ((target-point (bounding-box->cube msg)))
-    ;;(get-grasp-point)
+    ;;(get-depth)
     ;;(sub-grasp-point)
     (if *grasping-object-p*
         (progn
