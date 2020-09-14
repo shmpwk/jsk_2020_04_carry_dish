@@ -8,6 +8,7 @@
 
 (ros::load-ros-manifest "jsk_recognition_msgs")
 (ros::load-ros-manifest "jsk_rviz_plugins")
+(ros::roseus-add-msgs "geometry_msgs")
 
 (ros::roseus "pr2_tabletop_object_grasp_node")
 (ros::rate 10)
@@ -30,13 +31,20 @@
 ;;  )
 
 ;; service callで把持候補のpclをcsvに落とす
+;;(defun grasp-point-cb (msg)
+;;  (print (send msg: position))
+;;  )
+
 (defun grasp-point-cb (msg)
-  (print (send msg: position))
+  ;;(print (list 'cb (send msg :position :x)))
+  (setq a (ros::tf-pose->coords msg))
+  (print a)
   )
+
 
 ;; 把持点をsubし、graspする
 (defun sub-grasp-point()
-  (ros::subscribe "grasp-point" geometry_msgs::pose #’grasp-point-cb)
+  (ros::subscribe "grasp_point" geometry_msgs::pose #'grasp-point-cb)
   )
 
 ;; 対象物を持ち上げられたか否か判断する
@@ -98,12 +106,20 @@
     (send (apply #'make-cube d)
           :transform
           (send (send base->parent :copy-worldcoords)
-                :transform cds))))
+                :transform cds))
+    (print d)
+    (setq *d_xyz* d)
+    (send (apply #'make-cube d)
+          :transform
+          (send (send base->parent :copy-worldcoords)
+                :transform cds)))
+  )
 
 (defun grasp-target-callback (msg)
   (let ((target-point (bounding-box->cube msg)))
     ;;(get-depth)
     ;;(sub-grasp-point)
+
     (if *grasping-object-p*
         (progn
           (publish-warn "cancel grasping...")
@@ -117,6 +133,9 @@
                                   (float-vector 0 0 0))
                          :rpy #f(0 1.2 -1.54))
             :rotation-axis :t)
+      (print (make-coords :pos  (send target-point :worldpos)
+                          :rpy #f(0 1.2 -1.54)))
+
       (publish-error "out of reach...")
       (return-from grasp-target-callback nil))
     (publish-info "openning gripper...")
