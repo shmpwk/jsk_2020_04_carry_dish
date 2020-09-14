@@ -35,19 +35,16 @@ def choose_point_callback(data):
     Other roatation angle is fixed toward middle point.
 
     """
-
+    # euler will be strange when converting  
     theta = -1.54 
     phi = 1.2
     psi = 0
     q = tf.transformations.quaternion_from_euler(theta, phi, psi)
 
-
-
     pose = Pose()
     pose.position.x = Ax
     pose.position.y = Ay
     pose.position.z = Az 
-
     pose.orientation.x = q[0]
     pose.orientation.y = q[1]
     pose.orientation.z = q[2]
@@ -55,14 +52,12 @@ def choose_point_callback(data):
     
     pub.publish(pose)
 
-    
-
 # get depth and get grasp point 
 if __name__=="__main__":
     #subscribe edge pointcloud data
     try:
         rospy.init_node('grasp_point_server')
-        rospy.Subscriber('/camera/depth_registered/points', PointCloud2, choose_point_callback, queue_size=10)
+        rospy.Subscriber('/organized_edge_detector/output', PointCloud2, choose_point_callback, queue_size=10)
         pub = rospy.Publisher('/grasp_point', Pose, queue_size=10)
         rospy.spin()
     except rospy.ROSInterruptException: pass

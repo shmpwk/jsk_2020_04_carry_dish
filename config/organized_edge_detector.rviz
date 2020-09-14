@@ -118,7 +118,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: camera_depth_optical_frame
+    Fixed Frame: base_footprint
     Frame Rate: 30
   Name: root
   Tools:
@@ -179,4 +179,4 @@ Window Geometry:
     collapsed: false
   Width: 1200
   X: 67
-  Y: 30
+  Y: 27
