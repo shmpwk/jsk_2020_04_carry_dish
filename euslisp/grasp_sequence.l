@@ -32,13 +32,20 @@
 
 ;; service callで把持候補のpclをcsvに落とす
 ;;(defun grasp-point-cb (msg)
-;;  (print (send msg: position))
 ;;  )
 
 (defun grasp-point-cb (msg)
   ;;(print (list 'cb (send msg :position :x)))
-  (setq a (ros::tf-pose->coords msg))
-  (print a)
+  (let ((cds (ros::tf-pose->coords (send msg :pose)))
+        (base->parent (send *tfl* :lookup-transform
+                            *base-frame-id* (send msg :header :frame_id)
+                            (ros::time 0))))
+    (send *tfb* :send-transform
+          (send (send base->parent :copy-worldcoords)
+                :transform cds)
+          *base-frame-id* "target_object" (send msg :header :stamp)
+          )
+    )
   )
 
 
@@ -107,7 +114,7 @@
           :transform
           (send (send base->parent :copy-worldcoords)
                 :transform cds))
-    (print d)
+    ;;(print d)
     (setq *d_xyz* d)
     (send (apply #'make-cube d)
           :transform
@@ -116,7 +123,9 @@
   )
 
 (defun grasp-target-callback (msg)
-  (let ((target-point (bounding-box->cube msg)))
+  (let ((target-point (sub-grasp-point)))
+  ;;(let ((target-point (bounding-box->cube msg)))
+
     ;;(get-depth)
     ;;(sub-grasp-point)
 
@@ -133,8 +142,6 @@
                                   (float-vector 0 0 0))
                          :rpy #f(0 1.2 -1.54))
             :rotation-axis :t)
-      (print (make-coords :pos  (send target-point :worldpos)
-                          :rpy #f(0 1.2 -1.54)))
 
       (publish-error "out of reach...")
       (return-from grasp-target-callback nil))
