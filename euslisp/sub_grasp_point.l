@@ -21,15 +21,22 @@
                 :transform cds)
           *base-frame-id* "target_object" (ros::time 0)
           )
-    (print (send base->parent :worldpos))
-    )
+    ;;(print (make-coords :pos (send base->parent :worldpos)))
+    (print (make-coords :pos (send (send (send base->parent :copy-worldcoords)
+                :transform cds) :worldpos)
+                        :rpy (float-vector 0 0 (deg2rad 90))))
   )
+)
+
+(defun sub-grasp-point ()
+   (ros::subscribe "grasp_point" geometry_msgs::posestamped #'grasp-point-cb)
+   )
 
 ;; 把持点をsubscribe
 (setq *tfl* (instance ros::transform-listener :init))
 (setq *tfb* (instance ros::transform-broadcaster :init))
 (ros::advertise "/grasp_state" std_msgs::String 1)
+(sub-grasp-point)
 
-(ros::subscribe "grasp_point" geometry_msgs::posestamped #'grasp-point-cb)
 (ros::spin)
 
