@@ -9,7 +9,7 @@ import rospy
 from geometry_msgs.msg import Point
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs import point_cloud2 
-from geometry_msgs.msg import Pose
+from geometry_msgs.msg import PoseStamped
 import tf
 import numpy as np
 
@@ -41,7 +41,8 @@ def choose_point_callback(data):
     psi = 0
     q = tf.transformations.quaternion_from_euler(theta, phi, psi)
 
-    pose = Pose()
+    posestamped = PoseStamped()
+    pose = posestamped.pose
     pose.position.x = Ax
     pose.position.y = Ay
     pose.position.z = Az 
@@ -49,8 +50,10 @@ def choose_point_callback(data):
     pose.orientation.y = q[1]
     pose.orientation.z = q[2]
     pose.orientation.w = q[3]
+    header = posestamped.header
+    header.frame_id = "head_mount_kinect_rgb_optical_frame"
     
-    pub.publish(pose)
+    pub.publish(posestamped)
 
 # get depth and get grasp point 
 if __name__=="__main__":
@@ -58,7 +61,7 @@ if __name__=="__main__":
     try:
         rospy.init_node('grasp_point_server')
         rospy.Subscriber('/organized_edge_detector/output', PointCloud2, choose_point_callback, queue_size=10)
-        pub = rospy.Publisher('/grasp_point', Pose, queue_size=10)
+        pub = rospy.Publisher('/grasp_point', PoseStamped, queue_size=10)
         rospy.spin()
     except rospy.ROSInterruptException: pass
 

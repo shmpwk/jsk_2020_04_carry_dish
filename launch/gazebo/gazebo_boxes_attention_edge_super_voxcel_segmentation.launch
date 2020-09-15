@@ -50,6 +50,9 @@
       use_rgb: true
     </rosparam>
   </node>
+  <node name="publish_grasp_point"
+      pkg="jsk_2020_4_carry_dish" type="gazebo_pub_grasp_point.py">
+  </node>    
 
   <group if="$(arg gui)">
     <node name="normal_concatenater"
