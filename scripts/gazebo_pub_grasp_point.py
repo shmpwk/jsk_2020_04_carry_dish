@@ -53,6 +53,7 @@ def choose_point_callback(data):
     pose.orientation.z = q[2]
     pose.orientation.w = q[3]
     header = posestamped.header
+    header.stamp = rospy.Time.now()
     header.frame_id = "head_mount_kinect_rgb_optical_frame"
     
     pub.publish(posestamped)

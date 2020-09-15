@@ -15,7 +15,6 @@
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 
-
 (defun pr2-pregrasp-pose ()
   (send *pr2* :reset-manip-pose)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
@@ -63,7 +62,6 @@
 ;;バウンディングボックスの端を掴む
 (defun bounding-box->cube (msg)
   (progn
-    (print (list (send msg :dimensions)))
     (let ((cds (ros::tf-pose->coords (send msg :pose)))
           (d (vector3-> 'list (send msg :dimensions)))
           (base->parent (send *tfl* :lookup-transform
@@ -73,9 +71,8 @@
             (send (send base->parent :copy-worldcoords)
                   :transform cds)
             *base-frame-id* "target_object" (send msg :header :stamp))
-      (print d)
+      (print base->parent)
       (setq *d_xyz* d)
-      (print cds)
       (send (apply #'make-cube d)
             :transform
             (send (send base->parent :copy-worldcoords)
@@ -85,6 +82,7 @@
 
 (defun grasp-target-callback (msg)
   (let ((target-obj (bounding-box->cube msg)))
+    ;;(print target-obj)
     (if *grasping-object-p*
         (progn
           (publish-warn "cancel grasping...")

@@ -5,7 +5,6 @@
 (defvar *grasp-target-bounding-box-topic* "/bounding_box_marker/selected_box")
 (defvar *grasp-status-topic* "/tabletop_object_grasp_status")
 (defvar *base-frame-id* "/base_footprint")
-
 (ros::load-ros-manifest "jsk_recognition_msgs")
 (ros::load-ros-manifest "jsk_rviz_plugins")
 (ros::roseus-add-msgs "geometry_msgs")
@@ -31,25 +30,35 @@
 ;;  )
 
 
-;; sub-grasp-pointのcallback
-(defun grasp-point-cb (msg)
-  (print (list 'cb (send msg :pose :position :x)))
-  (let ((cds (ros::tf-pose->coords (send msg :pose)))
-        (base->parent (send *tfl* :lookup-transform
-                            *base-frame-id* (send msg :header :frame_id)
-                            (ros::time 0))))
-    (send *tfb* :send-transform
-          (send (send base->parent :copy-worldcoords)
-                :transform cds)
-          *base-frame-id* "target_object" (send msg :header :stamp)
-          )
-    )
-  )
+;; ;; sub-grasp-pointのcallback
+;; (defun grasp-point-cb (msg)
+;;   (print (list 'cb (send msg :pose :position :x)))
+;;   (let ((cds (ros::tf-pose->coords (send msg :pose)))
+;;         (base->parent (send *tfl* :lookup-transform
+;;                             *base-frame-id* (send msg :header :frame_id)
+;;                             (ros::time 0))))
+;;     (send *tfb* :send-transform
+;;           (send (send base->parent :copy-worldcoords)
+;;                 :transform cds)
+;;           *base-frame-id* "target_object" (ros::time 0)
+;;           ))
+;;      (send (send base->parent :copy-worldcoords) :transform cds))
+;; )
 
 ;; 把持点をsubscribe
-(defun sub-grasp-point()
-  (ros::subscribe "grasp_point" geometry_msgs::posestamped #'grasp-point-cb)
-  )
+
+(defun sub-grasp-point ()
+  (let* ((msg (one-shot-subscribe "grasp_point" geometry_msgs::PoseStamped
+                                  :after-stamp (ros::time 0)))
+         (cds (when msg (ros::tf-pose->coords (send msg :pose))))
+         (base->parent
+           (when msg (send *tfl* :lookup-transform
+                           *base-frame-id* (send msg :header :frame_id)
+                           (ros::time 0)))))
+    (when (and cds base->parent)
+      (send (send base->parent :copy-worldcoords) :transform cds))))
+
+;;(ros::subscribe "grasp_point" geometry_msgs::posestamped #'grasp-point-cb)
 
 ;; 対象物を持ち上げられたか否か判断する
 (defun judge-grasp-success ()
@@ -95,7 +104,6 @@
          (* (send v :y) 1000.0)
          (* (send v :z) 1000.0)))
 
-
 ;; not use now  
 (defun bounding-box->cube (msg)
   (let ((cds (ros::tf-pose->coords (send msg :pose)))
@@ -111,17 +119,16 @@
           :transform
           (send (send base->parent :copy-worldcoords)
                 :transform cds))
-    ;;(print d)
-    (setq *d_xyz* d)
-    (send (apply #'make-cube d)
-          :transform
-          (send (send base->parent :copy-worldcoords)
-                :transform cds)))
+                )
   )
 
 (defun grasp-target-callback (msg)
   (let ((target-point (sub-grasp-point)))
-  ;;(let ((target-point (bounding-box->cube msg)))
+  ;; (let ((target-point (bounding-box->cube msg)))
+  ;; (print target-point) ;;t
+    (unless target-point
+      (ros::ros-logerr "target point is nil !!")
+      (return-from grasp-target-callback nil))
     (if *grasping-object-p*
         (progn
           (publish-warn "cancel grasping...")
@@ -131,15 +138,16 @@
       (setq *grasping-object-p* t))
     (unless
       (send *pr2* *rarm* :inverse-kinematics
-            (make-coords :pos (v+ (send target-point :worldpos)
-                                  (float-vector 0 0 0))
-                         :rpy #f(0 1.2 -1.54))
+            ;;(make-coords :pos target-point :worldpos)
+            (make-coords :pos (send target-point :worldpos)
+                         :rpy (float-vector 0 1.2 -1.54)))
             :rotation-axis :t)
-
+  
+  
       (publish-error "out of reach...")
       (return-from grasp-target-callback nil))
     (publish-info "openning gripper...")
-
+  
     (setq *grasp-state* "reaching")
     (publish-grasp-state)
     (publish-info "pre grasp pose...")
@@ -147,7 +155,7 @@
     (send *pr2* :head :look-at-hand *rarm*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 6000)
     (send *ri* :wait-interpolation)
-
+  
     (setq *grasp-state* "grasp-approaching")
     (publish-grasp-state)
     (publish-info "reaching...")
@@ -155,7 +163,7 @@
     (send *pr2* :head :look-at-hand *rarm*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
-
+  
     (setq *grasp-state* "grasp-closing")
     (publish-grasp-state)
     (publish-info "grasping...")
@@ -167,7 +175,7 @@
         (publish-info "back to pre grasp...")
         (pr2-pregrasp-pose)
         (return-from grasp-target-callback nil)))
-
+  
     (setq *grasp-state* "picking")
     (publish-grasp-state)
     (publish-info "picking up...")
@@ -177,26 +185,26 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
     (publish-info "grasp succeeded!")
-
+  
     (setq *grasp-state* "placing")
     (publish-grasp-state)
     (publish-info "placing ...")
     (send *pr2* *rarm* :move-end-pos #f(0 0 -150) :world)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
-
+  
     (setq *grasp-state* "grasp-opening")
     (publish-grasp-state)
     (send *ri* :stop-grasp *rarm* :wait t)
     (publish-info "return object...")
-
+  
     (setq *grasp-state* "leaving")
     (publish-grasp-state)
     (send *pr2* *rarm* :move-end-pos #f(-160 0 0) :world)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
     (publish-info "pre grasp pose")
-
+  
     (setq *grasp-state* "returning")
     (publish-grasp-state)
     (pr2-pregrasp-pose)
