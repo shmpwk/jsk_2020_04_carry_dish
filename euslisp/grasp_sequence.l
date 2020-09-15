@@ -21,7 +21,7 @@
   (send *ri* :wait-interpolation)
   )
 
-;; service callでdepthをcsvに落とす,把持点を得る。
+;; service callでdepthをcsvに落とす
 ;;(defun get-depth (msg)
 ;;  (ros::wait-for-service "get-depth")
 ;;  (setq req (instance roseus::GetDepthRequest :init))
@@ -30,26 +30,30 @@
 ;;  (setq after (ros::time-now))
 ;;  )
 
-;; service callで把持候補のpclをcsvに落とす
-;;(defun grasp-point-cb (msg)
-;;  (print (send msg: position))
-;;  )
 
+;; sub-grasp-pointのcallback
 (defun grasp-point-cb (msg)
-  ;;(print (list 'cb (send msg :position :x)))
-  (setq a (ros::tf-pose->coords msg))
-  (print a)
+  (print (list 'cb (send msg :pose :position :x)))
+  (let ((cds (ros::tf-pose->coords (send msg :pose)))
+        (base->parent (send *tfl* :lookup-transform
+                            *base-frame-id* (send msg :header :frame_id)
+                            (ros::time 0))))
+    (send *tfb* :send-transform
+          (send (send base->parent :copy-worldcoords)
+                :transform cds)
+          *base-frame-id* "target_object" (send msg :header :stamp)
+          )
+    )
   )
 
-
-;; 把持点をsubし、graspする
+;; 把持点をsubscribe
 (defun sub-grasp-point()
-  (ros::subscribe "grasp_point" geometry_msgs::pose #'grasp-point-cb)
+  (ros::subscribe "grasp_point" geometry_msgs::posestamped #'grasp-point-cb)
   )
 
 ;; 対象物を持ち上げられたか否か判断する
 (defun judge-grasp-success ()
-  ;;service call?
+  ;;service call
   )
 
 (defun publish-status (msg-type fmt)
@@ -92,7 +96,7 @@
          (* (send v :z) 1000.0)))
 
 
-;; bounding box の世界座標を出す。が、これをは時点にする  
+;; not use now  
 (defun bounding-box->cube (msg)
   (let ((cds (ros::tf-pose->coords (send msg :pose)))
         (d (vector3-> 'list (send msg :dimensions)))
@@ -107,7 +111,7 @@
           :transform
           (send (send base->parent :copy-worldcoords)
                 :transform cds))
-    (print d)
+    ;;(print d)
     (setq *d_xyz* d)
     (send (apply #'make-cube d)
           :transform
@@ -116,10 +120,8 @@
   )
 
 (defun grasp-target-callback (msg)
-  (let ((target-point (bounding-box->cube msg)))
-    ;;(get-depth)
-    ;;(sub-grasp-point)
-
+  (let ((target-point (sub-grasp-point)))
+  ;;(let ((target-point (bounding-box->cube msg)))
     (if *grasping-object-p*
         (progn
           (publish-warn "cancel grasping...")
@@ -133,8 +135,6 @@
                                   (float-vector 0 0 0))
                          :rpy #f(0 1.2 -1.54))
             :rotation-axis :t)
-      (print (make-coords :pos  (send target-point :worldpos)
-                          :rpy #f(0 1.2 -1.54)))
 
       (publish-error "out of reach...")
       (return-from grasp-target-callback nil))
@@ -203,9 +203,6 @@
     (publish-info "click tabletop object!")
     )
   )
-
-
-
 
 (defun wait-for-grasp-target ()
   (ros::subscribe *grasp-target-bounding-box-topic*
