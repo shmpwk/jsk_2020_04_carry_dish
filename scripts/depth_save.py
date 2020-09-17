@@ -7,10 +7,10 @@ import sys
 import csv
 import message_filters
 from cv_bridge import CvBridge, CvBridgeError
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, PointCloud2
 from geometry_msgs.msg import Point
 
-def ImageCallback(rgb_data , depth_data):
+def ImageCallback(rgb_data, depth_data, points_data):
     WIDTH = 50
     HEIGHT = 25
     bridge = CvBridge()
@@ -63,7 +63,8 @@ if __name__ == '__main__':
     rospy.init_node('depth_estimater', anonymous=True)
     sub_rgb = message_filters.Subscriber("/camera/rgb/image_raw",Image)
     sub_depth = message_filters.Subscriber("/camera/depth_registered/sw_registered/image_rect",Image)
-    mf = message_filters.ApproximateTimeSynchronizer([sub_rgb, sub_depth], 100, 10.0)
+    sub_points = message_filters.Subscriber("/", PointCloud2)
+    mf = message_filters.ApproximateTimeSynchronizer([sub_rgb, sub_depth, sub_points], 100, 10.0)
     mf.registerCallback(ImageCallback)
     pub = rospy.Publisher("/depth_crds", Point)
     rospy.spin()
