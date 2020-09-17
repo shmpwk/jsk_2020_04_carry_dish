@@ -37,7 +37,10 @@ def callback_pointcloud(data):
     with open('pointcloudxyz.csv', 'w') as f:
         writer = csv.writer(f)
         writer.writerows(gen) #shape(64751, 3)
-
+    with open('one_pointcloudxyz.csv', 'w') as f: 
+        writer = csv.writer(f)
+        writer.writerows(A) #shape(1, 3)?    
+ 
 if __name__ == '__main__':
     rospy.init_node('pointcloud_to_csv')
     #pub = rospy.Publisher('~output', PointStamped, queue_size=1)
