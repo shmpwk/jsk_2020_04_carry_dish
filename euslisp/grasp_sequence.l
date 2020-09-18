@@ -55,6 +55,7 @@
            (when msg (send *tfl* :lookup-transform
                            *base-frame-id* (send msg :header :frame_id)
                            (ros::time 0)))))
+    (print "aaaaaaaaaaaaaaaaaaaaaaaa")
     (when (and cds base->parent)
       (send (send base->parent :copy-worldcoords) :transform cds))))
 
@@ -125,7 +126,8 @@
 (defun grasp-target-callback (msg)
   (let ((target-point (sub-grasp-point)))
   ;; (let ((target-point (bounding-box->cube msg)))
-  ;; (print target-point) ;;t
+    ;;(print target-point) ;;t
+    (print "bbbbbbbbbbbbbbbbbb")
     (unless target-point
       (ros::ros-logerr "target point is nil !!")
       (return-from grasp-target-callback nil))
@@ -139,8 +141,9 @@
     (unless
       (send *pr2* *rarm* :inverse-kinematics
             ;;(make-coords :pos target-point :worldpos)
-            (make-coords :pos (send target-point :worldpos)
-                         :rpy (float-vector 0 1.2 -1.54)))
+            (make-coords :pos (v+ (send target-point :worldpos)
+                                  (float-vector -100 0  0))
+                         :rpy (float-vector 0 1.2 -1.54))
             :rotation-axis :t)
   
   
