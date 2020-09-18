@@ -1,6 +1,7 @@
 <launch>
   <arg name="gui" default="true"/>
-
+  <arg name="RGB_CAMERA_INFO" value="/kinect_head/rgb/camera_info" />
+  
   <node name="sample_manager"
         pkg="nodelet" type="nodelet"
         args="manager"/>
@@ -9,7 +10,7 @@
         pkg="nodelet" type="nodelet"
         args="standalone jsk_pcl/DepthImageCreator">
     <remap from="~input" to="/segmentation_decomposer/debug_output"/>
-    <remap from="~info" to="/camera/rgb/camera_info" />
+    <remap from="~info" to="$(arg RGB_CAMERA_INFO)" />
     <rosparam>
       use_approximate: true
       max_queue_size: 100
@@ -29,7 +30,7 @@
           pkg="nodelet" type="nodelet"
           args="standalone jsk_pcl/DepthImageCreator">
       <remap from="~input" to="pointcloud_xyzrgb_to_xyz/output" />
-      <remap from="~info" to="/camera/rgb/camera_info" />
+      <remap from="~info" to="$(arg RGB_CAMERA_INFO)"/>
       <rosparam>
         use_approximate: true
         max_queue_size: 100 

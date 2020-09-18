@@ -9,7 +9,7 @@
         pkg="nodelet" type="nodelet"
         args="standalone jsk_pcl/DepthImageCreator">
     <remap from="~input" to="/segmentation_decomposer/debug_output"/>
-    <remap from="~info" to="/head_mount_kinect/rgb/camera_info" />
+    <remap from="~info" to="/camera/rgb/camera_info" />
     <rosparam>
       use_approximate: true
       max_queue_size: 100
@@ -29,7 +29,7 @@
           pkg="nodelet" type="nodelet"
           args="standalone jsk_pcl/DepthImageCreator">
       <remap from="~input" to="pointcloud_xyzrgb_to_xyz/output" />
-      <remap from="~info" to="/head_mount_kinect/rgb/camera_info" />
+      <remap from="~info" to="/camera/rgb/camera_info" />
       <rosparam>
         use_approximate: true
         max_queue_size: 100 
@@ -50,9 +50,6 @@
       use_rgb: true
     </rosparam>
   </node>
-  <node name="publish_grasp_point"
-      pkg="jsk_2020_4_carry_dish" type="gazebo_pub_grasp_point.py">
-  </node>    
 
   <group if="$(arg gui)">
     <node name="normal_concatenater"
