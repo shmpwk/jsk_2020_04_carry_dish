@@ -1,0 +1,20 @@
+<launch>
+  <arg name="gui" default="true"/>
+
+  <node name="organized_pass_through"
+        pkg="nodelet" type="nodelet"
+        args="standalone jsk_pcl/OrganizedPassThrough">
+    <remap from="~input" to="/depth_image_creator/output_cloud"/>
+    <rosparam>
+      filter_field: 0
+      min_index: 220
+      max_index: 420
+    </rosparam>
+  </node>
+
+  <group if="$(arg gui)">
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find jsk_2020_4_carry_dish)/config/organized_edge_detector.rviz"/>
+  </group>
+</launch>

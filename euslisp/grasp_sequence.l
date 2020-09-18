@@ -8,16 +8,23 @@
 (ros::load-ros-manifest "jsk_recognition_msgs")
 (ros::load-ros-manifest "jsk_rviz_plugins")
 (ros::roseus-add-msgs "geometry_msgs")
+(load "models/arrow-object.l")
+
 
 (ros::roseus "pr2_tabletop_object_grasp_node")
 (ros::rate 10)
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 
+
 (defun pr2-pregrasp-pose ()
   (send *pr2* :reset-manip-pose)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
+
+  (setq *co-endeffector-vis* (arrow))
+  ;;(setq *co-target-vis* (arrow))
+  ;;(objects (list *pr2* *co-endeffector-vis*))
   )
 
 ;; service callでdepthをcsvに落とす
@@ -55,7 +62,6 @@
            (when msg (send *tfl* :lookup-transform
                            *base-frame-id* (send msg :header :frame_id)
                            (ros::time 0)))))
-    (print "aaaaaaaaaaaaaaaaaaaaaaaa")
     (when (and cds base->parent)
       (send (send base->parent :copy-worldcoords) :transform cds))))
 
@@ -124,10 +130,10 @@
   )
 
 (defun grasp-target-callback (msg)
+  (print "clicked")
   (let ((target-point (sub-grasp-point)))
   ;; (let ((target-point (bounding-box->cube msg)))
     ;;(print target-point) ;;t
-    (print "bbbbbbbbbbbbbbbbbb")
     (unless target-point
       (ros::ros-logerr "target point is nil !!")
       (return-from grasp-target-callback nil))
@@ -142,13 +148,13 @@
       (send *pr2* *rarm* :inverse-kinematics
             ;;(make-coords :pos target-point :worldpos)
             (make-coords :pos (v+ (send target-point :worldpos)
-                                  (float-vector -100 0  0))
+                                  (float-vector -200 0 50))
                          :rpy (float-vector 0 1.2 -1.54))
-            :rotation-axis :t)
-  
-  
+            :rotation-axis :nil)
       (publish-error "out of reach...")
       (return-from grasp-target-callback nil))
+    (send *co-endeffector-vis* :newcoords (send *pr2* :copy-worldcoords)) 
+    (objects (list *pr2* *co-endeffector-vis*))
     (publish-info "openning gripper...")
   
     (setq *grasp-state* "reaching")
@@ -162,7 +168,9 @@
     (setq *grasp-state* "grasp-approaching")
     (publish-grasp-state)
     (publish-info "reaching...")
-    (send *pr2* *rarm* :move-end-pos #f(105 0 0) :world)
+    (send *pr2* *rarm* :move-end-pos #f(200 0 -50) :world)
+    (send *co-endeffector-vis* :newcoords (send *pr2* :copy-worldcoords))
+    (objects (list *pr2* *co-endeffector-vis*))
     (send *pr2* :head :look-at-hand *rarm*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
@@ -203,7 +211,7 @@
   
     (setq *grasp-state* "leaving")
     (publish-grasp-state)
-    (send *pr2* *rarm* :move-end-pos #f(-160 0 0) :world)
+    (send *pr2* *rarm* :move-end-pos #f(-150 0 0) :world)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
     (publish-info "pre grasp pose")

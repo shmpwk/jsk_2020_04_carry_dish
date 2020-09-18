@@ -1,0 +1,71 @@
+<launch>
+  <arg name="gui" default="true"/>
+  <arg name="RGB_CAMERA_INFO" value="/head_mount_kinect/rgb/camera_info" />
+
+  <node name="sample_manager"
+        pkg="nodelet" type="nodelet"
+        args="manager"/>
+
+  <node name="depth_image_creator"
+        pkg="nodelet" type="nodelet"
+        args="standalone jsk_pcl/DepthImageCreator">
+    <remap from="~input" to="/segmentation_decomposer/debug_output"/>
+    <remap from="~info" to="$(arg RGB_CAMERA_INFO)" />
+    <rosparam>
+      use_approximate: true
+      max_queue_size: 100
+      max_pub_queue_size: 1
+      max_sub_queue_size: 1
+      organize_cloud: True
+    </rosparam>
+  </node>
+
+  <group ns="/segmentation_decomposer">
+    <node name="pointcloud_xyzrgb_to_xyz"
+          pkg="nodelet" type="nodelet"
+          args="standalone jsk_pcl_utils/PointCloudXYZRGBToXYZ">
+      <remap from="~input" to="debug_output" />
+    </node>
+    <node name="depth_image_creator"
+          pkg="nodelet" type="nodelet"
+          args="standalone jsk_pcl/DepthImageCreator">
+      <remap from="~input" to="pointcloud_xyzrgb_to_xyz/output" />
+      <remap from="~info" to="$(arg RGB_CAMERA_INFO)" />
+      <rosparam>
+        use_approximate: true
+        max_queue_size: 100 
+        max_pub_queue_size: 1
+        max_sub_queue_size: 1
+        organize_cloud: True
+      </rosparam>
+    </node>
+  </group>
+
+  <node name="organized_edge_detector"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/OrganizedEdgeDetector sample_manager">
+        <remap from="~input" to="/depth_image_creator/output_cloud"/>
+    <rosparam>
+      publish_normal: true
+      use_nan_boundary: true
+      use_rgb: true
+    </rosparam>
+  </node>
+
+  <node name="publish_grasp_point"
+      pkg="jsk_2020_4_carry_dish" type="gazebo_pub_grasp_point.py">
+  </node>    
+  
+  <group if="$(arg gui)">
+    <node name="normal_concatenater"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_pcl_utils/NormalConcatenater sample_manager">
+          <remap from="~input" to="/depth_image_creator/output_cloud"/>
+      <remap from="~normal" to="organized_edge_detector/output_normal"/>
+    </node>
+
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find jsk_2020_4_carry_dish)/config/organized_edge_detector.rviz"/>
+  </group>
+</launch>

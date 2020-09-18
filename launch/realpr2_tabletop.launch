@@ -44,5 +44,5 @@
 
   <node if="$(arg run_rviz)"
         pkg="rviz" name="pr2_rviz" type="rviz"
-        args="-d $(find jsk_2020_4_carry_dish)/config/pr2_tabletop.rviz" />
+        args="-d $(find jsk_2020_4_carry_dish)/config/realpr2_tabletop.rviz" />
 </launch>

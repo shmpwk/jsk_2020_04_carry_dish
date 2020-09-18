@@ -1,26 +1,23 @@
-<launch>
-  <arg name="gui" default="true"/>
-
-  <node name="sample_manager"
-        pkg="nodelet" type="nodelet"
-        args="manager"/>
-
+<launch> 
   <node name="organized_edge_detector"
         pkg="nodelet" type="nodelet"
         args="load jsk_pcl/OrganizedEdgeDetector sample_manager">
-    <remap from="~input" to="/depth_image_creator/output_cloud"/>
+        <remap from="~input" to="/depth_image_creator/output_cloud"/>
     <rosparam>
       publish_normal: true
       use_nan_boundary: true
       use_rgb: true
     </rosparam>
   </node>
+  <node name="publish_grasp_point"
+      pkg="jsk_2020_4_carry_dish" type="gazebo_pub_grasp_point.py">
+  </node>
 
   <group if="$(arg gui)">
     <node name="normal_concatenater"
           pkg="nodelet" type="nodelet"
           args="load jsk_pcl_utils/NormalConcatenater sample_manager">
-      <remap from="~input" to="/camera/depth_registered/points"/>
+          <remap from="~input" to="/depth_image_creator/output_cloud"/>
       <remap from="~normal" to="organized_edge_detector/output_normal"/>
     </node>
 
