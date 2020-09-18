@@ -1,0 +1,8 @@
+- git:
+    local-name: jsk-ros-pkg/jsk_demos
+    uri: https://github.com/jsk-ros-pkg/jsk_demos.git
+    version: master
+
+- git:
+    local-name: shmpwk/jsk_2020_4_cary_dish
+    uri: https://github.com/shmpwk/jsk_2020_4_carry_dish.git
