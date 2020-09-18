@@ -1,6 +1,6 @@
 <launch>
   <arg name="gui" default="true"/>
-  <arg name="RGB_CAMERA_INFO" value="/kinect_head/rgb/camera_info" />
+  <arg name="RGB_CAMERA_INFO" value="/head_mount_kinect/rgb/camera_info" />
 
   <node name="sample_manager"
         pkg="nodelet" type="nodelet"
