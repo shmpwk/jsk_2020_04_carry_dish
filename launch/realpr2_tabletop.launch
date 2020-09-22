@@ -16,7 +16,7 @@
 
   <!--include file="$(find pr2_machine)/pr2.machine" unless="$(arg load_machine)" /-->
 
-  <include file="$(find jsk_pcl_ros)/sample/tabletop_object_detector.launch">
+  <include file="$(find jsk_2020_4_carry_dish)/launch/tabletop_thin_object_detector.launch">
     <arg name="input" value="$(arg POINT_CLOUD_REMOTE)" />
     <arg name="sensor_frame" value="/head_mount_kinect_rgb_optical_frame" />
     <arg name="manager" value="$(arg manager)" />
