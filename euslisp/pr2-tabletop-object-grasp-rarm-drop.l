@@ -87,8 +87,8 @@
     (unless
       (send *pr2* *arm* :inverse-kinematics
             (make-coords :pos (v+ (send target-obj :worldpos)
-                                  (float-vector -200 0 -5))
-                         :rpy #f(0 1.2 -1.54))
+                                  (float-vector -200 0 150))
+                         :rpy #f(0 1.0 -1.54));;#f(0 1.2 -1.54) is success
             :rotation-axis :t)
       (publish-error "out of reach...")
       (return-from grasp-target-callback nil))
@@ -105,7 +105,7 @@
     (setq *grasp-state* "grasp-approaching")
     (publish-grasp-state)
     (publish-info "reaching...")
-    (send *pr2* *arm* :move-end-pos #f(105 0 0) :world)
+    (send *pr2* *arm* :move-end-pos #f(105 0 -150) :world) ;;#f(105 0 -150) is success
     (send *pr2* :head :look-at-hand *arm*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
@@ -126,7 +126,7 @@
     (publish-grasp-state)
     (publish-info "picking up...")
     (unix:sleep 10))
-    (send *pr2* *arm* :move-end-pos #f(0 0 150) :world)
+    (send *pr2* *arm* :move-end-pos #f(0 0 250) :world)
     (send *pr2* :head :look-at-hand *arm*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
@@ -135,7 +135,7 @@
     (setq *grasp-state* "placing")
     (publish-grasp-state)
     (publish-info "placing ...")
-    (send *pr2* *arm* :move-end-pos #f(0 0 -150) :world)
+    (send *pr2* *arm* :move-end-pos #f(0 0 -250) :world)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
 
@@ -146,7 +146,7 @@
 
     (setq *grasp-state* "leaving")
     (publish-grasp-state)
-    (send *pr2* *arm* :move-end-pos #f(-160 0 0) :world)
+    (send *pr2* *arm* :move-end-pos #f(-160 0 50) :world)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
     (publish-info "pre grasp pose")
