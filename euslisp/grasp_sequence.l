@@ -203,16 +203,19 @@
     (send *pr2* *rarm* :move-end-pos #f(0 0 -150) :world)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
-  
-    (setq *grasp-state* "grasp-opening")
-    (publish-grasp-state)
-    (send *ri* :stop-grasp *rarm* :wait t)
-    (publish-info "return object...")
-  
-    (setq *grasp-state* "leaving")
-    (publish-grasp-state)
-    (send *pr2* *rarm* :move-end-pos #f(-150 0 0) :world)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+    (let ((grasp-result (send *ri* :start-grasp *rarm*)))
+      (print grasp-result)
+      (if (< 0.1 grasp-result)                                       
+        (progn                                                     
+          (setq *grasp-state* "grasp succeeded!")               
+          (publish-grasp-state)
+          (publish-info "grasp succeeded!")                   
+          (ros::set-param (format nil "~/judge_grasp_success") 1))
+        (progn                                          
+          (setq *grasp-state* "grasp failed!")      
+          (publish-grasp-state)
+          (publish-info "grasp failed!")          
+          (ros::set-param (format nil "~/judge_grasp_success") 0)))) 
     (send *ri* :wait-interpolation)
     (publish-info "pre grasp pose")
   
