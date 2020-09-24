@@ -1,0 +1,28 @@
+<launch>
+  <!-- c.f. https://jsk-common.readthedocs.io/en/latest/jsk_data/node_scripts/data_collection_server.html , https://github.com/start-jsk/jsk_apc/blob/master/demos/selective_dualarm_stowing/launch/bimanual_stow_data_collection.launch#L130-L202 -->
+  <arg name="collect_data" default="true" />
+  
+  <node name="data_collection"
+        pkg="jsk_data" type="data_collection_server.py"
+        output="screen" if="$(arg collect_data)">
+    <rosparam subst_value="true">
+      message_filters: true
+      approximate_sync: true
+      method: request
+      save_dir: ~/Data
+      topics:
+        - name: /head_mount_kinect/rgb/image_raw
+          msg_class: sensor_msgs/Image
+          fname: rgb_image_raw_request.png
+          savetype: ColorImage
+        - name: /head_mount_kinect/depth/image_raw
+          msg_class: sensor_msgs/Image
+          fname: depth_image_raw.pkl
+          savetype: DepthImage
+      params:
+        - key: /judge_grasp_success
+          fname: judge_grasp_success.txt
+          savetype: Text
+    </rosparam>
+  </node>
+</launch>

@@ -143,10 +143,12 @@
       (if (< 0.1 grasp-result)
         (progn
           (setq *grasp-state* "grasp succeeded!")
-          (publish-info "grasp succeeded!"))
+          (publish-info "grasp succeeded!")
+          (ros::set-param (format nil "~/judge_grasp_success") 1))
         (progn
           (setq *grasp-state* "grasp failed!")
-          (publish-info "grasp failed!"))))
+          (publish-info "grasp failed!")
+          (ros::set-param (format nil "~/judge_grasp_success") 0))))
 
     (setq *grasp-state* "grasp-opening")
     (publish-grasp-state)
