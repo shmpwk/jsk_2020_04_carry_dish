@@ -28,18 +28,20 @@ def callback_pointcloud(data):
         ll = ll.reshape(1,3)
         A = np.append(A, ll, axis=0)
     #A = np.array(gen)
-    idx = np.random.randint(10, size=1)
+    idx = np.random.randint(100, size=1)
     print(A[idx, :])
     print(A.shape)
 
     #choose_point(list(gen.next()))
     #print(list(gen.next()))
+    """
     with open('pointcloudxyz.csv', 'w') as f:
         writer = csv.writer(f)
         writer.writerows(gen) #shape(64751, 3)
-    with open('one_pointcloudxyz.csv', 'w') as f: 
-        writer = csv.writer(f)
-        writer.writerows(A) #shape(1, 3)?    
+    """
+    with open('one_pointcloudxyz.csv', 'w') as ff: 
+        writerf = csv.writer(ff)
+        writerf.writerows(A[idx, :]) #shape(1, 3)?    
  
 if __name__ == '__main__':
     rospy.init_node('pointcloud_to_csv')
@@ -48,7 +50,7 @@ if __name__ == '__main__':
     #sub = rospy.Subscriber('/camera/depth_registered/points', PointCloud2, callback_pointcloud, sub_once)
 
     while not rospy.is_shutdown():
-        data = rospy.wait_for_message('/camera/depth_registered/points', PointCloud2)
+        data = rospy.wait_for_message('organized_edge_detector/output', PointCloud2)
         callback_pointcloud(data)
         break
     rospy.spin()

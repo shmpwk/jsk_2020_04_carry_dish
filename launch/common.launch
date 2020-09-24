@@ -15,4 +15,9 @@
     <arg name="machine" value="localhost" />
     <arg name="load_machine" value="true" />
   </include>
+
+  <include file="$(find jsk_2020_4_carry_dish)/launch/gazebo/gazebo_clicked_box_edge.launch">
+      <arg name="gui" value="false" />
+  </include>
+
 </launch>
