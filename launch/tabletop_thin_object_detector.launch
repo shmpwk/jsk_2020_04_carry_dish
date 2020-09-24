@@ -113,6 +113,9 @@
     <remap from="~indices" to="/euclidean_clustering/output" />
     <remap from="~selected_index" to="/bounding_box_marker/selected_index" />
     <remap from="~output" to="/selected_pointcloud" />
+    <rosparam>
+      keep_organized: true
+    </rosparam>
   </node>
 
   <!-- tracking -->

@@ -9,7 +9,7 @@
     <arg name="physics" value="$(arg physics)" />
   </include>
 
-  <include file="$(find jsk_2020_4_carry_dish)launch/pr2_tabletop.launch">
+  <include file="$(find jsk_2020_4_carry_dish)/launch/pr2_tabletop.launch">
     <arg name="run_rviz" value="$(arg run_rviz)" />
     <arg name="publish_objects_tf" value="$(arg publish_objects_tf)" />
     <arg name="machine" value="localhost" />
