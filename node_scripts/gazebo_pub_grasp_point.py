@@ -13,6 +13,7 @@ from geometry_msgs.msg import PoseStamped
 import tf
 import numpy as np
 import csv
+import pickle
 
 def choose_point_callback(data):
     assert isinstance(data, PointCloud2)
@@ -75,11 +76,15 @@ def choose_point_callback(data):
     grasp_posrot = np.array((Ax, Ay, Az, theta, phi, psi)).reshape(1,6) 
 
 
+    """
     with open('grasp_pointcloud_pos_rot.csv', 'w') as f: 
         writer = csv.writer(f)
         writer.writerows(grasp_posrot) #shape(1, 4)?
+        """
+    with open("grasp_pointcloud_pos_rot.pkl", "wb") as f:
+        pickle.dump(grasp_posrot, f)
+        print("saved grasp point")
 
-    print("saved grasp point")
 
     pub.publish(posestamped)
 
