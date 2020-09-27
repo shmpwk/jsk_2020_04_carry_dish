@@ -41,23 +41,23 @@
     </node>
   </group>
  
-  <node name="supervoxel_segmentation"
-        pkg="nodelet" type="nodelet"
-        args="load jsk_pcl/SupervoxelSegmentation sample_manager">
-    <remap from="~input" to="/selected_pointcloud"/>
-    <rosparam>
-      seed_resolution: 0.5
-    </rosparam>
-  </node>
-
   <node name="organized_edge_detector"
         pkg="nodelet" type="nodelet"
         args="load jsk_pcl/OrganizedEdgeDetector sample_manager">
-        <remap from="~input" to="/supervoxel_segmentation/output/cloud"/>
+        <remap from="~input" to="/selected_pointcloud"/>
     <rosparam>
       publish_normal: true
       use_nan_boundary: true
       use_rgb: true
+    </rosparam>
+  </node>
+
+  <node name="supervoxel_segmentation"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/SupervoxelSegmentation sample_manager">
+        <remap from="~input" to="/organized_edge_detector/output"/>
+    <rosparam>
+      seed_resolution: 0.5
     </rosparam>
   </node>
 

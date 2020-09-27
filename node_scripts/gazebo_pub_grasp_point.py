@@ -22,14 +22,15 @@ def choose_point_callback(data):
     Numpy array A is selected position.
     """
     gen = point_cloud2.read_points(data, field_names = ("x", "y", "z"), skip_nans=True)
-    
+    length = 0
     A = np.arange(3).reshape(1,3)
     for l in gen:
         l = np.array(l)
         l = l.reshape(1,3)
         A = np.append(A, l, axis=0)
+        length += 1
         
-    idx = np.random.randint(100, size=1) #To do : change 10 to data length
+    idx = np.random.randint(length, size=1) #To do : change 10 to data length
     Ax = A[idx, 0]
     Ay = A[idx, 1]
     Az = A[idx, 2]
@@ -95,7 +96,7 @@ if __name__=="__main__":
         #rospy.Subscriber('/organized_edge_detector/output', PointCloud2, choose_point_callback, queue_size=10)
         pub = rospy.Publisher('/grasp_point', PoseStamped, queue_size=10)
         while not rospy.is_shutdown():
-            data = rospy.wait_for_message('organized_edge_detector/output', PointCloud2)
+            data = rospy.wait_for_message('supervoxel_segmentation/output/cloud', PointCloud2)
             choose_point_callback(data)
             break
     except rospy.ROSInterruptException: pass
