@@ -15,7 +15,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from torchvision import transforms
-
+import os
 
 
 class MyDataset(Dataset):
@@ -32,7 +32,7 @@ class MyDataset(Dataset):
         
         """
         # depth_data_size(100) * (32*32)
-        depth_dataset_path = ~/.ros
+        depth_dataset_path = "~/my_ws/src"
         self.depth_dataset = np.empty((0,3))
         key = '.pkl'
         for dir_name, sub_dirs, files in os.walk(depth_dataset_path):
@@ -50,7 +50,7 @@ class MyDataset(Dataset):
         """
 
         # grasp point data size : 100 * 6(4)   
-        grasp_point_path = ~/.ros
+        grasp_point_path = "~/"
         self.grasp_datset = np.empty((0,3))
         grasp_key = 'point.pkl'
         for g_dir_name, g_sub_dirs, g_files in os.walk(grasp_point_path):
@@ -62,7 +62,7 @@ class MyDataset(Dataset):
 
         # judge data size : 100 * 1
 
-        judge_path = ~/.ros
+        judge_path = "~/"
         self.judge_dataset = np.empty((0,3))
         judge_key = 'judge.pkl'
         for j_dir_name. j_sub_dirs, j_files in os.walk(judge_path): 
@@ -89,7 +89,7 @@ class MyDataset(Dataset):
         c = torch.from_numpy(c)
         return x, y, c
 
-class Net(nn.module):
+class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         self.conv1 = nn.Conv2d(1, 96, kernel_size=11, stride=4, padding=2) #入力チャンネル数は1, 出力チャンネル数は96 
@@ -115,7 +115,7 @@ class Net(nn.module):
         x = self.fc3(x)
         return x
    
-   def num_flat_features(self, x):
+    def num_flat_features(self, x):
         size = x.size()[1:]  # all dimensions except the batch dimension
         num_features = 1
         for s in size:
@@ -128,11 +128,11 @@ class GraspSystem():
         pass
 
     # load depth_image and grasp_pos_rot data
-    def load_data(self):
+    def load_data(self, datasets):
 
         # Data loader (https://ohke.hateblo.jp/entry/2019/12/28/230000)
-        train_dataloader = data.DataLoader(
-            depth_dataset, batch_size=16, shuffle=True,
+        train_dataloader = torch.utils.data.DataLoader(
+            datasets, batch_size=16, shuffle=True,
             num_workers=2, drop_last=True
         )
 
@@ -173,7 +173,7 @@ class GraspSystem():
         # CPU save
         #torch.save(self.model.to('cpu').state_dict(), model_path)
 
-    def train(self, loop_num=10, train_dataloader):
+    def train(self, train_dataloader, loop_num=10):
         for epoch in range(2):  # 訓練データを複数回(2周分)学習する
             running_loss = 0.0
             
@@ -201,7 +201,8 @@ class GraspSystem():
                     running_loss = 0.0
         print('Finished Training')
 
-   def test(self):
+    def test(self):
+
         pass
 
 
@@ -213,8 +214,10 @@ if __name__ == '__main__':
 
     # train model or load model
     if train_flag:
-        train_dataloader = gs.load_data()
-        gs.tain(loop_num=10, train_dataloader)
+        datasets = MyDataset()
+
+        train_dataloader = gs.load_data(datasets)
+        gs.tain(train_dataloader, loop_num)
         gs.save_model()
 
     else:
