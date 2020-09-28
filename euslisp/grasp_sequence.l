@@ -28,14 +28,14 @@
   )
 
 ;; service callでdepthをcsvに落とす
-;;(defun get-depth (msg)
-;;  (ros::wait-for-service "get-depth")
-;;  (setq req (instance roseus::GetDepthRequest :init))
-;;  (setq before (ros::time-now))
-;;  (setq res (ros::service-call "get-depth" req))
-;;  (setq after (ros::time-now))
-;;  )
-
+(defun get-depth ()
+  (ros::wait-for-service "/data_collection/save_request")
+  (setq req (instance std_srvs::TriggerRequest :init))
+  (setq before (ros::time-now))
+  (setq res (ros::service-call "/data_collection/save_request" req))
+  (setq after (ros::time-now))
+  (print "depth data saved")
+  )
 
 ;; ;; sub-grasp-pointのcallback
 ;; (defun grasp-point-cb (msg)
@@ -131,6 +131,7 @@
 
 (defun grasp-target-callback (msg)
   (print "clicked")
+  (get-depth)
   (let ((target-point (sub-grasp-point)))
   ;; (let ((target-point (bounding-box->cube msg)))
     ;;(print target-point) ;;t

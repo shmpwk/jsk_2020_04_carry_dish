@@ -10,6 +10,7 @@
 (ros::load-ros-manifest "jsk_recognition_msgs")
 (ros::load-ros-manifest "jsk_rviz_plugins")
 
+(ros::roseus-add-srvs "roseus")
 (ros::roseus "pr2_tabletop_object_grasp_node")
 (ros::rate 10)
 
