@@ -222,6 +222,7 @@
           (publish-grasp-state)
           (publish-info "grasp failed!")          
           (ros::set-param (format nil "~/judge_grasp_success") 0)))) 
+
     (get-judge)
     (print "save judge")
     (send *ri* :wait-interpolation)
