@@ -29,12 +29,16 @@
 
 ;; service callでdepthをcsvに落とす
 (defun get-depth ()
-  (ros::wait-for-service "/data_collection/save_request")
+  (ros::wait-for-service "/depth_data_collection/save_request")
   (setq req (instance std_srvs::TriggerRequest :init))
-  (setq before (ros::time-now))
-  (setq res (ros::service-call "/data_collection/save_request" req))
-  (setq after (ros::time-now))
-  (print "depth data saved")
+  (setq res (ros::service-call "/depth_data_collection/save_request" req))
+  )
+
+(defun get-judge ()
+  (ros::wait-for-service "/judge_data_collection/save_request")
+  (setq req (instance std_srvs::TriggerRequest :init))
+  (setq res (ros::service-call "/judge_data_collection/save_request" req))
+  (print "judge data saved")
   )
 
 ;; ;; sub-grasp-pointのcallback
@@ -131,10 +135,11 @@
 
 (defun grasp-target-callback (msg)
   (print "clicked")
-  (get-depth)
   (let ((target-point (sub-grasp-point)))
   ;; (let ((target-point (bounding-box->cube msg)))
     ;;(print target-point) ;;t
+    (get-depth)
+    (print "save depth")
     (unless target-point
       (ros::ros-logerr "target point is nil !!")
       (return-from grasp-target-callback nil))
@@ -217,6 +222,8 @@
           (publish-grasp-state)
           (publish-info "grasp failed!")          
           (ros::set-param (format nil "~/judge_grasp_success") 0)))) 
+    (get-judge)
+    (print "save judge")
     (send *ri* :wait-interpolation)
     (publish-info "pre grasp pose")
   
