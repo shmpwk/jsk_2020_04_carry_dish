@@ -20,4 +20,7 @@
       <arg name="gui" value="false" />
   </include>
 
+  <include file="$(find jsk_2020_4_carry_dish)/launch/gazebo/gazebo_depth_data_collection.launch" />
+
+  <include file="$(find jsk_2020_4_carry_dish)/launch/gazebo/gazebo_grasp_data_collection.launch" />
 </launch>

@@ -28,14 +28,18 @@
   )
 
 ;; service callでdepthをcsvに落とす
-;;(defun get-depth (msg)
-;;  (ros::wait-for-service "get-depth")
-;;  (setq req (instance roseus::GetDepthRequest :init))
-;;  (setq before (ros::time-now))
-;;  (setq res (ros::service-call "get-depth" req))
-;;  (setq after (ros::time-now))
-;;  )
+(defun get-depth ()
+  (ros::wait-for-service "/depth_data_collection/save_request")
+  (setq req (instance std_srvs::TriggerRequest :init))
+  (setq res (ros::service-call "/depth_data_collection/save_request" req))
+  )
 
+(defun get-judge ()
+  (ros::wait-for-service "/judge_data_collection/save_request")
+  (setq req (instance std_srvs::TriggerRequest :init))
+  (setq res (ros::service-call "/judge_data_collection/save_request" req))
+  (print "judge data saved")
+  )
 
 ;; ;; sub-grasp-pointのcallback
 ;; (defun grasp-point-cb (msg)
@@ -134,6 +138,8 @@
   (let ((target-point (sub-grasp-point)))
   ;; (let ((target-point (bounding-box->cube msg)))
     ;;(print target-point) ;;t
+    (get-depth)
+    (print "save depth")
     (unless target-point
       (ros::ros-logerr "target point is nil !!")
       (return-from grasp-target-callback nil))
@@ -203,16 +209,21 @@
     (send *pr2* *rarm* :move-end-pos #f(0 0 -150) :world)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
-  
-    (setq *grasp-state* "grasp-opening")
-    (publish-grasp-state)
-    (send *ri* :stop-grasp *rarm* :wait t)
-    (publish-info "return object...")
-  
-    (setq *grasp-state* "leaving")
-    (publish-grasp-state)
-    (send *pr2* *rarm* :move-end-pos #f(-150 0 0) :world)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+    (let ((grasp-result (send *ri* :start-grasp *rarm*)))
+      (print grasp-result)
+      (if (< 0.1 grasp-result)                                       
+        (progn                                                     
+          (setq *grasp-state* "grasp succeeded!")               
+          (publish-grasp-state)
+          (publish-info "grasp succeeded!")                   
+          (ros::set-param (format nil "~/judge_grasp_success") 1))
+        (progn                                          
+          (setq *grasp-state* "grasp failed!")      
+          (publish-grasp-state)
+          (publish-info "grasp failed!")          
+          (ros::set-param (format nil "~/judge_grasp_success") 0)))) 
+    (get-judge)
+    (print "save judge")
     (send *ri* :wait-interpolation)
     (publish-info "pre grasp pose")
   
