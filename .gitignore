@@ -4,3 +4,5 @@
 *.pdf
 *.gv
 *mjc*
+*.png
+*.pkl

@@ -45,7 +45,7 @@ def ImageCallback(rgb_data, depth_data, points_data):
     ave = sum / ((WIDTH * 2) * (HEIGHT * 2)) #average distance 
     #print("%f [m]" % ave)
     #print(points)
-    with open('sample_depth_image.csv', 'w') as f:
+    with open('test_depth_image.csv', 'w') as f:
         writer = csv.writer(f)
         writer.writerows(depth_image) #datasize=480
     #with open('sample_points.csv', 'w') as f:
