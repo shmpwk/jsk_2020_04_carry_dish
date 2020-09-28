@@ -71,11 +71,12 @@ class MyDataset(Dataset):
                     np.append(self.judge_dataset, hf, axis=0)
 
     def __len__(self):
-        return len(self.csvfiles)
+        return self.datanum #should be dataset size / batch size
 
     def __getitem__(self, idx):
-        x = self.depth_datasets[idx]
-        y = self.grasp_datasets[idx]
+        print(idx)
+        x = self.depth_dataset[idx]
+        y = self.grasp_dataset[idx]
         c = self.judge_dataset[idx]
         """
         y = pd.read_csv(self.csvfiles[idx], header=None),
