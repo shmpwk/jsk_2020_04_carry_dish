@@ -9,7 +9,7 @@
       message_filters: true
       approximate_sync: true
       method: request
-      save_dir: ~/Data/test
+      save_dir: ~/Data/depth_data
       topics:
         - name: /head_mount_kinect/rgb/image_raw
           msg_class: sensor_msgs/Image
