@@ -9,6 +9,7 @@ import message_filters
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, PointCloud2
 from geometry_msgs.msg import Point
+import pickle
 
 def ImageCallback(rgb_data, depth_data, points_data):
     WIDTH = 50
@@ -45,9 +46,8 @@ def ImageCallback(rgb_data, depth_data, points_data):
     ave = sum / ((WIDTH * 2) * (HEIGHT * 2)) #average distance 
     #print("%f [m]" % ave)
     #print(points)
-    with open('test_depth_image.csv', 'w') as f:
-        writer = csv.writer(f)
-        writer.writerows(depth_image) #datasize=480
+    with open('test_depth_image.pkl', 'wb') as f:
+        pickle.dump(depth_image, f) #datasize=480
     #with open('sample_points.csv', 'w') as f:
     #    writer = csv.writer(f)
     #    writer.writerows(points)

@@ -21,7 +21,7 @@ import os
 class MyDataset(Dataset):
     def __init__(self, transform=None):
         self.transform = transform
-        self.datanum = 100
+        self.datanum = 10
         #self.imgfiles = sorted(glob('%s/*.png' % imgpath))
         #self.csvfiles = sorted(glob('%s/*.csv' % csvpath))
 
@@ -33,6 +33,7 @@ class MyDataset(Dataset):
         """
         # depth_data_size(100) * (32*32)
         depth_dataset_path = "~/my_ws/src"
+        depth_dataset_path = os.path.expanduser('~/Data/depth_data')
         self.depth_dataset = np.empty((0,3))
         key = '.pkl'
         for dir_name, sub_dirs, files in os.walk(depth_dataset_path):
@@ -133,16 +134,14 @@ class GraspSystem():
 
         # Data loader (https://ohke.hateblo.jp/entry/2019/12/28/230000)
         train_dataloader = torch.utils.data.DataLoader(
-            datasets, batch_size=16, shuffle=True,
+            datasets, batch_size=1, shuffle=True,
             num_workers=2, drop_last=True
         )
-
         depth_data, grasp_point, labels = next(iter(train_dataloader))
         print(depth_data.size())  # torch.Size([16, 3, 224, 224])‚É‚È‚Á‚Ä‚¢‚é‚©‚È
         print(grasp_point.size())
         print(labels.size())
         return train_dataloader
-
 
     # make Net class model
     def make_model(self):

@@ -13,7 +13,7 @@ import pickle
 
 def ImageCallback(rgb_data, depth_data, points_data):
     WIDTH = 50
-    HEIGHT = 25
+    HEIGHT = 50 
     bridge = CvBridge()
     try:
         color_image = bridge.imgmsg_to_cv2(rgb_data, 'passthrough')
@@ -31,31 +31,27 @@ def ImageCallback(rgb_data, depth_data, points_data):
     y2 = (h / 2) + HEIGHT
     sum = 0.0
     points = []
+    depth_data = []
 
     for i in range(y1, y2):
         for j in range(x1, x2):
             color_image.itemset((i, j, 0), 0) #color roi without blue 
             color_image.itemset((i, j, 1), 0) #color roi without green
             #color_image.itemset((100,100,2), 0)
-
             if depth_image.item(i,j) == depth_image.item(i,j):
                 point = Point(i, j, depth_image.item(i,j))
                 points.append(point)
+                depth_data.append(depth_image.item(i,j))
 
     #pub.publisher(points)            
     ave = sum / ((WIDTH * 2) * (HEIGHT * 2)) #average distance 
     #print("%f [m]" % ave)
     #print(points)
-    """
-    with open('sample_depth_image.csv', 'w') as f:
-        writer = csv.writer(f)
-        writer.writerows(depth_image) #datasize=480
-    """
+    with open('test_depth_image.pkl', 'wb') as f:
+        pickle.dump(depth_data, f) #datasize=480
     #with open('sample_points.csv', 'w') as f:
     #    writer = csv.writer(f)
     #    writer.writerows(points)
-    with open("depth_image.pkl", "wb") as f:
-        pickle.dump(depth_image, f) 
 
     cv2.normalize(depth_image, depth_image, 0, 1, cv2.NORM_MINMAX)
     cv2.namedWindow("color_image")
