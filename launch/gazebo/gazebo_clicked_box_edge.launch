@@ -6,6 +6,10 @@
         pkg="nodelet" type="nodelet"
         args="manager"/>
 
+  <node name="depth_save"
+      pkg="jsk_2020_4_carry_dish" type="gazebo_depth_save.py">
+  </node>    
+  
   <node name="depth_image_creator"
         pkg="nodelet" type="nodelet"
         args="standalone jsk_pcl/DepthImageCreator">
