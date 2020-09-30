@@ -16,7 +16,7 @@ from absl import flags
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string(
-        'depth_topic', 'default value', '/head_mount_kinect/depth/image_raw')
+        'depth_topic', '/head_mount_kinect/depth/image_raw', "depth topic name")
 
 def ImageCallback(depth_data):
     WIDTH = 50
@@ -75,7 +75,9 @@ if __name__ == '__main__':
     """
     try:
         while not rospy.is_shutdown():
-            data = rospy.wait_for_message("/head_mount_kinect/depth/image_raw",Image)
+            topic_name = "{}".format(FLAGS.depth_topic) 
+            data = rospy.wait_for_message(topic_name,Image)
+            #data = rospy.wait_for_message("/head_mount_kinect/depth/image_raw", Image)
             ImageCallback(data)
             break
     except rospy.ROSInterruptException: pass

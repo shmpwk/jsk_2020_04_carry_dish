@@ -5,8 +5,8 @@
   <arg if="$(arg use_sim)" name="RGB_CAMERA_INFO" value="/head_mount_kinect/rgb/camera_info"/>
   <!--arg name="RGB_CAMERA_INFO" value="/head_mount_kinect/rgb/camera_info"/-->
   
-  <arg unless="$(arg use_sim)" name="DEPTH_TOPIC" value="--depth_topic /kinect_head/depth/image_raw"/>
-  <arg if="$(arg use_sim)" name="DEPTH_TOPIC" value="/head_mount_kinect/depth/image_raw"/>
+  <arg unless="$(arg use_sim)" name="DEPTH_TOPIC" value="--depth_topic "/kinect_head/depth/image_raw""/>
+  <arg if="$(arg use_sim)" name="DEPTH_TOPIC" value="--depth_topic "/head_mount_kinect/depth/image_raw""/>
 
   <node name="sample_manager"
         pkg="nodelet" type="nodelet"
