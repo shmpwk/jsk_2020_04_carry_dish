@@ -6,6 +6,10 @@
         pkg="nodelet" type="nodelet"
         args="manager"/>
 
+  <node name="depth_save"
+      pkg="jsk_2020_4_carry_dish" type="depth_save.py">
+  </node>    
+  
   <node name="depth_image_creator"
         pkg="nodelet" type="nodelet"
         args="standalone jsk_pcl/DepthImageCreator">
@@ -44,7 +48,7 @@
   <node name="organized_edge_detector"
         pkg="nodelet" type="nodelet"
         args="load jsk_pcl/OrganizedEdgeDetector sample_manager">
-        <remap from="~input" to="/depth_image_creator/output_cloud"/>
+        <remap from="~input" to="/selected_pointcloud"/>
     <rosparam>
       publish_normal: true
       use_nan_boundary: true
@@ -52,6 +56,19 @@
     </rosparam>
   </node>
 
+  <node name="supervoxel_segmentation"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/SupervoxelSegmentation sample_manager">
+        <remap from="~input" to="/organized_edge_detector/output"/>
+    <rosparam>
+      seed_resolution: 0.5
+    </rosparam>
+  </node>
+
+  <node name="publish_grasp_point"
+      pkg="jsk_2020_4_carry_dish" type="pub_grasp_point.py">
+  </node>    
+  
   <group if="$(arg gui)">
     <node name="normal_concatenater"
           pkg="nodelet" type="nodelet"

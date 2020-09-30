@@ -10,13 +10,6 @@ from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, PointCloud2
 from geometry_msgs.msg import Point
 import pickle
-from absl import app
-from absl import flags
-
-FLAGS = flags.FLAGS
-
-flags.DEFINE_string(
-        'depth_topic', 'default value', '/head_mount_kinect/depth/image_raw')
 
 def ImageCallback(depth_data):
     WIDTH = 50
