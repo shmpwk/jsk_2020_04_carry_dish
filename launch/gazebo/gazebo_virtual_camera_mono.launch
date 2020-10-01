@@ -1,5 +1,5 @@
 <launch>
-  <!--TODO: edit camera topic and camera frame  --/>
+  <!--TODO: edit camera topic and camera frame  -->
   <arg name="gui" default="true"/>
 
   <!--node name="static_tf_publisher"
@@ -8,19 +8,19 @@
 
   <node name="virtual_camera_mono"
         pkg="jsk_perception" type="virtual_camera_mono">
-        <remap from="image" to="/head_mount_kinect/rgb/image_rect_color"/>
+        <remap from="image" to="/head_mount_kinect/rgb/image_raw"/>
         <remap from="camera_info" to="/head_mount_kinect/rgb/camera_info"/>
         <rosparam>
-            frame_id: segmentation_decompoeroutput00
+            frame_id: segmentation_decomposeroutput00
             child_frame_id: virtual_camera_frame
-            initial_pos: [2.0, 0.0, 0.0]
-            initial_rot: [0.5, 0.5, -0.5, -0.5]
+            initial_pos: [0.0, 0.0, -0.98]
+            initial_rot: [0.0, 0.0, 0.0, 1.0]
         </rosparam>
   </node>
 
   <group if="$(arg gui)">
       <node name="rviz"
           pkg="rviz" type="rviz"
-          args="-d $(find grasp_recognition)/config/virtual_camera_mono.rviz"/>
+          args="-d $(find jsk_2020_4_carry_dish)/config/virtual_camera_mono.rviz"/>
   </group>
 </launch>
