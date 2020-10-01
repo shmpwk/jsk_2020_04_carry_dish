@@ -8,7 +8,7 @@
 (ros::load-ros-manifest "jsk_recognition_msgs")
 (ros::load-ros-manifest "jsk_rviz_plugins")
 (ros::roseus-add-msgs "geometry_msgs")
-(load "models/arrow-object.l")
+(require "models/arrow-object.l")
 
 
 (ros::roseus "pr2_tabletop_object_grasp_node")
@@ -23,6 +23,8 @@
   (send *ri* :wait-interpolation)
 
   (setq *co-endeffector-vis* (arrow))
+  (setq *co-ik-target* (arrow))
+  (objects (list *co-endeffector-vis* *co-ik-target* *pr2*))
   ;;(setq *co-target-vis* (arrow))
   ;;(objects (list *pr2* *co-endeffector-vis*))
   )
@@ -158,10 +160,11 @@
                          :rpy (float-vector 0 1.2 -1.54))
             :rotation-axis :nil)
       (publish-error "out of reach...")
-      (return-from grasp-target-callback nil)))
+      (return-from grasp-target-callback nil))
     (send *co-endeffector-vis* :newcoords (send *pr2* :copy-worldcoords)) 
-    (objects (list *pr2* *co-endeffector-vis*))
-    (publish-info "openning gripper...")
+    (send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
+    (objects (list *pr2* *co-endeffector-vis* *co-ik-target*))
+    (publish-info "openning gripper..."))
   
     (setq *grasp-state* "reaching")
     (publish-grasp-state)
