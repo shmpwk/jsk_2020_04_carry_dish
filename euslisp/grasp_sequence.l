@@ -24,6 +24,7 @@
 
   (setq *co-endeffector-vis* (arrow))
   (setq *co-ik-target* (arrow))
+  (setq *pregrasp-point* (arrow))
   (objects (list *co-endeffector-vis* *co-ik-target* *pr2*))
   ;;(setq *co-target-vis* (arrow))
   ;;(objects (list *pr2* *co-endeffector-vis*))
@@ -161,9 +162,14 @@
             :rotation-axis :nil)
       (publish-error "out of reach...")
       (return-from grasp-target-callback nil))
-    (send *co-endeffector-vis* :newcoords (send *pr2* :copy-worldcoords)) 
+    ;;(send *co-endeffector-vis* :newcoords (send *pr2* :copy-worldcoords)) 
+    (send *pregrasp-point* :newcoords
+          (make-coords :pos (v+ (send target-point :worldpos)
+                                  (float-vector -200 0 150))
+                         :rpy (float-vector 0 1.2 -1.54)))
+    ;;(send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
     (send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
-    (objects (list *pr2* *co-endeffector-vis* *co-ik-target*))
+    (objects (list *pr2* *co-endeffector-vis* *co-ik-target* *pregrasp-point*))
     (publish-info "openning gripper..."))
   
     (setq *grasp-state* "reaching")
