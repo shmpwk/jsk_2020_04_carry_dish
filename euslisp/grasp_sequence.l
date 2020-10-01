@@ -130,11 +130,11 @@
           (send (send base->parent :copy-worldcoords)
                 :transform cds)
           *base-frame-id* "target_object" (send msg :header :stamp))
-    (send (apply #'make-cube d)
+    (setq *box* (send (apply #'make-cube d)
           :transform
           (send (send base->parent :copy-worldcoords)
                 :transform cds))
-                )
+                ))
   )
 
 (defun grasp-target-callback (msg)
@@ -171,7 +171,7 @@
                          :rpy (float-vector 0 1.2 -1.54)))
     ;;(send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
     (send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
-    (objects (list *pr2* *co-endeffector-vis* *co-ik-target* *pregrasp-point*))
+    (objects (list *pr2* *box* *co-endeffector-vis* *co-ik-target* *pregrasp-point*))
     (publish-info "openning gripper...")
   
     (setq *grasp-state* "reaching")
@@ -193,7 +193,7 @@
           (make-coords :pos (v+ (send target-point :worldpos)
                                 (float-vector -95 0 0)) ;;(-200+105, 0+0, 150-150)
                        :rpy (float-vector 0 1.2 -1.54)))
-    (objects (list *pr2* *co-endeffector-vis* *co-ik-target* *grasp-point*))
+    (objects (list *pr2* *box* *co-endeffector-vis* *co-ik-target* *grasp-point*))
     (send *pr2* :head :look-at-hand *rarm*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation))
