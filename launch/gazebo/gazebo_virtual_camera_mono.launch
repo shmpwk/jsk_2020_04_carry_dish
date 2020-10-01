@@ -1,6 +1,8 @@
 <launch>
   <!--TODO: edit camera topic and camera frame  -->
   <arg name="gui" default="true"/>
+  <arg name="RGB_IMAGE" default="/head_mount_kinect/rgb/image_raw"/>
+  <arg name="RGB_CAMERA_INFO" default="/head_mount_kinect/rgb/camera_info"/>
 
   <!--node name="static_tf_publisher"
         pkg="tf" type="static_transform_publisher"
@@ -8,8 +10,10 @@
 
   <node name="virtual_camera_mono"
         pkg="jsk_perception" type="virtual_camera_mono">
-        <remap from="image" to="/head_mount_kinect/rgb/image_raw"/>
-        <remap from="camera_info" to="/head_mount_kinect/rgb/camera_info"/>
+        <remap from="image" to="$(arg RGB_IMAGE)"/>
+        <remap from="camera_info" to="$(arg RGB_CAMERA_INFO)"/>
+        <!--remap from="image" to="/head_mount_kinect/rgb/image_raw"/-->
+        <!--remap from="camera_info" to="/head_mount_kinect/rgb/camera_info"/-->
         <rosparam>
             frame_id: segmentation_decomposeroutput00
             child_frame_id: virtual_camera_frame

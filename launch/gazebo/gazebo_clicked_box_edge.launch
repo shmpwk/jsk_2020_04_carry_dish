@@ -5,17 +5,27 @@
   <arg if="$(arg use_sim)" name="RGB_CAMERA_INFO" value="/head_mount_kinect/rgb/camera_info"/>
   <!--arg name="RGB_CAMERA_INFO" value="/head_mount_kinect/rgb/camera_info"/-->
   
-  <arg unless="$(arg use_sim)" name="DEPTH_TOPIC" value="--depth_topic "/kinect_head/depth/image_raw""/>
-  <arg if="$(arg use_sim)" name="DEPTH_TOPIC" value="--depth_topic "/head_mount_kinect/depth/image_raw""/>
+  <arg unless="$(arg use_sim)" name="DEPTH_TOPIC" value="--depth_topic '/kinect_head/depth/image_raw'"/>
+  <arg if="$(arg use_sim)" name="DEPTH_TOPIC" value="--depth_topic '/head_mount_kinect/depth/image_raw'"/>
+
+  <arg unless="$(arg use_sim)" name="RGB_IMAGE" value="/kinect_head/rgb/image_raw"/>
+  <arg if="$(arg use_sim)" name="RGB_IMAGE" value="/head_mount_kinect/rgb/image_raw"/>
 
   <node name="sample_manager"
         pkg="nodelet" type="nodelet"
         args="manager"/>
+  
+  <!--group if="$(arg use_sim)"-->
+  <include file="$(find jsk_2020_4_carry_dish)/launch/gazebo/gazebo_virtual_camera_mono.launch" >
+      <arg name="RGB_IMAGE" value="$(arg RGB_IMAGE)"/>
+      <arg name="RGB_CAMERA_INFO" value="$(arg RGB_CAMERA_INFO)"/>
+  </include>
+  <!--/group-->
 
   <node name="depth_save"
       pkg="jsk_2020_4_carry_dish" type="gazebo_depth_save.py" args="$(arg DEPTH_TOPIC)">
   </node>    
-  
+
   <node name="depth_image_creator"
         pkg="nodelet" type="nodelet"
         args="standalone jsk_pcl/DepthImageCreator">
@@ -52,7 +62,7 @@
   </group>
  
   <node name="organized_edge_detector"
-        pkg="nodelet" type="nodelet"
+         pkg="nodelet" type="nodelet"
         args="load jsk_pcl/OrganizedEdgeDetector sample_manager">
         <remap from="~input" to="/selected_pointcloud"/>
     <rosparam>

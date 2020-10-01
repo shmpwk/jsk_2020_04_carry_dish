@@ -16,7 +16,7 @@ from absl import flags
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string(
-        'depth_topic', '/head_mount_kinect/depth/image_raw', "depth topic name")
+        'depth_topic', '/head_mount_kinect/depth/image_raw', 'depth topic name')
 
 def ImageCallback(depth_data):
     WIDTH = 50
@@ -62,7 +62,7 @@ def ImageCallback(depth_data):
     cv2.imshow("depth_image", depth_image)
     cv2.waitKey(10)
 
-if __name__ == '__main__':
+def main(argv):
     rospy.init_node('depth_estimater', anonymous=True)
     """ 
     sub_rgb = message_filters.Subscriber("/head_mount_kinect/rgb/image_raw",Image)
@@ -82,3 +82,6 @@ if __name__ == '__main__':
             break
     except rospy.ROSInterruptException: pass
 
+if __name__ == '__main__':
+    print("=============================================started!!")
+    app.run(main)
