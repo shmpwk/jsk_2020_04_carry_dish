@@ -22,7 +22,7 @@ def choose_point_callback(data):
     Numpy array A is selected position.
     """
     gen = point_cloud2.read_points(data, field_names = ("x", "y", "z"), skip_nans=True)
-    length = 0
+    length = 1 
     A = np.arange(3).reshape(1,3)
     for l in gen:
         l = np.array(l)
