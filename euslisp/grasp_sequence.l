@@ -25,6 +25,7 @@
   (setq *co-endeffector-vis* (arrow))
   (setq *co-ik-target* (arrow))
   (setq *pregrasp-point* (arrow))
+  (setq *grasp-point* (arrow))
   (objects (list *co-endeffector-vis* *co-ik-target* *pr2*))
   ;;(setq *co-target-vis* (arrow))
   ;;(objects (list *pr2* *co-endeffector-vis*))
@@ -138,8 +139,9 @@
 
 (defun grasp-target-callback (msg)
   (print "clicked")
-  (let ((target-point (sub-grasp-point)))
-  ;; (let ((target-point (bounding-box->cube msg)))
+  (let ((target-point (sub-grasp-point))
+     (target-box (bounding-box->cube msg)))
+    ;;(let ((target-point (bounding-box->cube msg)))
     ;;(print target-point) ;;t
     (get-depth)
     (print "save depth")
@@ -151,7 +153,7 @@
           (publish-warn "cancel grasping...")
           (send *ri* :stop-motion)
           (send *ri* :stop-grasp *rarm* :wait t)
-          (setq *grasping-object-p* nil))
+          (setq *grasping-ebject-p* nil))
       (setq *grasping-object-p* t))
     (unless
       (send *pr2* *rarm* :inverse-kinematics
@@ -170,7 +172,7 @@
     ;;(send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
     (send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
     (objects (list *pr2* *co-endeffector-vis* *co-ik-target* *pregrasp-point*))
-    (publish-info "openning gripper..."))
+    (publish-info "openning gripper...")
   
     (setq *grasp-state* "reaching")
     (publish-grasp-state)
@@ -185,10 +187,16 @@
     (publish-info "reaching...")
     (send *pr2* *rarm* :move-end-pos #f(105 0 -150) :world)
     (send *co-endeffector-vis* :newcoords (send *pr2* :copy-worldcoords))
-    (objects (list *pr2* *co-endeffector-vis*))
+    (print "pregrasp point")
+    (print *pregrasp-point*)
+    (send *grasp-point* :newcoords 
+          (make-coords :pos (v+ (send target-point :worldpos)
+                                (float-vector -95 0 0)) ;;(-200+105, 0+0, 150-150)
+                       :rpy (float-vector 0 1.2 -1.54)))
+    (objects (list *pr2* *co-endeffector-vis* *co-ik-target* *grasp-point*))
     (send *pr2* :head :look-at-hand *rarm*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-    (send *ri* :wait-interpolation)
+    (send *ri* :wait-interpolation))
   
     (setq *grasp-state* "grasp-closing")
     (publish-grasp-state)
