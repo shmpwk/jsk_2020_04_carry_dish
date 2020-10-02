@@ -46,7 +46,7 @@
   (print "judge data saved")
   )
 
-;; ;; sub-grasp-pointのcallback
+;;; ;; sub-grasp-pointのcallback
 ;; (defun grasp-point-cb (msg)
 ;;   (print (list 'cb (send msg :pose :position :x)))
 ;;   (let ((cds (ros::tf-pose->coords (send msg :pose)))
@@ -61,7 +61,19 @@
 ;;      (send (send base->parent :copy-worldcoords) :transform cds))
 ;; )
 
-;; 把持点をsubscribe
+;; sub-grasp-pointのcallback
+(defun grasp-point-cb (msg)
+  (print (list 'cb (send msg :pose :position :x)))
+  (let ((cds (ros::tf-pose->coords (send msg :pose)))
+        (base->parent (send *tfl* :lookup-transform
+                            *base-frame-id* (send msg :header :frame_id)
+                            (ros::time 0))))
+     (send (send base->parent :copy-worldcoords) :transform cds)
+     )
+  )
+
+
+;; one-shot-subscribe but not use now
 (defun sub-grasp-point ()
   (let* ((msg (one-shot-subscribe "grasp_point" geometry_msgs::PoseStamped
                                   :after-stamp (ros::time 0)))
@@ -149,7 +161,8 @@
 
 (defun grasp-target-callback (msg)
   (print "clicked")
-  (let ((target-point (sub-grasp-point))
+  ;;(let ((target-point (sub-grasp-point))
+  (let ((target-point (grasp-point-cb msg))
      (target-box (bounding-box->cube msg)))
     ;;(let ((target-point (bounding-box->cube msg)))
     ;;(print target-point) ;;t
