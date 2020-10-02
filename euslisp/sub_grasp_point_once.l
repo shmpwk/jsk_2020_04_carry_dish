@@ -1,4 +1,10 @@
 #!/usr/bin/env roseus
+(ros::load-ros-manifest "jsk_recognition_msgs")
+(ros::load-ros-manifest "jsk_rviz_plugins")
+(ros::roseus-add-msgs "geometry_msgs")
+(require "models/arrow-object.l")
+
+(require :pr2-interface "package://pr2eus/pr2-interface.l")
 
 (defun sub-grasp-point ()
   (let* ((msg (one-shot-subscribe "grasp_point" geometry_msgs::PoseStamped

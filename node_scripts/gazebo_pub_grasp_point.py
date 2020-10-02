@@ -41,8 +41,8 @@ def choose_point_callback(data):
     But currently, rotation is fixed for test. 
     """
     # euler angle will be strange when converting in eus program. Adjust parameter until solving this problem.  
-    theta = -1.54 
-    phi = 1.2
+    theta = 0#-1.54 
+    phi = 0#1.2
     psi = 0
     q = tf.transformations.quaternion_from_euler(theta, phi, psi)
 

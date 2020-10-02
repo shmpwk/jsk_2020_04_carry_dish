@@ -26,6 +26,7 @@
   (setq *co-ik-target* (arrow))
   (setq *pregrasp-point* (arrow))
   (setq *grasp-point* (arrow))
+  (setq *box-arrow* (arrow))
   (objects (list *co-endeffector-vis* *co-ik-target* *pr2*))
   ;;(setq *co-target-vis* (arrow))
   ;;(objects (list *pr2* *co-endeffector-vis*))
@@ -61,7 +62,6 @@
 ;; )
 
 ;; 把持点をsubscribe
-
 (defun sub-grasp-point ()
   (let* ((msg (one-shot-subscribe "grasp_point" geometry_msgs::PoseStamped
                                   :after-stamp (ros::time 0)))
@@ -69,9 +69,18 @@
          (base->parent
            (when msg (send *tfl* :lookup-transform
                            *base-frame-id* (send msg :header :frame_id)
-                           (ros::time 0)))))
+                           (ros::time 0)
+                           )
+             )
+           )
+         )
     (when (and cds base->parent)
-      (send (send base->parent :copy-worldcoords) :transform cds))))
+      ;;(send *tfb* :send-transform
+            (send (send base->parent :copy-worldcoords) :transform cds) 
+      ;;      *base-frame-id* "target_object" (send msg :header :stamp))
+      )
+    )
+  )
 
 ;;(ros::subscribe "grasp_point" geometry_msgs::posestamped #'grasp-point-cb)
 
@@ -119,7 +128,6 @@
          (* (send v :y) 1000.0)
          (* (send v :z) 1000.0)))
 
-;; not use now  
 (defun bounding-box->cube (msg)
   (let ((cds (ros::tf-pose->coords (send msg :pose)))
         (d (vector3-> 'list (send msg :dimensions)))
@@ -134,7 +142,9 @@
           :transform
           (send (send base->parent :copy-worldcoords)
                 :transform cds))
-                ))
+                )
+    (send *box-arrow* :newcoords (send *box* :copy-worldcoords))
+    )
   )
 
 (defun grasp-target-callback (msg)
@@ -160,18 +170,33 @@
             ;;(make-coords :pos target-point :worldpos)
             (make-coords :pos (v+ (send target-point :worldpos)
                                   (float-vector -200 0 150))
-                         :rpy (float-vector 0 1.2 -1.54))
+                         ;;:rpy (float-vector 0 0 0)) ;;success(0 1.2 -1.54)
+                         :rpy (v- (send target-point :worldpos)
+                                  (send (bounding-box->cube msg) :worldpos)))
             :rotation-axis :nil)
       (publish-error "out of reach...")
+      (send *pregrasp-point* :newcoords
+            (make-coords :pos (v+ (send target-point :worldpos)
+                                    (float-vector -200 0 150))
+                           ;;:rpy (float-vector 0 1.2 -1.54)))
+                           :rpy (v- (send target-point :worldpos)
+                                    (send (bounding-box->cube msg) :worldpos))))
+      ;;(send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
+      (send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
+      (objects (list *pr2* *box* *box-arrow* *co-ik-target* *pregrasp-point*))
       (return-from grasp-target-callback nil))
     ;;(send *co-endeffector-vis* :newcoords (send *pr2* :copy-worldcoords)) 
     (send *pregrasp-point* :newcoords
           (make-coords :pos (v+ (send target-point :worldpos)
                                   (float-vector -200 0 150))
-                         :rpy (float-vector 0 1.2 -1.54)))
+                         ;;:rpy (float-vector 0 0 0)))
+                         :rpy (v- (send target-point :worldpos)
+                                  (send (bounding-box->cube msg) :worldpos))))
     ;;(send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
+    (print "print target-point")
+    (print (send target-point :worldrot))
     (send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
-    (objects (list *pr2* *box* *co-endeffector-vis* *co-ik-target* *pregrasp-point*))
+    (objects (list *pr2* *box* *co-ik-target* *pregrasp-point*))
     (publish-info "openning gripper...")
   
     (setq *grasp-state* "reaching")

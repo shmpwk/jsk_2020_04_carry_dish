@@ -141,7 +141,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: camera_depth_optical_frame
+    Fixed Frame: base_link
     Frame Rate: 30
   Name: root
   Tools:
@@ -172,18 +172,18 @@ Visualization Manager:
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.02885771542787552
-        Y: -0.041437529027462006
-        Z: 0.36917081475257874
+        X: 0.6288005709648132
+        Y: -0.4245738387107849
+        Z: 0.57979816198349
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: -1.5697963237762451
+      Pitch: 0.2752022445201874
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.165407657623291
+      Yaw: 4.060406684875488
     Saved: ~
 Window Geometry:
   Displays:
@@ -204,4 +204,4 @@ Window Geometry:
     collapsed: false
   Width: 1276
   X: 94
-  Y: 98
+  Y: 68
