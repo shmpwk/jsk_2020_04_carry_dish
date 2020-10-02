@@ -93,12 +93,13 @@ if __name__=="__main__":
     #subscribe edge pointcloud data
     try:
         rospy.init_node('grasp_point_server')
-        #rospy.Subscriber('/organized_edge_detector/output', PointCloud2, choose_point_callback, queue_size=10)
-        pub = rospy.Publisher('/grasp_point', PoseStamped, queue_size=10)
-        while not rospy.is_shutdown():
+        rospy.Subscriber('supervoxel_segmentation/output/cloud', PointCloud2, choose_point_callback, queue_size=10)
+        pub = rospy.Publisher('/grasp_point', PoseStamped, queue_size=100)
+        """while not rospy.is_shutdown():
             data = rospy.wait_for_message('supervoxel_segmentation/output/cloud', PointCloud2)
             choose_point_callback(data)
-            break
+            break"""
+        rospy.spin()
     except rospy.ROSInterruptException: pass
 
 """

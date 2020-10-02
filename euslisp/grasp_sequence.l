@@ -16,7 +16,6 @@
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 
-
 (defun pr2-pregrasp-pose ()
   (send *pr2* :reset-manip-pose)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
@@ -75,20 +74,23 @@
 
 ;; one-shot-subscribe but not use now
 (defun sub-grasp-point ()
-  (let* ((msg (one-shot-subscribe "grasp_point" geometry_msgs::PoseStamped
+    (let* (
+         (msg (one-shot-subscribe "/grasp_point" geometry_msgs::PoseStamped
                                   :after-stamp (ros::time 0)))
          (cds (when msg (ros::tf-pose->coords (send msg :pose))))
          (base->parent
            (when msg (send *tfl* :lookup-transform
                            *base-frame-id* (send msg :header :frame_id)
-                           (ros::time 0)
+                           (ros::time-now)
                            )
              )
            )
          )
     (when (and cds base->parent)
       ;;(send *tfb* :send-transform
-            (send (send base->parent :copy-worldcoords) :transform cds) 
+      (progn
+        (publish-info "one-shot-subscribe!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        (send (send base->parent :copy-worldcoords) :transform cds))
       ;;      *base-frame-id* "target_object" (send msg :header :stamp))
       )
     )
@@ -182,7 +184,7 @@
       (send *pr2* *rarm* :inverse-kinematics
             ;;(make-coords :pos target-point :worldpos)
             (make-coords :pos (v+ (send target-point :worldpos)
-                                  (float-vector -200 0 50))
+                                  (float-vector -200 0 150))
                          :rpy (float-vector 0 1.2 -1.54)) ;;success(0 1.2 -1.54)
                          ;;:rpy (v- (send target-point :worldpos)
                          ;;         (send (bounding-box->cube msg) :worldpos)))
@@ -223,13 +225,13 @@
     (setq *grasp-state* "grasp-approaching")
     (publish-grasp-state)
     (publish-info "reaching...")
-    (send *pr2* *rarm* :move-end-pos #f(105 0 -150) :world)
+    (send *pr2* *rarm* :move-end-pos #f(200 0 -150) :world)
     (send *co-endeffector-vis* :newcoords (send *pr2* :copy-worldcoords))
     (print "pregrasp point")
     (print *pregrasp-point*)
     (send *grasp-point* :newcoords 
           (make-coords :pos (v+ (send target-point :worldpos)
-                                (float-vector -95 0 0)) ;;(-200+105, 0+0, 150-150)
+                                (float-vector 0 0 0)) ;;(-200+105, 0+0, 150-150)
                        :rpy (float-vector 0 1.2 -1.54)))
     (objects (list *pr2* *box* *co-endeffector-vis* *co-ik-target* *grasp-point*))
     (send *pr2* :head :look-at-hand *rarm*)
