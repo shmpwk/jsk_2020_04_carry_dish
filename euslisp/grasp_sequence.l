@@ -182,7 +182,7 @@
       (send *pr2* *rarm* :inverse-kinematics
             ;;(make-coords :pos target-point :worldpos)
             (make-coords :pos (v+ (send target-point :worldpos)
-                                  (float-vector -200 0 150))
+                                  (float-vector -200 0 50))
                          :rpy (float-vector 0 1.2 -1.54)) ;;success(0 1.2 -1.54)
                          ;;:rpy (v- (send target-point :worldpos)
                          ;;         (send (bounding-box->cube msg) :worldpos)))
@@ -251,7 +251,7 @@
     (setq *grasp-state* "picking")
     (publish-grasp-state)
     (publish-info "picking up...")
-    (unix:sleep 1)
+    ;;(unix:sleep 1)
     (send *pr2* *rarm* :move-end-pos #f(0 0 250) :world)
     (send *pr2* :head :look-at-hand *rarm*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
