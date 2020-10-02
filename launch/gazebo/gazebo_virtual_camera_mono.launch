@@ -1,6 +1,6 @@
 <launch>
   <!--TODO: edit camera topic and camera frame  -->
-  <arg name="gui" default="true"/>
+  <arg name="gui" default="false"/>
   <arg name="RGB_IMAGE" default="/head_mount_kinect/rgb/image_raw"/>
   <arg name="RGB_CAMERA_INFO" default="/head_mount_kinect/rgb/camera_info"/>
 
