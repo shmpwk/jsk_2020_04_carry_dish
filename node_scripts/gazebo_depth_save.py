@@ -51,7 +51,9 @@ def ImageCallback(depth_data):
                 depth_data.append(depth_image.item(i,j))
 
     ave = sum / ((WIDTH * 2) * (HEIGHT * 2)) #average distance 
-    with open('test_depth_image.pkl', 'wb') as f:
+    now = datetime.datetime.now()
+    filename = 'Data/depth_image_' + now.strftime('%Y%m%d_%H%M%S') + '.pkl'
+    with open(filename, 'wb') as f:
         pickle.dump(depth_data, f) #datasize=480
     print("depth saved at node script")
 
