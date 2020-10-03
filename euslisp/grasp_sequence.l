@@ -79,13 +79,12 @@
                                   :after-stamp (ros::time 0)))
          (cds (when msg (ros::tf-pose->coords (send msg :pose))))
          (base->parent
-           (when msg (send *tfl* :lookup-transform
+           (when msg 
+	     (progn 
+	       (send *tfl* :wait-for-transform *base-frame-id* (send msg :header :frame_id) (ros::time 0) 0.1)
+	       (send *tfl* :lookup-transform
                            *base-frame-id* (send msg :header :frame_id)
-                           (ros::time-now)
-                           )
-             )
-           )
-         )
+                           (ros::time 0))))))
     (when (and cds base->parent)
       ;;(send *tfb* :send-transform
       (progn
