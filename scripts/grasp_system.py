@@ -20,7 +20,7 @@ import os
 
 class MyDataset(Dataset):
     def __init__(self, transform=None):
-        self.transform = transform
+        self.transforms = transforms
         self.datanum = 10
         #self.imgfiles = sorted(glob('%s/*.png' % imgpath))
         #self.csvfiles = sorted(glob('%s/*.csv' % csvpath))
@@ -41,7 +41,11 @@ class MyDataset(Dataset):
                 if key == f[-len(key):]:
                     np.append(self.dapth_dataset, f, axis = 0) 
                     #os.path.join(dir_name, f[:-len(key)]))
-        
+
+        # Can depth image (not PIL )use transform? 
+        resize_transform = self.transforms.Resize((100, 100))
+        display(resize_transform(self.depth_dataset))
+
         """
         data=np.loadtxt("data.csv",  # 読み込みたいファイルのパス
                   delimiter=",",    # ファイルの区切り文字
