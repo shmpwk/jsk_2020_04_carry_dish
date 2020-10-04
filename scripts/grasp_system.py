@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from torchvision import transforms
 import os
-
+import Image
 
 class MyDataset(Dataset):
     def __init__(self, transform=None):
@@ -42,9 +42,11 @@ class MyDataset(Dataset):
                     np.append(self.dapth_dataset, f, axis = 0) 
                     #os.path.join(dir_name, f[:-len(key)]))
 
-        # Can depth image (not PIL )use transform? 
+        # Can depth image (not PIL )use transform? : No, so you should convert from numpy.
+
+        pilImg = Image.fromarray(self.depth_dataset)
         resize_transform = self.transforms.Resize((100, 100))
-        display(resize_transform(self.depth_dataset))
+        display(resize_transform(pilImg))
 
         """
         data=np.loadtxt("data.csv",  # 読み込みたいファイルのパス
