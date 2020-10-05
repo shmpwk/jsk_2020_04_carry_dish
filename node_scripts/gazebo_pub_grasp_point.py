@@ -24,12 +24,14 @@ def choose_point_callback(data):
     gen = point_cloud2.read_points(data, field_names = ("x", "y", "z"), skip_nans=True)
     length = 1 
     A = np.arange(3).reshape(1,3)
+    
     for l in gen:
         l = np.array(l)
         l = l.reshape(1,3)
         A = np.append(A, l, axis=0)
+        print("A", A)
         length += 1
-        
+            
     idx = np.random.randint(length, size=1) #To do : change 10 to data length
     Ax = A[idx, 0]
     Ay = A[idx, 1]
@@ -93,7 +95,8 @@ if __name__=="__main__":
     #subscribe edge pointcloud data
     try:
         rospy.init_node('grasp_point_server')
-        rospy.Subscriber('supervoxel_segmentation/output/cloud', PointCloud2, choose_point_callback, queue_size=10)
+        #rospy.Subscriber('supervoxel_segmentation/output/cloud', PointCloud2, choose_point_callback, queue_size=1000)
+        rospy.Subscriber('/organized_edge_detector/output', PointCloud2, choose_point_callback, queue_size=1000)
         pub = rospy.Publisher('/grasp_point', PoseStamped, queue_size=100)
         """while not rospy.is_shutdown():
             data = rospy.wait_for_message('supervoxel_segmentation/output/cloud', PointCloud2)

@@ -79,19 +79,17 @@
                                   :after-stamp (ros::time 0)))
          (cds (when msg (ros::tf-pose->coords (send msg :pose))))
          (base->parent
-           (when msg 
-	     (progn 
-	       (send *tfl* :wait-for-transform *base-frame-id* (send msg :header :frame_id) (ros::time 0) 0.1)
-	       (send *tfl* :lookup-transform
+           (when msg
+               (publish-info "????????????????????????????????/")
+               (send *tfl* :wait-for-transform *base-frame-id* (send msg :header :frame_id) (ros::time 0) 0.1)
+               (send *tfl* :lookup-transform
                            *base-frame-id* (send msg :header :frame_id)
-                           (ros::time 0))))))
+                           (ros::time 0)))))
     (when (and cds base->parent)
       ;;(send *tfb* :send-transform
-      (progn
         (publish-info "one-shot-subscribe!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         (send (send base->parent :copy-worldcoords) :transform cds))
       ;;      *base-frame-id* "target_object" (send msg :header :stamp))
-      )
     )
   )
 
@@ -177,13 +175,13 @@
           (publish-warn "cancel grasping...")
           (send *ri* :stop-motion)
           (send *ri* :stop-grasp *rarm* :wait t)
-          (setq *grasping-ebject-p* nil))
+          (setq *grasping-object-p* nil))
       (setq *grasping-object-p* t))
     (unless
       (send *pr2* *rarm* :inverse-kinematics
             ;;(make-coords :pos target-point :worldpos)
             (make-coords :pos (v+ (send target-point :worldpos)
-                                  (float-vector -200 0 150))
+                                  (float-vector -200 0 100))
                          :rpy (float-vector 0 1.2 -1.54)) ;;success(0 1.2 -1.54)
                          ;;:rpy (v- (send target-point :worldpos)
                          ;;         (send (bounding-box->cube msg) :worldpos)))
@@ -191,7 +189,7 @@
       (publish-error "out of reach...")
       (send *pregrasp-point* :newcoords
             (make-coords :pos (v+ (send target-point :worldpos)
-                                    (float-vector -200 0 150))
+                                    (float-vector -200 0 100))
                            :rpy (float-vector 0 1.2 -1.54)))
                            ;;:rpy (v- (send target-point :worldpos)
                            ;;         (send (bounding-box->cube msg) :worldpos))))
@@ -202,7 +200,7 @@
     ;;(send *co-endeffector-vis* :newcoords (send *pr2* :copy-worldcoords)) 
     (send *pregrasp-point* :newcoords
           (make-coords :pos (v+ (send target-point :worldpos)
-                                  (float-vector -200 0 150))
+                                  (float-vector -200 0 100))
                          :rpy (float-vector 0 1.2 -1.54)))
                          ;;:rpy (v- (send target-point :worldpos)
                          ;;         (send (bounding-box->cube msg) :worldpos))))
@@ -217,25 +215,24 @@
     (publish-grasp-state)
     (publish-info "pre grasp pose...")
     (send *ri* :stop-grasp *rarm* :wait t)
-    (send *pr2* :head :look-at-hand *rarm*)
+    ;;(send *pr2* :head :look-at-hand *rarm*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 6000)
     (send *ri* :wait-interpolation)
   
+    (send *co-endeffector-vis* :newcoords (send *pr2* :copy-worldcoords))
+    (send *grasp-point* :newcoords 
+          (make-coords :pos (v+ (send target-point :worldpos)
+                                (float-vector 0 0 -10)) ;;(-200+105, 0+0, 150-150)
+                       :rpy (float-vector 0 1.2 -1.54)))
+    (objects (list *pr2* *box* *co-endeffector-vis* *co-ik-target* *grasp-point*)))
+    
     (setq *grasp-state* "grasp-approaching")
     (publish-grasp-state)
     (publish-info "reaching...")
-    (send *pr2* *rarm* :move-end-pos #f(200 0 -150) :world)
-    (send *co-endeffector-vis* :newcoords (send *pr2* :copy-worldcoords))
-    (print "pregrasp point")
-    (print *pregrasp-point*)
-    (send *grasp-point* :newcoords 
-          (make-coords :pos (v+ (send target-point :worldpos)
-                                (float-vector 0 0 0)) ;;(-200+105, 0+0, 150-150)
-                       :rpy (float-vector 0 1.2 -1.54)))
-    (objects (list *pr2* *box* *co-endeffector-vis* *co-ik-target* *grasp-point*))
-    (send *pr2* :head :look-at-hand *rarm*)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-    (send *ri* :wait-interpolation))
+    (send *pr2* *rarm* :move-end-pos #f(200 0 -110) :world)
+    ;;(send *pr2* :head :look-at-hand *rarm*)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 6000)
+    (send *ri* :wait-interpolation)
   
     (setq *grasp-state* "grasp-closing")
     (publish-grasp-state)
@@ -254,7 +251,7 @@
     (publish-info "picking up...")
     ;;(unix:sleep 1)
     (send *pr2* *rarm* :move-end-pos #f(0 0 250) :world)
-    (send *pr2* :head :look-at-hand *rarm*)
+    ;;(send *pr2* :head :look-at-hand *rarm*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
     (publish-info "grasp succeeded!")
@@ -262,7 +259,7 @@
     (setq *grasp-state* "placing")
     (publish-grasp-state)
     (publish-info "placing ...")
-    (send *pr2* *rarm* :move-end-pos #f(0 0 -150) :world)
+    (send *pr2* *rarm* :move-end-pos #f(0 0 -240) :world)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
     (let ((grasp-result (send *ri* :start-grasp *rarm*)))
