@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+! /usr/bin/env python
 # -*- coding: utf-8 -*-
  
 import rospy
@@ -12,11 +12,11 @@ from geometry_msgs.msg import Point
 import pickle
 from absl import app
 from absl import flags
+import datetime
+#FLAGS = flags.FLAGS
 
-FLAGS = flags.FLAGS
-
-flags.DEFINE_string(
-        'depth_topic', '/head_mount_kinect/depth/image_raw', 'depth topic name')
+#flags.DEFINE_string(
+#        'depth_topic', '/head_mount_kinect/depth/image_raw', 'depth topic name')
 
 def ImageCallback(depth_data):
     WIDTH = 50
@@ -52,7 +52,7 @@ def ImageCallback(depth_data):
 
     ave = sum / ((WIDTH * 2) * (HEIGHT * 2)) #average distance 
     now = datetime.datetime.now()
-    filename = 'Data/depth_image_' + now.strftime('%Y%m%d_%H%M%S') + '.pkl'
+    filename = 'Data/gazebo_depth_image/depth_image_' + now.strftime('%Y%m%d_%H%M%S') + '.pkl'
     with open(filename, 'wb') as f:
         pickle.dump(depth_data, f) #datasize=480
     print("depth saved at node script")
@@ -64,8 +64,8 @@ def ImageCallback(depth_data):
     cv2.imshow("depth_image", depth_image)
     cv2.waitKey(10)
 
-def main(argv):
-    rospy.init_node('depth_estimater', anonymous=True)
+#def main():
+if __name__ == '__main__':
     """ 
     sub_rgb = message_filters.Subscriber("/head_mount_kinect/rgb/image_raw",Image)
     sub_depth = message_filters.Subscriber("/head_mount_kinect/depth/image_raw",Image)
@@ -76,14 +76,17 @@ def main(argv):
     rospy.spin()
     """
     try:
+        rospy.init_node('depth_estimater', anonymous=True)
         while not rospy.is_shutdown():
-            topic_name = "{}".format(FLAGS.depth_topic) 
+            #topic_name = "{}".format(FLAGS.depth_topic) 
+            topic_name = "/head_mount_kinect/depth/image_raw"
             data = rospy.wait_for_message(topic_name,Image)
             #data = rospy.wait_for_message("/head_mount_kinect/depth/image_raw", Image)
             ImageCallback(data)
             break
     except rospy.ROSInterruptException: pass
-
+"""
 if __name__ == '__main__':
     print("=============================================started!!")
-    app.run(main)
+    #app.run(main)
+    main"""
