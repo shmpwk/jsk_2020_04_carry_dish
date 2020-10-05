@@ -14,6 +14,7 @@ import tf
 import numpy as np
 import csv
 import pickle
+import datetime 
 
 def choose_point_callback(data):
     assert isinstance(data, PointCloud2)
@@ -84,7 +85,9 @@ def choose_point_callback(data):
         writer = csv.writer(f)
         writer.writerows(grasp_posrot) #shape(1, 4)?
         """
-    with open("grasp_pointcloud_pos_rot.pkl", "wb") as f:
+    now = datetime.datetime.now()
+    filename = 'Data/grasp_point/grasp_point_' + now.strftime('%Y%m%d_%H%M%S') + '.pkl'
+    with open(filename, "wb") as f:
         pickle.dump(grasp_posrot, f)
         print("saved grasp point")
 
