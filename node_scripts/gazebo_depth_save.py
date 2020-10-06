@@ -1,4 +1,4 @@
-! /usr/bin/env python
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
  
 import rospy
@@ -13,6 +13,8 @@ import pickle
 from absl import app
 from absl import flags
 import datetime
+import time
+
 #FLAGS = flags.FLAGS
 
 #flags.DEFINE_string(
@@ -30,7 +32,6 @@ def ImageCallback(depth_data):
 
     #color_image = cv2.cvtColor(color_image, cv2.COLOR_BGR2RGB) 
     #h, w, c = color_image.shape
-    #print("h,w,c",h,w,c)
     h, w = depth_image.shape
 
     x1 = (w / 2) - WIDTH
@@ -46,11 +47,12 @@ def ImageCallback(depth_data):
             #color_image.itemset((i, j, 0), 0) #color roi without blue 
             #color_image.itemset((i, j, 1), 0) #color roi without green
             if depth_image.item(i,j) == depth_image.item(i,j):
+                print("depth image item", depth_image.item(i,j))
                 #point = Point(i, j, depth_image.item(i,j))
                 #points.append(point)
                 depth_data.append(depth_image.item(i,j))
 
-    print(depth_data) #wb‚Å‚¢‚¢‚Ì‚©
+    print("depth_data was saved?????????????", depth_data) 
     ave = sum / ((WIDTH * 2) * (HEIGHT * 2)) #average distance 
     now = datetime.datetime.now()
     filename = 'Data/gazebo_depth_image/depth_image_' + now.strftime('%Y%m%d_%H%M%S') + '.pkl'
@@ -77,6 +79,7 @@ if __name__ == '__main__':
     rospy.spin()
     """
     try:
+        time.sleep(50)
         rospy.init_node('depth_estimater', anonymous=True)
         while not rospy.is_shutdown():
             #topic_name = "{}".format(FLAGS.depth_topic) 
