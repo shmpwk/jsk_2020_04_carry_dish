@@ -24,10 +24,10 @@ def choose_point_callback(data):
     """
     gen = point_cloud2.read_points(data, field_names = ("x", "y", "z"), skip_nans=True)
     length = 1 
-    A = np.arange(3).reshape(1,3)
+    A = np.arange(3, dtype=float).reshape(1,3)
     
     for l in gen:
-        l = np.array(l)
+        l = np.array(l, dtype='float')
         l = l.reshape(1,3)
         A = np.append(A, l, axis=0)
         print("A", A)
@@ -77,7 +77,7 @@ def choose_point_callback(data):
         writer.writerows(gen) #shape(64751, 3)
     """
 
-    grasp_posrot = np.array((Ax, Ay, Az, theta, phi, psi)).reshape(1,6) 
+    grasp_posrot = np.array((Ax, Ay, Az, theta, phi, psi), dtype='float').reshape(1,6) 
 
 
     """
