@@ -50,6 +50,7 @@ def ImageCallback(depth_data):
                 #points.append(point)
                 depth_data.append(depth_image.item(i,j))
 
+    print(depth_data) #wb‚Å‚¢‚¢‚Ì‚©
     ave = sum / ((WIDTH * 2) * (HEIGHT * 2)) #average distance 
     now = datetime.datetime.now()
     filename = 'Data/gazebo_depth_image/depth_image_' + now.strftime('%Y%m%d_%H%M%S') + '.pkl'

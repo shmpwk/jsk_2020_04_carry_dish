@@ -254,7 +254,6 @@
     ;;(send *pr2* :head :look-at-hand *rarm*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
-    (publish-info "grasp succeeded!")
   
     (setq *grasp-state* "placing")
     (publish-grasp-state)
@@ -279,8 +278,12 @@
     (get-judge)
     (print "save judge")
     (send *ri* :wait-interpolation)
-    (publish-info "pre grasp pose")
+    ;; open glipper
+    (send *ri* :stop-grasp *rarm* :wait t)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 6000)
+    (send *ri* :wait-interpolation)
   
+    (publish-info "pre grasp pose")
     (setq *grasp-state* "returning")
     (publish-grasp-state)
     (pr2-pregrasp-pose)
