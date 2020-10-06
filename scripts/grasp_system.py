@@ -10,13 +10,16 @@
 
 import numpy as np
 import torch 
+import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from torchvision import transforms
+import torch.optim as optim
 import os
-import Image
+import pickle
+import matplotlib.pyplot as plt
 
 class MyDataset(Dataset):
     def __init__(self, transform=None):
@@ -31,7 +34,8 @@ class MyDataset(Dataset):
                 /home/Data
         
         """
-        # depth_data_size(100) * (32*32)
+        # depth_data_size(10) * (32*32)
+        """
         depth_dataset_path = "~/my_ws/src"
         depth_dataset_path = os.path.expanduser('~/Data/depth_data')
         self.depth_dataset = np.empty((0,3))
@@ -47,7 +51,17 @@ class MyDataset(Dataset):
         pilImg = Image.fromarray(self.depth_dataset)
         resize_transform = self.transforms.Resize((100, 100))
         display(resize_transform(pilImg))
+        """
+        
+        # It was copied from scripts/depth_pickle_load.py
+        self.depth_dataset = np.empty((0,40000))
 
+        for file in os.listdir(".ros/Data/gazebo_depth_image"):
+            with open (".ros/Data/gazebo_depth_image/" + file, "rb") as f:
+                ff = pickle.load(f)
+                ff = np.array(ff).reshape((1, 40000))
+                self.depth_dataset = np.append(self.depth_dataset, ff, axis=0)
+        self.depth_dataset = self.depth_dataset.reshape((10, 1, 200, 200))
         """
         data=np.loadtxt("data.csv",  # 読み込みたいファイルのパス
                   delimiter=",",    # ファイルの区切り文字
@@ -56,7 +70,8 @@ class MyDataset(Dataset):
                 )
         """
 
-        # grasp point data size : 100 * 6(4)   
+        # grasp point data size : 10 * 6(4)   
+        """
         grasp_point_path = "~/"
         self.grasp_datset = np.empty((0,3))
         grasp_key = 'point.pkl'
@@ -64,24 +79,45 @@ class MyDataset(Dataset):
             for gf in g_files:
                 if grasp_key == gf[-len(grasp_key):]:
                     np.append(self.grasp_dataset, gf, axis=0)
+                    """
+        self.grasp_dataset = np.empty((0,6))
 
-        # data=np.genfromtxt("sample_writer.csv", filling_values=0) #nanを0に置き換える。data.shape(480,)
-
+        for file in os.listdir(".ros/Data/grasp_point"):
+            with open (".ros/Data/grasp_point/" + file, "rb") as f:
+                ff = pickle.load(f)
+                ff = np.array(ff).reshape((1, 6))
+                self.grasp_dataset = np.append(self.grasp_dataset, ff, axis=0)
+                
         # judge data size : 100 * 1
 
-        judge_path = "~/"
-        self.judge_dataset = np.empty((0,3))
-        judge_key = 'judge.pkl'
+        """
+        judge_path = "~/Data"
+        self.judge_dataset = np.empty((0,1))
+        judge_key = '.txt'
         for j_dir_name. j_sub_dirs, j_files in os.walk(judge_path): 
             for jf in j_files:
                 if judge_key == jf[-len(judge_key):]:
                     np.append(self.judge_dataset, hf, axis=0)
+        """
+
+        judge_path = "Data/judge_data"
+        self.judge_dataset = np.empty((0,1))
+        judge_key = '.txt'
+        for j_dir_name, j_sub_dirs, j_files in os.walk(judge_path): 
+            for jf in j_files:
+                if judge_key == jf[-len(judge_key):]:
+                    f = open(os.path.join(j_dir_name, jf), 'r')
+                    n = f.read()
+                    self.judge_dataset = np.append(self.judge_dataset, int(n))
+
+        print(self.depth_dataset.shape)
+        print(self.grasp_dataset.shape)
+        print(self.judge_dataset.shape)
 
     def __len__(self):
         return self.datanum #should be dataset size / batch size
 
     def __getitem__(self, idx):
-        print(idx)
         x = self.depth_dataset[idx]
         y = self.grasp_dataset[idx]
         c = self.judge_dataset[idx]
@@ -92,9 +128,9 @@ class MyDataset(Dataset):
         c = yy[1:]
         y = yy[:1]
         """
-        x = torch.from_numpy(x)
-        y = torch.from_numpy(y)
-        c = torch.from_numpy(c)
+        x = torch.from_numpy(x).float()
+        y = torch.from_numpy(y).float()
+        c = torch.from_numpy(np.array(c)).float()
         return x, y, c
 
 class Net(nn.Module):
@@ -140,7 +176,7 @@ class GraspSystem():
 
         # Data loader (https://ohke.hateblo.jp/entry/2019/12/28/230000)
         train_dataloader = torch.utils.data.DataLoader(
-            datasets, batch_size=1, shuffle=True,
+            datasets, batch_size=2, shuffle=True,
             num_workers=2, drop_last=True
         )
         depth_data, grasp_point, labels = next(iter(train_dataloader))
@@ -152,8 +188,8 @@ class GraspSystem():
     # make Net class model
     def make_model(self):
         self.model = Net()
-        self.criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+        self.criterion = nn.BCEWithLogitsLoss()
+        self.optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
 
     def get_batch_train():
         pass
@@ -175,7 +211,7 @@ class GraspSystem():
     def save_model(self):
         model_path = 'model.pth'
         # GPU save
-        torch.save(self.model.state_dict(), PATH)
+        #torch.save(self.model.state_dict(), PATH)
         # CPU save
         #torch.save(self.model.to('cpu').state_dict(), model_path)
 
@@ -183,21 +219,19 @@ class GraspSystem():
         for epoch in range(2):  # 訓練データを複数回(2周分)学習する
             running_loss = 0.0
             
-            for i, data in enumerate(trainloader, 0):
+            for i, data in enumerate(train_dataloader, 0):
                 # ローダからデータを取得する; データは [inputs, labels] の形で取得される
                 # イテレータを使用していないように見えますが for の内部で使用されています。
-                depth_data, grasp_point, labelsb = data 
+                depth_data, grasp_point, labels = data 
                 
-
-
                 # 勾配を0に初期化する(逆伝播に備える)
-                optimizer.zero_grad()
+                self.optimizer.zero_grad()
 
                 # 順伝播 + 逆伝播 + 最適化(訓練)
-                outputs = net(depth_data, grasp_point)
-                loss = criterion(outputs, labels)
+                outputs = self.model(depth_data, grasp_point)
+                loss = self.criterion(outputs.view_as(labels), labels)
                 loss.backward()
-                optimizer.step()
+                self.optimizer.step()
 
                 # 統計を表示する
                 running_loss += loss.item()
@@ -217,19 +251,21 @@ if __name__ == '__main__':
     train_flag = True #int(arg.train)
 
     gs = GraspSystem()
+    loop_num = 1
 
     # train model or load model
     if train_flag:
         datasets = MyDataset()
 
         train_dataloader = gs.load_data(datasets)
-        gs.tain(train_dataloader, loop_num)
+        gs.make_model()
+        gs.train(train_dataloader, loop_num)
         gs.save_model()
 
     else:
         pass
 
     # test
-    gs.start()
+    #gs.start()
 
 

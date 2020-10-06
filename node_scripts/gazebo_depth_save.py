@@ -21,8 +21,8 @@ import time
 #        'depth_topic', '/head_mount_kinect/depth/image_raw', 'depth topic name')
 
 def ImageCallback(depth_data):
-    WIDTH = 50
-    HEIGHT = 50 
+    WIDTH = 100
+    HEIGHT = 100 
     bridge = CvBridge()
     try:
         #color_image = bridge.imgmsg_to_cv2(rgb_data, 'passthrough')
