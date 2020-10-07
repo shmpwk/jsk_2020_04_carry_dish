@@ -21,8 +21,8 @@
   
   <!--group if="$(arg use_sim)"-->
   <include file="$(find jsk_2020_4_carry_dish)/launch/gazebo/gazebo_virtual_camera_mono.launch" >
-      <arg name="RGB_IMAGE" value="$(arg RGB_IMAGE)"/>
-      <arg name="RGB_CAMERA_INFO" value="$(arg RGB_CAMERA_INFO)"/>
+      <!--arg name="RGB_IMAGE" value="$(arg RGB_IMAGE)"/-->
+      <!--arg name="RGB_CAMERA_INFO" value="$(arg RGB_CAMERA_INFO)"/-->
   </include>
   <!--/group-->
 

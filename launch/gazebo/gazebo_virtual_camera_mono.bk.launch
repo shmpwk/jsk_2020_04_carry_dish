@@ -8,11 +8,6 @@
         pkg="tf" type="static_transform_publisher"
         args="0.0 0.0 2.0 0.0, 0.785, 1.571 /camera_rgb_optical_frame /dummy_frame 10"/-->
 
-  <!--node name="dynamic_tf_publisher" pkg="tf2_dynamic" type="tf2_dynamic_node"-->
-    <!--param name="parent_frame" type="string" value="camera_rgb_optical_frame"  /-->
-    <!--param name="child_frame" type="string" value="virtual_frame" /-->
-  <!--/node-->
-  
   <node name="virtual_camera_mono"
         pkg="jsk_perception" type="virtual_camera_mono">
         <!--remap from="image" to="/kinect_head/rgb/image_rect_color"/-->
@@ -27,34 +22,14 @@
             initial_pos: [0.0, -0.8, -1.08]
             initial_rot: [-0.2, 0.0, 0.0, 1.0]
         </rosparam>
-  </node>
-  
-  <node name="depth_image_creator1" pkg="nodelet" type="nodelet" args="standalone jsk_pcl/DepthImageCreator">
-    <remap from="~input" to="/kinect_head/depth_registered/throttled/points" />
-    <remap from="~info" to="/virtual_camera_mono/camera_info" />
-    <rosparam>
-      use_approximate: true
-      max_queue_size: 300
-      max_pub_queue_size: 1
-      max_sub_queue_size: 1
-    </rosparam>
+        <!--rosparam>
+            frame_id: segmentation_decomposeroutput00
+            child_frame_id: virtual_camera_frame
+            initial_pos: [0.0, -0.6, -0.1]
+            initial_rot: [-0.23, 0.0, 0.0, 1.0]
+        </rosparam-->
   </node>
 
-  <group ns="/camera">
-    <node name="pointcloud_xyzrgb_to_xyz" pkg="nodelet" type="nodelet" args="standalone jsk_pcl_utils/PointCloudXYZRGBToXYZ">
-      <remap from="~input" to="/kinect_head/depth_registered/throttled/points" />
-    </node>
-    <node name="depth_image_creator1" pkg="nodelet" type="nodelet" args="standalone jsk_pcl/DepthImageCreator">
-      <remap from="~input" to="pointcloud_xyzrgb_to_xyz/output" />
-      <remap from="~info" to="/virtual_camera_mono/camera_info" />
-      <rosparam>
-        use_approximate: true
-        max_queue_size: 300
-        max_pub_queue_size: 1
-        max_sub_queue_size: 1
-      </rosparam>
-    </node>
-  </group>
   <group if="$(arg gui)">
       <node name="rviz"
           pkg="rviz" type="rviz"

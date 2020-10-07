@@ -170,6 +170,9 @@
     (unless target-point
       (ros::ros-logerr "target point is nil !!")
       (return-from grasp-target-callback nil))
+    (send *pr2* *rarm* :move-end-pos #f(0 0 100) :world)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
     (if *grasping-object-p*
         (progn
           (publish-warn "cancel grasping...")
@@ -229,7 +232,7 @@
     (setq *grasp-state* "grasp-approaching")
     (publish-grasp-state)
     (publish-info "reaching...")
-    (send *pr2* *rarm* :move-end-pos #f(200 0 -110) :world)
+    (send *pr2* *rarm* :move-end-pos #f(200 0 -110) :world :look-at-target t)
     ;;(send *pr2* :head :look-at-hand *rarm*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 6000)
     (send *ri* :wait-interpolation)
@@ -283,6 +286,9 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 6000)
     (send *ri* :wait-interpolation)
   
+    (send *pr2* *rarm* :move-end-pos #f(0 0 100) :world)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
     (publish-info "pre grasp pose")
     (setq *grasp-state* "returning")
     (publish-grasp-state)
