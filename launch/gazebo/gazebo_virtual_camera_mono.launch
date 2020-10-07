@@ -10,15 +10,23 @@
 
   <node name="virtual_camera_mono"
         pkg="jsk_perception" type="virtual_camera_mono">
-        <remap from="image" to="$(arg RGB_IMAGE)"/>
-        <remap from="camera_info" to="$(arg RGB_CAMERA_INFO)"/>
+        <remap from="image" to="/kinect_head/rgb/image_rect_color"/>
+        <!--remap from="image" to="$(arg RGB_IMAGE)"/-->
+        <remap from="camera_info" to="/kinect_head/depth/camera_info"/>
+        <!--remap from="camera_info" to="$(arg RGB_CAMERA_INFO)"/-->
         <!--remap from="image" to="/head_mount_kinect/rgb/image_raw"/-->
         <!--remap from="camera_info" to="/head_mount_kinect/rgb/camera_info"/-->
-        <rosparam>
+        <!--rosparam>
             frame_id: segmentation_decomposeroutput00
             child_frame_id: virtual_camera_frame
             initial_pos: [0.0, -0.8, -1.08]
             initial_rot: [-0.2, 0.0, 0.0, 1.0]
+        </rosparam -->
+        <rosparam>
+            frame_id: segmentation_decomposeroutput00
+            child_frame_id: virtual_camera_frame
+            initial_pos: [0.0, -0.6, -0.1]
+            initial_rot: [-0.23, 0.0, 0.0, 1.0]
         </rosparam>
   </node>
 

@@ -1,14 +1,18 @@
 <launch>
   <arg name="gui" default="true"/>
   <arg name="use_sim" default="true"/>
+  
   <arg unless="$(arg use_sim)" name="RGB_CAMERA_INFO" value="/kinect_head/rgb/camera_info"/>
   <arg if="$(arg use_sim)" name="RGB_CAMERA_INFO" value="/head_mount_kinect/rgb/camera_info"/>
   <!--arg name="RGB_CAMERA_INFO" value="/head_mount_kinect/rgb/camera_info"/-->
   
-  <arg unless="$(arg use_sim)" name="DEPTH_TOPIC" value="/kinect_head_remote/depth_registered/image_rect"/>
+  <arg unless="$(arg use_sim)" name="DEPTH_CAMERA_INFO" value="/kinect_head/depth/camera_info"/>
+  <arg if="$(arg use_sim)" name="DEPTH_CAMERA_INFO" value="/head_mount_kinect/depth/camera_info"/>
+  
+  <arg unless="$(arg use_sim)" name="DEPTH_TOPIC" value="/kinect_head/depth_registered/image_rect"/>
   <arg if="$(arg use_sim)" name="DEPTH_TOPIC" value="/head_mount_kinect/depth/image_raw"/>
 
-  <arg unless="$(arg use_sim)" name="RGB_IMAGE" value="/kinect_head/rgb/image_raw"/>
+  <arg unless="$(arg use_sim)" name="RGB_IMAGE" value="/kinect_head_remote/rgb/image_rect_color"/>
   <arg if="$(arg use_sim)" name="RGB_IMAGE" value="/head_mount_kinect/rgb/image_raw"/>
 
   <node name="sample_manager"
