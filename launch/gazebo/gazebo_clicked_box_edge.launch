@@ -20,10 +20,10 @@
         args="manager"/>
   
   <!--group if="$(arg use_sim)"-->
-  <include file="$(find jsk_2020_4_carry_dish)/launch/gazebo/gazebo_virtual_camera_mono.launch" >
+  <!--include file="$(find jsk_2020_4_carry_dish)/launch/gazebo/gazebo_virtual_camera_mono.launch"-->
       <!--arg name="RGB_IMAGE" value="$(arg RGB_IMAGE)"/-->
       <!--arg name="RGB_CAMERA_INFO" value="$(arg RGB_CAMERA_INFO)"/-->
-  </include>
+  <!--/include-->
   <!--/group-->
 
   <group if="$(arg use_sim)">
