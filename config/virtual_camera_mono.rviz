@@ -11,7 +11,7 @@ Panels:
         - /Image2
         - /CameraInfo1
       Splitter Ratio: 0.5
-    Tree Height: 282
+    Tree Height: 806
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -83,6 +83,20 @@ Visualization Manager:
           Value: false
         double_stereo_link:
           Value: false
+        eng2:
+          Value: true
+        eng2/1f:
+          Value: true
+        eng2/2f:
+          Value: true
+        eng2/3f:
+          Value: true
+        eng2/7f:
+          Value: true
+        eng2/7f/73B2:
+          Value: true
+        eng2/8f:
+          Value: true
         fl_caster_l_wheel_link:
           Value: false
         fl_caster_r_wheel_link:
@@ -95,6 +109,8 @@ Visualization Manager:
           Value: false
         fr_caster_rotation_link:
           Value: false
+        head_chain_cb_link:
+          Value: true
         head_mount_kinect_ir_link:
           Value: false
         head_mount_kinect_ir_optical_frame:
@@ -171,6 +187,10 @@ Visualization Manager:
           Value: false
         laser_tilt_mount_link:
           Value: false
+        left_arm_chain_cb_link:
+          Value: true
+        map:
+          Value: true
         narrow_stereo_l_stereo_camera_frame:
           Value: false
         narrow_stereo_l_stereo_camera_optical_frame:
@@ -235,17 +255,151 @@ Visualization Manager:
           Value: false
         r_wrist_roll_link:
           Value: false
+        right_arm_chain_cb_link:
+          Value: true
         segmentation_decomposeroutput00:
           Value: true
         segmentation_decomposeroutput01:
           Value: false
+        segmentation_decomposeroutput02:
+          Value: true
+        segmentation_decomposeroutput03:
+          Value: true
+        segmentation_decomposeroutput04:
+          Value: true
+        segmentation_decomposeroutput05:
+          Value: true
+        segmentation_decomposeroutput06:
+          Value: true
+        segmentation_decomposeroutput07:
+          Value: true
+        segmentation_decomposeroutput08:
+          Value: true
+        segmentation_decomposeroutput09:
+          Value: true
+        segmentation_decomposeroutput10:
+          Value: true
+        segmentation_decomposeroutput11:
+          Value: true
+        segmentation_decomposeroutput12:
+          Value: true
+        segmentation_decomposeroutput13:
+          Value: true
+        segmentation_decomposeroutput14:
+          Value: true
+        segmentation_decomposeroutput15:
+          Value: true
+        segmentation_decomposeroutput16:
+          Value: true
+        segmentation_decomposeroutput17:
+          Value: true
+        segmentation_decomposeroutput18:
+          Value: true
+        segmentation_decomposeroutput19:
+          Value: true
+        segmentation_decomposeroutput20:
+          Value: true
+        segmentation_decomposeroutput21:
+          Value: true
+        segmentation_decomposeroutput22:
+          Value: true
+        segmentation_decomposeroutput23:
+          Value: true
+        segmentation_decomposeroutput24:
+          Value: true
+        segmentation_decomposeroutput25:
+          Value: true
+        segmentation_decomposeroutput26:
+          Value: true
+        segmentation_decomposeroutput27:
+          Value: true
+        segmentation_decomposeroutput28:
+          Value: true
+        segmentation_decomposeroutput29:
+          Value: true
+        segmentation_decomposeroutput30:
+          Value: true
+        segmentation_decomposeroutput31:
+          Value: true
+        segmentation_decomposeroutput32:
+          Value: true
+        segmentation_decomposeroutput33:
+          Value: true
+        segmentation_decomposeroutput34:
+          Value: true
+        segmentation_decomposeroutput35:
+          Value: true
+        segmentation_decomposeroutput36:
+          Value: true
+        segmentation_decomposeroutput37:
+          Value: true
+        segmentation_decomposeroutput38:
+          Value: true
+        segmentation_decomposeroutput39:
+          Value: true
+        segmentation_decomposeroutput40:
+          Value: true
+        segmentation_decomposeroutput41:
+          Value: true
+        segmentation_decomposeroutput42:
+          Value: true
+        segmentation_decomposeroutput43:
+          Value: true
+        segmentation_decomposeroutput44:
+          Value: true
+        segmentation_decomposeroutput45:
+          Value: true
+        segmentation_decomposeroutput46:
+          Value: true
+        segmentation_decomposeroutput47:
+          Value: true
+        segmentation_decomposeroutput48:
+          Value: true
+        segmentation_decomposeroutput49:
+          Value: true
+        segmentation_decomposeroutput50:
+          Value: true
+        segmentation_decomposeroutput51:
+          Value: true
+        segmentation_decomposeroutput52:
+          Value: true
+        segmentation_decomposeroutput53:
+          Value: true
+        segmentation_decomposeroutput54:
+          Value: true
+        segmentation_decomposeroutput55:
+          Value: true
+        segmentation_decomposeroutput56:
+          Value: true
+        segmentation_decomposeroutput57:
+          Value: true
+        segmentation_decomposeroutput58:
+          Value: true
+        segmentation_decomposeroutput59:
+          Value: true
+        segmentation_decomposeroutput60:
+          Value: true
+        segmentation_decomposeroutput61:
+          Value: true
+        segmentation_decomposeroutput62:
+          Value: true
+        segmentation_decomposeroutput63:
+          Value: true
+        segmentation_decomposeroutput64:
+          Value: true
+        segmentation_decomposeroutput65:
+          Value: true
+        segmentation_decomposeroutput66:
+          Value: true
+        segmentation_decomposeroutput67:
+          Value: true
         sensor_mount_link:
           Value: false
         torso_lift_link:
           Value: false
         torso_lift_motor_screw_link:
           Value: false
-        virtual_camera_frame:
+        virtual_camera_optical_frame:
           Value: true
         wide_stereo_l_stereo_camera_frame:
           Value: false
@@ -259,157 +413,311 @@ Visualization Manager:
           Value: false
         wide_stereo_r_stereo_camera_optical_frame:
           Value: false
+        world:
+          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        odom_combined:
-          base_footprint:
-            base_link:
-              base_bellow_link:
+        world:
+          eng2:
+            eng2/1f:
+              {}
+            eng2/2f:
+              {}
+            eng2/3f:
+              {}
+            eng2/7f:
+              eng2/7f/73B2:
                 {}
-              base_laser_link:
-                {}
-              bl_caster_rotation_link:
-                bl_caster_l_wheel_link:
-                  {}
-                bl_caster_r_wheel_link:
-                  {}
-              br_caster_rotation_link:
-                br_caster_l_wheel_link:
-                  {}
-                br_caster_r_wheel_link:
-                  {}
-              fl_caster_rotation_link:
-                fl_caster_l_wheel_link:
-                  {}
-                fl_caster_r_wheel_link:
-                  {}
-              fr_caster_rotation_link:
-                fr_caster_l_wheel_link:
-                  {}
-                fr_caster_r_wheel_link:
-                  {}
-              torso_lift_link:
-                head_pan_link:
-                  head_tilt_link:
-                    head_plate_frame:
-                      head_mount_link:
-                        head_mount_kinect_ir_link:
-                          head_mount_kinect_ir_optical_frame:
-                            {}
-                          head_mount_kinect_rgb_link:
-                            head_mount_kinect_rgb_optical_frame:
-                              segmentation_decomposeroutput00:
-                                virtual_camera_frame:
-                                  {}
-                              segmentation_decomposeroutput01:
-                                {}
-                        head_mount_prosilica_link:
-                          head_mount_prosilica_optical_frame:
-                            {}
-                      projector_wg6802418_frame:
-                        projector_wg6802418_child_frame:
+              map:
+                odom_combined:
+                  base_footprint:
+                    base_link:
+                      base_bellow_link:
+                        {}
+                      base_laser_link:
+                        {}
+                      bl_caster_rotation_link:
+                        bl_caster_l_wheel_link:
                           {}
-                      sensor_mount_link:
-                        double_stereo_link:
-                          narrow_stereo_link:
-                            narrow_stereo_l_stereo_camera_frame:
-                              narrow_stereo_l_stereo_camera_optical_frame:
-                                {}
-                              narrow_stereo_r_stereo_camera_frame:
-                                narrow_stereo_r_stereo_camera_optical_frame:
-                                  {}
-                            narrow_stereo_optical_frame:
+                        bl_caster_r_wheel_link:
+                          {}
+                      br_caster_rotation_link:
+                        br_caster_l_wheel_link:
+                          {}
+                        br_caster_r_wheel_link:
+                          {}
+                      fl_caster_rotation_link:
+                        fl_caster_l_wheel_link:
+                          {}
+                        fl_caster_r_wheel_link:
+                          {}
+                      fr_caster_rotation_link:
+                        fr_caster_l_wheel_link:
+                          {}
+                        fr_caster_r_wheel_link:
+                          {}
+                      torso_lift_link:
+                        head_pan_link:
+                          head_tilt_link:
+                            head_chain_cb_link:
                               {}
-                          wide_stereo_link:
-                            wide_stereo_l_stereo_camera_frame:
-                              wide_stereo_l_stereo_camera_optical_frame:
-                                {}
-                              wide_stereo_r_stereo_camera_frame:
-                                wide_stereo_r_stereo_camera_optical_frame:
+                            head_plate_frame:
+                              head_mount_link:
+                                head_mount_kinect_ir_link:
+                                  head_mount_kinect_ir_optical_frame:
+                                    {}
+                                  head_mount_kinect_rgb_link:
+                                    head_mount_kinect_rgb_optical_frame:
+                                      segmentation_decomposeroutput00:
+                                        virtual_camera_optical_frame:
+                                          {}
+                                      segmentation_decomposeroutput01:
+                                        {}
+                                      segmentation_decomposeroutput02:
+                                        {}
+                                      segmentation_decomposeroutput03:
+                                        {}
+                                      segmentation_decomposeroutput04:
+                                        {}
+                                      segmentation_decomposeroutput05:
+                                        {}
+                                      segmentation_decomposeroutput06:
+                                        {}
+                                      segmentation_decomposeroutput07:
+                                        {}
+                                      segmentation_decomposeroutput08:
+                                        {}
+                                      segmentation_decomposeroutput09:
+                                        {}
+                                      segmentation_decomposeroutput10:
+                                        {}
+                                      segmentation_decomposeroutput11:
+                                        {}
+                                      segmentation_decomposeroutput12:
+                                        {}
+                                      segmentation_decomposeroutput13:
+                                        {}
+                                      segmentation_decomposeroutput14:
+                                        {}
+                                      segmentation_decomposeroutput15:
+                                        {}
+                                      segmentation_decomposeroutput16:
+                                        {}
+                                      segmentation_decomposeroutput17:
+                                        {}
+                                      segmentation_decomposeroutput18:
+                                        {}
+                                      segmentation_decomposeroutput19:
+                                        {}
+                                      segmentation_decomposeroutput20:
+                                        {}
+                                      segmentation_decomposeroutput21:
+                                        {}
+                                      segmentation_decomposeroutput22:
+                                        {}
+                                      segmentation_decomposeroutput23:
+                                        {}
+                                      segmentation_decomposeroutput24:
+                                        {}
+                                      segmentation_decomposeroutput25:
+                                        {}
+                                      segmentation_decomposeroutput26:
+                                        {}
+                                      segmentation_decomposeroutput27:
+                                        {}
+                                      segmentation_decomposeroutput28:
+                                        {}
+                                      segmentation_decomposeroutput29:
+                                        {}
+                                      segmentation_decomposeroutput30:
+                                        {}
+                                      segmentation_decomposeroutput31:
+                                        {}
+                                      segmentation_decomposeroutput32:
+                                        {}
+                                      segmentation_decomposeroutput33:
+                                        {}
+                                      segmentation_decomposeroutput34:
+                                        {}
+                                      segmentation_decomposeroutput35:
+                                        {}
+                                      segmentation_decomposeroutput36:
+                                        {}
+                                      segmentation_decomposeroutput37:
+                                        {}
+                                      segmentation_decomposeroutput38:
+                                        {}
+                                      segmentation_decomposeroutput39:
+                                        {}
+                                      segmentation_decomposeroutput40:
+                                        {}
+                                      segmentation_decomposeroutput41:
+                                        {}
+                                      segmentation_decomposeroutput42:
+                                        {}
+                                      segmentation_decomposeroutput43:
+                                        {}
+                                      segmentation_decomposeroutput44:
+                                        {}
+                                      segmentation_decomposeroutput45:
+                                        {}
+                                      segmentation_decomposeroutput46:
+                                        {}
+                                      segmentation_decomposeroutput47:
+                                        {}
+                                      segmentation_decomposeroutput48:
+                                        {}
+                                      segmentation_decomposeroutput49:
+                                        {}
+                                      segmentation_decomposeroutput50:
+                                        {}
+                                      segmentation_decomposeroutput51:
+                                        {}
+                                      segmentation_decomposeroutput52:
+                                        {}
+                                      segmentation_decomposeroutput53:
+                                        {}
+                                      segmentation_decomposeroutput54:
+                                        {}
+                                      segmentation_decomposeroutput55:
+                                        {}
+                                      segmentation_decomposeroutput56:
+                                        {}
+                                      segmentation_decomposeroutput57:
+                                        {}
+                                      segmentation_decomposeroutput58:
+                                        {}
+                                      segmentation_decomposeroutput59:
+                                        {}
+                                      segmentation_decomposeroutput60:
+                                        {}
+                                      segmentation_decomposeroutput61:
+                                        {}
+                                      segmentation_decomposeroutput62:
+                                        {}
+                                      segmentation_decomposeroutput63:
+                                        {}
+                                      segmentation_decomposeroutput64:
+                                        {}
+                                      segmentation_decomposeroutput65:
+                                        {}
+                                      segmentation_decomposeroutput66:
+                                        {}
+                                      segmentation_decomposeroutput67:
+                                        {}
+                                head_mount_prosilica_link:
+                                  head_mount_prosilica_optical_frame:
+                                    {}
+                              projector_wg6802418_frame:
+                                projector_wg6802418_child_frame:
                                   {}
-                            wide_stereo_optical_frame:
-                              {}
-                        high_def_frame:
-                          high_def_optical_frame:
+                              sensor_mount_link:
+                                double_stereo_link:
+                                  narrow_stereo_link:
+                                    narrow_stereo_l_stereo_camera_frame:
+                                      narrow_stereo_l_stereo_camera_optical_frame:
+                                        {}
+                                      narrow_stereo_r_stereo_camera_frame:
+                                        narrow_stereo_r_stereo_camera_optical_frame:
+                                          {}
+                                    narrow_stereo_optical_frame:
+                                      {}
+                                  wide_stereo_link:
+                                    wide_stereo_l_stereo_camera_frame:
+                                      wide_stereo_l_stereo_camera_optical_frame:
+                                        {}
+                                      wide_stereo_r_stereo_camera_frame:
+                                        wide_stereo_r_stereo_camera_optical_frame:
+                                          {}
+                                    wide_stereo_optical_frame:
+                                      {}
+                                high_def_frame:
+                                  high_def_optical_frame:
+                                    {}
+                        imu_link:
+                          {}
+                        l_shoulder_pan_link:
+                          l_shoulder_lift_link:
+                            l_upper_arm_roll_link:
+                              l_upper_arm_link:
+                                l_elbow_flex_link:
+                                  l_forearm_roll_link:
+                                    l_forearm_cam_frame:
+                                      l_forearm_cam_optical_frame:
+                                        {}
+                                    l_forearm_link:
+                                      l_wrist_flex_link:
+                                        l_wrist_roll_link:
+                                          l_gripper_palm_link:
+                                            l_gripper_l_finger_link:
+                                              l_gripper_l_finger_tip_link:
+                                                {}
+                                            l_gripper_led_frame:
+                                              {}
+                                            l_gripper_motor_accelerometer_link:
+                                              {}
+                                            l_gripper_motor_slider_link:
+                                              l_gripper_motor_screw_link:
+                                                {}
+                                            l_gripper_r_finger_link:
+                                              l_gripper_r_finger_tip_link:
+                                                l_gripper_l_finger_tip_frame:
+                                                  {}
+                                            l_gripper_tool_frame:
+                                              {}
+                                          left_arm_chain_cb_link:
+                                            {}
+                        l_torso_lift_side_plate_link:
+                          {}
+                        laser_tilt_mount_link:
+                          laser_tilt_link:
                             {}
-                imu_link:
-                  {}
-                l_shoulder_pan_link:
-                  l_shoulder_lift_link:
-                    l_upper_arm_roll_link:
-                      l_upper_arm_link:
-                        l_elbow_flex_link:
-                          l_forearm_roll_link:
-                            l_forearm_cam_frame:
-                              l_forearm_cam_optical_frame:
-                                {}
-                            l_forearm_link:
-                              l_wrist_flex_link:
-                                l_wrist_roll_link:
-                                  l_gripper_palm_link:
-                                    l_gripper_l_finger_link:
-                                      l_gripper_l_finger_tip_link:
+                        r_shoulder_pan_link:
+                          r_shoulder_lift_link:
+                            r_upper_arm_roll_link:
+                              r_upper_arm_link:
+                                r_elbow_flex_link:
+                                  r_forearm_roll_link:
+                                    r_forearm_cam_frame:
+                                      r_forearm_cam_optical_frame:
                                         {}
-                                    l_gripper_led_frame:
-                                      {}
-                                    l_gripper_motor_accelerometer_link:
-                                      {}
-                                    l_gripper_motor_slider_link:
-                                      l_gripper_motor_screw_link:
-                                        {}
-                                    l_gripper_r_finger_link:
-                                      l_gripper_r_finger_tip_link:
-                                        l_gripper_l_finger_tip_frame:
-                                          {}
-                                    l_gripper_tool_frame:
-                                      {}
-                l_torso_lift_side_plate_link:
-                  {}
-                laser_tilt_mount_link:
-                  laser_tilt_link:
-                    {}
-                r_shoulder_pan_link:
-                  r_shoulder_lift_link:
-                    r_upper_arm_roll_link:
-                      r_upper_arm_link:
-                        r_elbow_flex_link:
-                          r_forearm_roll_link:
-                            r_forearm_cam_frame:
-                              r_forearm_cam_optical_frame:
-                                {}
-                            r_forearm_link:
-                              r_wrist_flex_link:
-                                r_wrist_roll_link:
-                                  r_gripper_palm_link:
-                                    r_gripper_l_finger_link:
-                                      r_gripper_l_finger_tip_link:
-                                        {}
-                                    r_gripper_led_frame:
-                                      {}
-                                    r_gripper_motor_accelerometer_link:
-                                      {}
-                                    r_gripper_motor_slider_link:
-                                      r_gripper_motor_screw_link:
-                                        {}
-                                    r_gripper_r_finger_link:
-                                      r_gripper_r_finger_tip_link:
-                                        r_gripper_l_finger_tip_frame:
-                                          {}
-                                    r_gripper_tool_frame:
-                                      {}
-                r_torso_lift_side_plate_link:
-                  {}
-              torso_lift_motor_screw_link:
-                {}
+                                    r_forearm_link:
+                                      r_wrist_flex_link:
+                                        r_wrist_roll_link:
+                                          r_gripper_palm_link:
+                                            r_gripper_l_finger_link:
+                                              r_gripper_l_finger_tip_link:
+                                                {}
+                                            r_gripper_led_frame:
+                                              {}
+                                            r_gripper_motor_accelerometer_link:
+                                              {}
+                                            r_gripper_motor_slider_link:
+                                              r_gripper_motor_screw_link:
+                                                {}
+                                            r_gripper_r_finger_link:
+                                              r_gripper_r_finger_tip_link:
+                                                r_gripper_l_finger_tip_frame:
+                                                  {}
+                                            r_gripper_tool_frame:
+                                              {}
+                                          right_arm_chain_cb_link:
+                                            {}
+                        r_torso_lift_side_plate_link:
+                          {}
+                      torso_lift_motor_screw_link:
+                        {}
+            eng2/8f:
+              {}
       Update Interval: 0
       Value: true
     - Class: rviz/Image
       Enabled: true
-      Image Topic: /virtual_camera_mono/image
+      Image Topic: /depth_image_creator1/output_image
       Max Value: 1
       Median window: 5
       Min Value: 0
@@ -513,6 +821,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        head_chain_cb_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         head_mount_kinect_ir_link:
           Alpha: 1
           Show Axes: false
@@ -688,6 +1000,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        left_arm_chain_cb_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         narrow_stereo_l_stereo_camera_frame:
           Alpha: 1
           Show Axes: false
@@ -827,6 +1143,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        right_arm_chain_cb_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         sensor_mount_link:
           Alpha: 1
           Show Axes: false
@@ -873,7 +1193,7 @@ Visualization Manager:
       Visual Enabled: true
     - Class: rviz/Image
       Enabled: true
-      Image Topic: /head_mount_kinect/rgb/image_raw
+      Image Topic: /kinect_head/depth_registered/image
       Max Value: 1
       Median window: 5
       Min Value: 0
@@ -927,35 +1247,35 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 5.643610954284668
+      Distance: 5.248806476593018
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
+        X: 1.9124294519424438
+        Y: 1.1375916004180908
+        Z: 1.0365703105926514
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6653981804847717
+      Pitch: 0.22039872407913208
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.968585014343262
+      Yaw: 4.578573703765869
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 846
+  Height: 1025
   Hide Left Dock: false
-  Hide Right Dock: false
+  Hide Right Dock: true
   Image:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000025e000002b0fc020000000afb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d00000157000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d006100670065010000019a000000910000001600fffffffb0000000a0049006d0061006700650100000231000000bc0000001600ffffff000000010000010f000002b0fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d000002b0000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000005b80000003efc0100000002fb0000000800540069006d00650100000000000005b8000002eb00fffffffb0000000800540069006d006501000000000000045000000000000000000000023f000002b000000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000001f100000363fc020000000afb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d00000363000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d006100670065030000058600000035000001f10000017dfb0000000a0049006d00610067006503000005800000024b000001f10000018f000000010000010f00000363fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003d00000363000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073d0000003efc0100000002fb0000000800540069006d006501000000000000073d000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000005460000036300000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -963,7 +1283,7 @@ Window Geometry:
   Tool Properties:
     collapsed: false
   Views:
-    collapsed: false
-  Width: 1464
-  X: 311
-  Y: 50
+    collapsed: true
+  Width: 1853
+  X: 67
+  Y: 27
