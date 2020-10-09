@@ -87,7 +87,6 @@
                            (ros::time 0)))))
     (when (and cds base->parent)
       ;;(send *tfb* :send-transform
-        (publish-info "one-shot-subscribe!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         (send (send base->parent :copy-worldcoords) :transform cds))
       ;;      *base-frame-id* "target_object" (send msg :header :stamp))
     )
@@ -190,7 +189,8 @@
             (make-coords :pos (v+ (send target-point :worldpos)
                                   (float-vector -100 0 50))
                          ;;:rpy (float-vector 0 1.2 -1.54)) ;;success(0 1.2 -1.54)
-                         :rpy (float-vector (elt *rot* 0) 1.2 (elt *rot* 2)))
+                         ;;:rpy (float-vector (elt *rot* 0) 0 (elt *rot* 2)))
+                         :rpy (float-vector 1.54 0 0))
             )
       (publish-error "out of reach...")
       (send *pregrasp-point* :newcoords
