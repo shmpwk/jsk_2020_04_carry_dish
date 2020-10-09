@@ -169,7 +169,14 @@
     (unless target-point
       (ros::ros-logerr "target point is nil !!")
       (return-from grasp-target-callback nil))
-    (send *pr2* *rarm* :move-end-pos #f(0 0 100) :world)
+    ;;(send *pr2* *rarm* :move-end-pos #f(0 0 100) :world)
+    ;;(send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    ;;(send *ri* :wait-interpolation)
+    (send *pr2* *rarm* :inverse-kinematics
+          ;;(make-coords :pos target-point :worldpos)
+          (make-coords :pos (float-vector 50 50 -10)
+                       :rpy (float-vector 0 0 0)) ;;1.2 -1.54)) ;;success(0 1.2 -1.54)
+          )
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
     (if *grasping-object-p*
@@ -267,7 +274,7 @@
     (send *ri* :wait-interpolation)
     (let ((grasp-result (send *ri* :start-grasp *rarm*)))
       (print grasp-result)
-      (if (< 0.1 grasp-result)                                       
+      (if (< 4.0 grasp-result)   ;;for gazebo (< 0.1 grasp-result)                          
         (progn                                                     
           (setq *grasp-state* "grasp succeeded!")               
           (publish-grasp-state)
