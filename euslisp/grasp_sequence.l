@@ -17,10 +17,13 @@
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 
 (defun pr2-pregrasp-pose ()
-  (send *pr2* :reset-manip-pose)
+  ;;(send *pr2* :reset-manip-pose)
+  ;;(send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
+  ;;(send *ri* :wait-interpolation)
+  ;;(send *pr2* :angle-vector #f(299.86 74.9198 49.001 109.745 -105.69 -20.0204 -5.72958 -12.8242 -2.82205 -20.2598 -96.5148 -57.0581 -73.0642 -92.0065 132.964 4.4467 21.474))
+  (send *pr2* :angle-vector #f(299.865 55.4297 53.3196 102.662 -121.542 125.071 -87.0418 -48.2131 -32.0168 -20.2598 -67.6931 -45.3044 -72.9084 -96.2568 -100.018 4.1047 54.75))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
-
   (setq *co-endeffector-vis* (arrow))
   (setq *co-ik-target* (arrow))
   (setq *pregrasp-point* (arrow))
@@ -172,11 +175,6 @@
     ;;(send *pr2* *rarm* :move-end-pos #f(0 0 100) :world)
     ;;(send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     ;;(send *ri* :wait-interpolation)
-    (send *pr2* *rarm* :inverse-kinematics
-          ;;(make-coords :pos target-point :worldpos)
-          (make-coords :pos (float-vector 50 50 -10)
-                       :rpy (float-vector 0 0 0)) ;;1.2 -1.54)) ;;success(0 1.2 -1.54)
-          )
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
     (if *grasping-object-p*
@@ -190,7 +188,7 @@
       (send *pr2* *rarm* :inverse-kinematics
             ;;(make-coords :pos target-point :worldpos)
             (make-coords :pos (v+ (send target-point :worldpos)
-                                  (float-vector -150 0 50))
+                                  (float-vector -100 0 50))
                          :rpy (float-vector 0 1.2 -1.54)) ;;success(0 1.2 -1.54)
                          ;;:rpy (v- (send target-point :worldpos)
                          ;;         (send (bounding-box->cube msg) :worldpos)))
@@ -198,7 +196,7 @@
       (publish-error "out of reach...")
       (send *pregrasp-point* :newcoords
             (make-coords :pos (v+ (send target-point :worldpos)
-                                    (float-vector -150 0 50))
+                                    (float-vector -100 0 50))
                            :rpy (float-vector 0 1.2 -1.54))
             )
                            ;;:rpy (v- (send target-point :worldpos)
@@ -210,7 +208,7 @@
     ;;(send *co-endeffector-vis* :newcoords (send *pr2* :copy-worldcoords)) 
     (send *pregrasp-point* :newcoords
           (make-coords :pos (v+ (send target-point :worldpos)
-                                  (float-vector -150 0 50))
+                                  (float-vector -100 0 50))
                          :rpy (float-vector 0 1.2 -1.54))
           )
                          ;;:rpy (v- (send target-point :worldpos)
@@ -240,7 +238,7 @@
     (setq *grasp-state* "grasp-approaching")
     (publish-grasp-state)
     (publish-info "reaching...")
-    (send *pr2* *rarm* :move-end-pos #f(150 0 -60) :world :look-at-target t)
+    (send *pr2* *rarm* :move-end-pos #f(100 0 -60) :world :look-at-target t)
     ;;(send *pr2* :head :look-at-hand *rarm*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 6000)
     (send *ri* :wait-interpolation)
