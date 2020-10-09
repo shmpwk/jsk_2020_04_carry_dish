@@ -61,7 +61,7 @@ def choose_point_callback(data):
     header = posestamped.header
     header.stamp = rospy.Time.now()
     header.frame_id = "head_mount_kinect_rgb_optical_frame"
-
+    print("data.header.frame_id", data.header.frame_id)
     print("publish grasp point")
 
     """

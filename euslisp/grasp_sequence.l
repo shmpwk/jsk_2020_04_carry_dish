@@ -71,7 +71,6 @@
      )
   )
 
-
 ;; one-shot-subscribe but not use now
 (defun sub-grasp-point ()
     (let* (
@@ -162,7 +161,7 @@
   (print "clicked")
   (let ((target-point (sub-grasp-point))
   ;;(let ((target-point (grasp-point-cb msg))
-     (target-box (bounding-box->cube msg)))
+    (target-box (bounding-box->cube msg)))
     ;;(let ((target-point (bounding-box->cube msg)))
     ;;(print target-point) ;;t
     (get-depth)
@@ -170,9 +169,9 @@
     (unless target-point
       (ros::ros-logerr "target point is nil !!")
       (return-from grasp-target-callback nil))
-    (send *pr2* *rarm* :move-end-pos #f(0 0 100) :world)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-    (send *ri* :wait-interpolation)
+    ;;(send *pr2* *rarm* :move-end-pos #f(0 0 100) :world)
+    ;;(send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    ;;(send *ri* :wait-interpolation)
     (if *grasping-object-p*
         (progn
           (publish-warn "cancel grasping...")
