@@ -174,9 +174,14 @@
     ;;(send *ri* :wait-interpolation)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
+    ;; gradient from grasp point to the middle of the box
     (setq grad (v- (send (bounding-box->cube msg) :worldpos)
                             (send target-point :worldpos)))
+    ;; grasping toward centripetal direction
     (setq *rot* (- 1.57 (atan2  (elt grad 1) (elt grad 0))))
+    ;; pregrasp pos
+    (setq *pre-pos* (scale 3 grad))
+
     (if *grasping-object-p*
         (progn
           (publish-warn "cancel grasping...")
@@ -188,7 +193,8 @@
       (send *pr2* *rarm* :inverse-kinematics
             ;;(make-coords :pos target-point :worldpos)
             (make-coords :pos (v+ (send target-point :worldpos)
-                                  (float-vector -100 0 50))
+                                  *pre-pos*)
+                                  ;;(float-vector -100 0 50))
                          ;;:rpy (float-vector 0 1.2 -1.54)) ;;success(0 1.2 -1.54)
                          :rpy (float-vector *rot* 1.2 -1.54))
                          ;;:rpy (float-vector -1.57 1.2 -1.54))
@@ -196,7 +202,8 @@
       (publish-error "out of reach...")
       (send *pregrasp-point* :newcoords
             (make-coords :pos (v+ (send target-point :worldpos)
-                                    (float-vector -100 0 150))
+                                    *pre-pos*)
+                                    ;;(float-vector -100 0 150))
                            ;;:rpy (float-vector -1.57 1.2 -1.54)))
                            :rpy (float-vector *rot* 1.2 -1.54)))
                            ;;:rpy (v- (send (bounding-box->cube msg) :worldpos) 
@@ -207,7 +214,8 @@
     ;;(send *co-endeffector-vis* :newcoords (send *pr2* :copy-worldcoords)) 
     (send *pregrasp-point* :newcoords
           (make-coords :pos (v+ (send target-point :worldpos)
-                                  (float-vector -100 0 150))
+                                  ;;(float-vector -100 0 150))
+                                  *pre-pos*)
                          ;;:rpy (float-vector 0 1.2 -1.54)))
                          :rpy (float-vector *rot* 1.2 -1.54)))
                          ;;:rpy (v- (send (bounding-box->cube msg) :worldpos)
