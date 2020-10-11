@@ -180,7 +180,10 @@
     ;; grasping toward centripetal direction
     (setq *rot* (- 1.57 (atan2  (elt grad 1) (elt grad 0))))
     ;; pregrasp pos
-    (setq *pre-pos* (scale 3 grad))
+
+    (setq *pre-pos* (float-vector (elt (scale 3 grad) 0) (elt (scale 3 grad) 1) 50))
+    (print *pre-pos*)
+    (setq *reach-pos* (float-vector (elt (scale -2 grad) 0) (elt (scale -2 grad) 1) -60))
 
     (if *grasping-object-p*
         (progn
@@ -245,7 +248,7 @@
     (setq *grasp-state* "grasp-approaching")
     (publish-grasp-state)
     (publish-info "reaching...")
-    (send *pr2* *rarm* :move-end-pos #f(100 0 -60) :world :look-at-target t)
+    (send *pr2* *rarm* :move-end-pos *reach-pos* :world :look-at-target t)
     ;;(send *pr2* :head :look-at-hand *rarm*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 6000)
     (send *ri* :wait-interpolation)
