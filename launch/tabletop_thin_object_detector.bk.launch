@@ -1,6 +1,6 @@
 <launch>
   <arg name="input" default="/camera/depth_registered/points" />
-  <arg name="sensor_frame" default="/camera_rgb_optical_frame" />
+  <arg name="sensor_frame" default="head_mount_kinect_rgb_optical_frame" />
   <arg name="manager" default="tabletop_object_detector_nodelet_manager" />
   <arg name="machine" default="localhost" />
 
@@ -87,10 +87,10 @@
         args="standalone jsk_pcl/AttentionClipper">
     <remap from="~input/points" to="/plane_extraction/output" />
     <rosparam>
-      initial_pos: [0, -0.2, 1.2]
+      initial_pos: [0, 0.3, 1.2]
       initial_rot: [-0.65, 0, 0]
-      dimension_x: 1.5
-      dimension_y: 1.0
+      dimension_x: 0.7
+      dimension_y: 0.5
       dimension_z: 0.6
       frame_id: head_mount_kinect_rgb_optical_frame
     </rosparam>
@@ -119,6 +119,7 @@
       use_pca: true
       publish_clouds: false
       publish_tf: $(arg publish_tf)
+      sort_by: -cloud_size
     </rosparam>
   </node>
 
@@ -132,7 +133,8 @@
         args="load jsk_pcl/SelectedClusterPublisher $(arg manager)"
         output="screen"
         machine="$(arg machine)">
-    <remap from="~input" to="/plane_extraction/output" />
+    <!--remap from="~input" to="/plane_extraction/output" /-->
+    <remap from="~input" to="/extract_indices/output" />
     <remap from="~indices" to="/euclidean_clustering/output" />
     <remap from="~selected_index" to="/bounding_box_marker/selected_index" />
     <remap from="~output" to="/selected_pointcloud" />
