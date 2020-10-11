@@ -56,6 +56,12 @@ roseus pr2-tabletop-object-grasp-dual-success.l
       - tabletop_object_detector.launch
 
 ## grasp learning
+```
+$ roslaunch jsk_2020_4_carry_dish realpr2_tabletop.launch
+$ roseus euslisp/grasp_sequence.l 
+$ roslaunch jsk_2020_4_carry_dish gazebo_clicked_box_edge.launch use_sim:=false gui:=false
+```
+
 
 - scripts/grasp_system.py : learning system
 - scripts/pub_grasp_point.py
