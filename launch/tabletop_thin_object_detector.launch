@@ -33,12 +33,33 @@
         machine="$(arg machine)">
     <remap from="~input" to="$(arg input)" />
   </node>
+  <node name="attention_clipper"
+        pkg="nodelet" type="nodelet"
+        args="standalone jsk_pcl/AttentionClipper">
+    <remap from="~input/points" to="input_relay/output" />
+    <rosparam>
+      initial_pos: [0, 0.3, 1.2]
+      initial_rot: [-0.65, 0, 0]
+      dimension_x: 0.7
+      dimension_y: 0.5
+      dimension_z: 0.6
+      frame_id: head_mount_kinect_rgb_optical_frame
+    </rosparam>
+  </node>
+  <node name="extract_indices"
+        pkg="jsk_pcl_ros" type="extract_indices">
+    <remap from="~input" to="input_relay/output" />
+    <remap from="~indices" to="attention_clipper/output/point_indices" />
+    <rosparam>
+      keep_organized: true
+    </rosparam>
+  </node>
   <node name="multi_plane_estimate" pkg="nodelet" type="nodelet"
         args="load jsk_pcl/OrganizedMultiPlaneSegmentation $(arg manager)"
         output="screen"
         if="$(arg launch_manager)"
         machine="$(arg machine)">
-    <remap from="~input" to="input_relay/output" />
+    <remap from="~input" to="/extract_indices/output" />
     <rosparam>
       max_curvature: 0.01
       estimate_normal: true
@@ -55,7 +76,7 @@
         args="load jsk_pcl/MultiPlaneExtraction $(arg manager)"
         output="screen"
         machine="$(arg machine)">
-    <remap from="~input" to="input_relay/output" />
+    <remap from="~input" to="/extract_indices/output" />
     <remap from="~indices" to="/multi_plane_estimate/output_refined" />
     <remap from="~input_polygons" to="/multi_plane_estimate/output_refined_polygon" />
     <remap from="~input_coefficients" to="/multi_plane_estimate/output_refined_coefficients" />
@@ -82,32 +103,10 @@
     <remap from="~input" to="euclidean_clustering/output" />
     <remap from="~output" to="euclidean_clustering/output_throttle" />
   </node>
-  <node name="attention_clipper"
-        pkg="nodelet" type="nodelet"
-        args="standalone jsk_pcl/AttentionClipper">
-    <remap from="~input/points" to="/plane_extraction/output" />
-    <rosparam>
-      initial_pos: [0, 0.3, 1.2]
-      initial_rot: [-0.65, 0, 0]
-      dimension_x: 0.7
-      dimension_y: 0.5
-      dimension_z: 0.6
-      frame_id: head_mount_kinect_rgb_optical_frame
-    </rosparam>
-  </node>
-  <node name="extract_indices"
-        pkg="jsk_pcl_ros" type="extract_indices">
-    <remap from="~input" to="/plane_extraction/output" />
-    <remap from="~indices" to="attention_clipper/output/point_indices" />
-    <rosparam>
-      keep_organized: true
-    </rosparam>
-  </node>
   <node name="segmentation_decomposer" pkg="nodelet" type="nodelet"
         args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg manager)"
         output="screen"
         machine="$(arg machine)">
-    <!--remap from="~input" to="/extract_indices/output" /-->
     <remap from="~input" to="/plane_extraction/output" />
     <remap from="~target" to="/euclidean_clustering/output_throttle" />
     <remap from="~align_planes" to="/multi_plane_estimate/output_refined_polygon" />

@@ -45,7 +45,7 @@
       max_queue_size: 1000
       max_pub_queue_size: 100
       max_sub_queue_size: 100
-      tf_duration: 10.0
+      tf_duration: 50.0
     </rosparam>
   </node>
 
