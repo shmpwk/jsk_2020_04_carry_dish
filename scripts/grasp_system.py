@@ -20,6 +20,8 @@ import torch.optim as optim
 import os
 import pickle
 import matplotlib.pyplot as plt
+import cv2
+from cv_bridge import CvBridge, CvBridgeError
 
 class MyDataset(Dataset):
     def __init__(self, transform=None):
@@ -36,16 +38,6 @@ class MyDataset(Dataset):
         """
         # depth_data_size(10) * (32*32)
         """
-        depth_dataset_path = "~/my_ws/src"
-        depth_dataset_path = os.path.expanduser('~/Data/depth_data')
-        self.depth_dataset = np.empty((0,3))
-        key = '.pkl'
-        for dir_name, sub_dirs, files in os.walk(depth_dataset_path):
-            for f in files:
-                if key == f[-len(key):]:
-                    np.append(self.dapth_dataset, f, axis = 0) 
-                    #os.path.join(dir_name, f[:-len(key)]))
-
         # Can depth image (not PIL )use transform? : No, so you should convert from numpy.
 
         pilImg = Image.fromarray(self.depth_dataset)
@@ -54,6 +46,7 @@ class MyDataset(Dataset):
         """
         
         # It was copied from scripts/depth_pickle_load.py
+        """
         self.depth_dataset = np.empty((0,40000))
 
         for file in os.listdir(".ros/Data/gazebo_depth_image"):
@@ -63,23 +56,49 @@ class MyDataset(Dataset):
                 self.depth_dataset = np.append(self.depth_dataset, ff, axis=0)
         self.depth_dataset = self.depth_dataset.reshape((10, 1, 200, 200))
         """
-        data=np.loadtxt("data.csv",  # 読み込みたいファイルのパス
-                  delimiter=",",    # ファイルの区切り文字
-                  skiprows=0,       # 先頭の何行を無視するか（指定した行数までは読み込まない）
-                  #usecols=(1,2,3,4,5,6,7,8,9,10) # 読み込みたい列番号。
-                )
-        """
+        depth_path = "Data/depth_data"
+        self.depth_dataset = np.empty((0,230400))
+        depth_key = '.pkl'
+        for d_dir_name, d_sub_dirs, d_files in os.walk(depth_path): 
+            for df in d_files:
+                if depth_key == df[-len(depth_key):]:
+                    with open(os.path.join(d_dir_name, df), 'rb') as f:
+                        ff = pickle.load(f)
 
+                        WIDTH = 240
+                        HEIGHT = 240 
+                        bridge = CvBridge()
+                        #try:
+                        #    depth_image = bridge.imgmsg_to_cv2(ff, 'passthrough')
+                        #except CvBridgeError, e:
+                        #    rospy.logerr(e)
+                        im = ff.reshape((480,640,3))
+                        im_gray = 0.299 * im[:, :, 0] + 0.587 * im[:, :, 1] + 0.114 * im[:, :, 2]
+                        depth_image = im_gray
+
+                        h, w = depth_image.shape
+
+                        x1 = (w / 2) - WIDTH
+                        x2 = (w / 2) + WIDTH
+                        y1 = (h / 2) - HEIGHT
+                        y2 = (h / 2) + HEIGHT
+                        depth_data = np.empty((0,230400))
+
+                        for i in range(y1, y2):
+                            for j in range(x1, x2):
+                                if depth_image.item(i,j) == depth_image.item(i,j):
+                                    depth_data = np.append(depth_data, depth_image.item(i,j))
+                                            
+                        #ims = depth_data.reshape((1, 480, 480))
+                        #plt.imshow(np.transpose(ims[0, :, :]))
+                        #plt.show()
+                                    
+                        depth_data = np.array(depth_data).reshape((1, 230400))
+                        self.depth_dataset = np.append(self.depth_dataset, depth_data, axis=0)
+        self.depth_dataset = self.depth_dataset.reshape((10, 1, 480, 480))
+        print("Finished loading all depth data")
+        
         # grasp point data size : 10 * 6(4)   
-        """
-        grasp_point_path = "~/"
-        self.grasp_datset = np.empty((0,3))
-        grasp_key = 'point.pkl'
-        for g_dir_name, g_sub_dirs, g_files in os.walk(grasp_point_path):
-            for gf in g_files:
-                if grasp_key == gf[-len(grasp_key):]:
-                    np.append(self.grasp_dataset, gf, axis=0)
-                    """
         self.grasp_dataset = np.empty((0,6))
 
         for file in os.listdir(".ros/Data/grasp_point"):
@@ -87,7 +106,7 @@ class MyDataset(Dataset):
                 ff = pickle.load(f)
                 ff = np.array(ff).reshape((1, 6))
                 self.grasp_dataset = np.append(self.grasp_dataset, ff, axis=0)
-                
+        print("Finished loading grasp point")         
         # judge data size : 100 * 1
 
         """
@@ -109,6 +128,7 @@ class MyDataset(Dataset):
                     f = open(os.path.join(j_dir_name, jf), 'r')
                     n = f.read()
                     self.judge_dataset = np.append(self.judge_dataset, int(n))
+        print("Finished loading judge data")
 
         print(self.depth_dataset.shape)
         print(self.grasp_dataset.shape)
@@ -141,7 +161,8 @@ class Net(nn.Module):
         self.conv3 = nn.Conv2d(256, 384, kernel_size=3, padding=1)
         self.conv4 = nn.Conv2d(384, 384, kernel_size=3, padding=1)
         self.conv5 = nn.Conv2d(384, 256, kernel_size=3, padding=1)
-        self.fc1 = nn.Linear(256 * 6 * 6, 4096)
+        #self.fc1 = nn.Linear(256 * 6 * 6, 4096)
+        self.fc1 = nn.Linear(50176, 4096)
         self.fc2 = nn.Linear(4096, 4096)
         self.fc3 = nn.Linear(4096, 1) # output is 1 dim scalar probability
 
@@ -153,7 +174,8 @@ class Net(nn.Module):
         x = F.relu(self.conv4(x))
         x = F.max_pool2d(F.relu(self.conv5(x)), 2)
         x = x.view(-1, self.num_flat_features(x))
-
+        #depth_data =depth_data.view(depth_data.shape[0], -1)
+        print("x", x.shape)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
@@ -180,7 +202,7 @@ class GraspSystem():
             num_workers=2, drop_last=True
         )
         depth_data, grasp_point, labels = next(iter(train_dataloader))
-        print(depth_data.size())  # torch.Size([16, 3, 224, 224])になっているかな
+        print(depth_data.size())  # torch.Size([10, 1, 480, 480])になっているかな
         print(grasp_point.size())
         print(labels.size())
         return train_dataloader
@@ -235,21 +257,19 @@ class GraspSystem():
 
                 # 統計を表示する
                 running_loss += loss.item()
-                if i % 2000 == 1999:    # 2000 ミニバッチ毎に表示する
+                if i % 2 == 1:    # 2000 ミニバッチ毎に表示する
                     print('[%d, %5d] loss: %.3f' %
-                          (epoch + 1, i + 1, running_loss / 2000))
+                          (epoch + 1, i + 1, running_loss / 2))
                     running_loss = 0.0
         print('Finished Training')
 
     def test(self):
-
         pass
 
 
 if __name__ == '__main__':
     # parse
     train_flag = True #int(arg.train)
-
     gs = GraspSystem()
     loop_num = 1
 
@@ -261,10 +281,8 @@ if __name__ == '__main__':
         gs.make_model()
         gs.train(train_dataloader, loop_num)
         gs.save_model()
-
     else:
         pass
-
     # test
     #gs.start()
 
