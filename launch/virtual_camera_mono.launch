@@ -22,7 +22,7 @@
   </node>
   -->
 
-  <node name="virtual_camera_info_publihser"
+  <node name="virtual_camera_info_publisher"
         pkg="jsk_2020_4_carry_dish" type="virtual_camera_info_publisher.py" >
     <remap from="~input" to="$(arg CLOUD)" />
     <rosparam>
@@ -36,9 +36,9 @@
         args="0.0 -0.25 -0.25 -0.4 0.0 0.0 1.0 /segmentation_decomposeroutput00 /virtual_camera_optical_frame 30"/>
 
 
-  <node name="depth_image_creator1" pkg="nodelet" type="nodelet" args="standalone jsk_pcl/DepthImageCreator">
+  <node name="extracted_depth_image_creator" pkg="nodelet" type="nodelet" args="standalone jsk_pcl/DepthImageCreator">
     <remap from="~input" to="$(arg CLOUD)" />
-    <remap from="~info" to="/virtual_camera_info_publihser/output/camera_info" />
+    <remap from="~info" to="/virtual_camera_info_publisher/output/camera_info" />
     <rosparam>
       use_approximate: true
       use_asynchronous: false
@@ -53,9 +53,9 @@
     <node name="pointcloud_xyzrgb_to_xyz" pkg="nodelet" type="nodelet" args="standalone jsk_pcl_utils/PointCloudXYZRGBToXYZ">
       <remap from="~input" to="$(arg CLOUD)" />
     </node>
-    <node name="depth_image_creator1" pkg="nodelet" type="nodelet" args="standalone jsk_pcl/DepthImageCreator">
+    <node name="extracted_depth_image_creator1" pkg="nodelet" type="nodelet" args="standalone jsk_pcl/DepthImageCreator">
       <remap from="~input" to="pointcloud_xyzrgb_to_xyz/output" />
-      <remap from="~info" to="/virtual_camera_info_publihser/output/camera_info" />
+      <remap from="~info" to="/virtual_camera_info_publisher/output/camera_info" />
       <rosparam>
         use_approximate: true
         use_asynchronous: false

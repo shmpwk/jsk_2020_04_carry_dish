@@ -178,12 +178,13 @@
     (setq grad (v- (send (bounding-box->cube msg) :worldpos)
                             (send target-point :worldpos)))
     ;; grasping toward centripetal direction
-    (setq *rot* (- 1.57 (atan2  (elt grad 1) (elt grad 0))))
+    ;;(setq *rot* (- 1.57 (atan2  (elt grad 1) (elt grad 0))))
+    (setq *rot*  (atan2  (elt grad 1) (elt grad 0)))
     ;; pregrasp pos
 
-    (setq *pre-pos* (float-vector (elt (scale 3 grad) 0) (elt (scale 3 grad) 1) 50))
+    (setq *pre-pos* (float-vector (elt (scale 2 grad) 0) (elt (scale 2 grad) 1) 20))
     (print *pre-pos*)
-    (setq *reach-pos* (float-vector (elt (scale -2 grad) 0) (elt (scale -2 grad) 1) -60))
+    (setq *reach-pos* (float-vector (elt (scale -0.5 grad) 0) (elt (scale -0.5 grad) 1) -45))
 
     (if *grasping-object-p*
         (progn
@@ -199,7 +200,7 @@
                                   *pre-pos*)
                                   ;;(float-vector -100 0 50))
                          ;;:rpy (float-vector 0 1.2 -1.54)) ;;success(0 1.2 -1.54)
-                         :rpy (float-vector *rot* 1.2 -1.54))
+                         :rpy (float-vector *rot* 2.0 -1.54))
                          ;;:rpy (float-vector -1.57 1.2 -1.54))
             )
       (publish-error "out of reach...")
@@ -241,7 +242,7 @@
     (send *co-endeffector-vis* :newcoords (send *pr2* :copy-worldcoords))
     (send *grasp-point* :newcoords 
           (make-coords :pos (v+ (send target-point :worldpos)
-                                (float-vector 0 0 -10)) ;;(-200+105, 0+0, 150-150)
+                                (float-vector 0 0 -15)) ;;(-200+105, 0+0, 150-150)
                        :rpy (float-vector 0 1.2 -1.54)))
     (objects (list *pr2* *box* *co-endeffector-vis* *co-ik-target* *grasp-point* *box-arrow*)))
     
@@ -277,7 +278,7 @@
     (setq *grasp-state* "placing")
     (publish-grasp-state)
     (publish-info "placing ...")
-    (send *pr2* *rarm* :move-end-pos #f(0 0 -240) :world)
+    (send *pr2* *rarm* :move-end-pos #f(0 0 -230) :world)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
     (let ((grasp-result (send *ri* :start-grasp *rarm*)))
@@ -299,7 +300,7 @@
     (send *ri* :wait-interpolation)
     ;; open glipper
     (send *ri* :stop-grasp *rarm* :wait t)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 6000)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
   
     (send *pr2* *rarm* :move-end-pos #f(0 0 100) :world)
