@@ -164,7 +164,10 @@ class Net(nn.Module):
         #self.fc1 = nn.Linear(256 * 6 * 6, 4096)
         self.fc1 = nn.Linear(50176, 4096)
         self.fc2 = nn.Linear(4096, 4096)
-        self.fc3 = nn.Linear(4096, 1) # output is 1 dim scalar probability
+        self.fc3 = nn.Linear(4096, 10)
+        self.fc4 = nn.Linear(10 + 6, 16)
+        self.fc5 = nn.Linear(16, 1) # output is 1 dim scalar probability
+        
 
     # depth encording without concate grasp point
     def forward(self, x, y):
@@ -178,8 +181,11 @@ class Net(nn.Module):
         print("x", x.shape)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
+        x = F.relu(self.fc3(x))
+        z = torch.cat((x, y), dim=1)
+        z = F.relu(self.fc4(z))
+        z = self.fc5(z)
+        return z
    
     def num_flat_features(self, x):
         size = x.size()[1:]  # all dimensions except the batch dimension
@@ -202,7 +208,7 @@ class GraspSystem():
             num_workers=2, drop_last=True
         )
         depth_data, grasp_point, labels = next(iter(train_dataloader))
-        print(depth_data.size())  # torch.Size([10, 1, 480, 480])‚É‚È‚Á‚Ä‚¢‚é‚©‚È
+        print(depth_data.size())  # torch.Size([10, 1, 480, 480])‚É‚È‚Á‚Ä‚¢‚é‚©
         print(grasp_point.size())
         print(labels.size())
         return train_dataloader
