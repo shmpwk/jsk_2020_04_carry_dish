@@ -8,6 +8,7 @@
   <arg     if="$(arg use_sim)" name="depth_name" default="/head_mount_kinect/depth/image_raw"/>
   <!--arg unless="$(arg use_sim)" name="depth_name" default="/kinect_head/depth/image_raw"/-->
   <arg unless="$(arg use_sim)" name="depth_name" default="/kinect_head_remote/depth_registered/image_rect"/>
+  <arg unless="$(arg use_sim)" name="extract_depth_name" default="/extracted_depth_image_creator/output_image"/>
   
   <node name="depth_data_collection"
         pkg="jsk_data" type="data_collection_server.py"
@@ -18,15 +19,20 @@
       method: request
       save_dir: ~/Data/depth_data
       topics:
+        - name: $(arg extract_depth_name)
+          msg_class: sensor_msgs/Image
+          fname: extract_depth_image.pkl
+          savetype: DepthImage
+    </rosparam>
+  </node>
+  <!--
         - name: $(arg rgb_name)
           msg_class: sensor_msgs/Image
           fname: rgb_image_raw_request.png
           savetype: ColorImage
- 
         - name: $(arg depth_name)
           msg_class: sensor_msgs/Image
           fname: depth_image_raw.pkl
           savetype: DepthImage
-    </rosparam>
-  </node>
+          -->
 </launch>
