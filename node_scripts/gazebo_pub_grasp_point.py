@@ -15,6 +15,8 @@ import numpy as np
 import csv
 import pickle
 import datetime 
+import math
+import random
 
 def choose_point_callback(data):
     assert isinstance(data, PointCloud2)
@@ -44,8 +46,9 @@ def choose_point_callback(data):
     But currently, rotation is fixed for test. 
     """
     # euler angle will be strange when converting in eus program. Adjust parameter until solving this problem.  
-    theta = 0#-1.54 
-    phi = 0#1.2
+    phi_list = [math.pi/2, math.pi*3/4, math.pi]
+    theta = 0 #-1.54 
+    phi = random.choice(phi_list) #1.2(recentry, 2.0)
     psi = 0
     q = tf.transformations.quaternion_from_euler(theta, phi, psi)
 
