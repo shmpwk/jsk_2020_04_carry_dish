@@ -272,7 +272,6 @@ class GraspSystem():
     def test(self):
         pass
 
-
 if __name__ == '__main__':
     # parse
     train_flag = True #int(arg.train)

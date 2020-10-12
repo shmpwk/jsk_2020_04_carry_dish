@@ -185,6 +185,7 @@
     (setq *pre-pos* (float-vector (elt (scale 2 grad) 0) (elt (scale 2 grad) 1) 20))
     (print *pre-pos*)
     (setq *reach-pos* (float-vector (elt (scale -0.5 grad) 0) (elt (scale -0.5 grad) 1) -45))
+    (setq *grasp-rot* (float-vector *rot* (elt (send target-point :worldrot) 1) -1.54))
 
     (if *grasping-object-p*
         (progn
@@ -200,8 +201,9 @@
                                   *pre-pos*)
                                   ;;(float-vector -100 0 50))
                          ;;:rpy (float-vector 0 1.2 -1.54)) ;;success(0 1.2 -1.54)
-                         :rpy (float-vector *rot* 2.0 -1.54))
+                         ;;:rpy (float-vector *rot* 2.0 -1.54))
                          ;;:rpy (float-vector -1.57 1.2 -1.54))
+                         :rpy *grasp-rot*)
             )
       (publish-error "out of reach...")
       (send *pregrasp-point* :newcoords
@@ -209,9 +211,8 @@
                                     *pre-pos*)
                                     ;;(float-vector -100 0 150))
                            ;;:rpy (float-vector -1.57 1.2 -1.54)))
-                           :rpy (float-vector *rot* 1.2 -1.54)))
-                           ;;:rpy (v- (send (bounding-box->cube msg) :worldpos) 
-                           ;;         (send target-point :worldpos))))
+                           ;;:rpy (float-vector *rot* 2.0 -1.54)))
+                           :rpy *grasp-rot*))
       (send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
       (objects (list *pr2* *box* *co-ik-target* *pregrasp-point* *box-arrow*))
       (return-from grasp-target-callback nil))
@@ -221,9 +222,8 @@
                                   ;;(float-vector -100 0 150))
                                   *pre-pos*)
                          ;;:rpy (float-vector 0 1.2 -1.54)))
-                         :rpy (float-vector *rot* 1.2 -1.54)))
-                         ;;:rpy (v- (send (bounding-box->cube msg) :worldpos)
-                         ;;         (send target-point :worldpos))))
+                         ;;:rpy (float-vector *rot* 2.0 -1.54)))
+                         :rpy *grasp-rot*))
     ;;(send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
     (print "print target-point")
     (print (send target-point :worldrot))
@@ -294,7 +294,6 @@
           (publish-grasp-state)
           (publish-info "grasp failed!")          
           (ros::set-param (format nil "~/judge_grasp_success") 0)))) 
-
     (get-judge)
     (print "save judge")
     (send *ri* :wait-interpolation)
@@ -302,7 +301,6 @@
     (send *ri* :stop-grasp *rarm* :wait t)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
-  
     (send *pr2* *rarm* :move-end-pos #f(0 0 100) :world)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
