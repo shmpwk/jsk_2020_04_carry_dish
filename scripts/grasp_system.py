@@ -22,6 +22,7 @@ import pickle
 import matplotlib.pyplot as plt
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
+from torch.utils.tensorboard import SummaryWriter
 
 class MyDataset(Dataset):
     def __init__(self, transform=None):
@@ -99,12 +100,12 @@ class MyDataset(Dataset):
         print("Finished loading all depth data")
         
         # grasp point data size : 10 * 6(4)   
-        self.grasp_dataset = np.empty((0,6))
+        self.grasp_dataset = np.empty((0,4))
 
         for file in os.listdir(".ros/Data/grasp_point"):
             with open (".ros/Data/grasp_point/" + file, "rb") as f:
                 ff = pickle.load(f)
-                ff = np.array(ff).reshape((1, 6))
+                ff = np.array(ff).reshape((1, 4))
                 self.grasp_dataset = np.append(self.grasp_dataset, ff, axis=0)
         print("Finished loading grasp point")         
         # judge data size : 100 * 1
@@ -165,8 +166,8 @@ class Net(nn.Module):
         self.fc1 = nn.Linear(50176, 4096)
         self.fc2 = nn.Linear(4096, 4096)
         self.fc3 = nn.Linear(4096, 10)
-        self.fc4 = nn.Linear(10 + 6, 16)
-        self.fc5 = nn.Linear(16, 1) # output is 1 dim scalar probability
+        self.fc4 = nn.Linear(10 + 4, 14)
+        self.fc5 = nn.Linear(14, 1) # output is 1 dim scalar probability
         
 
     # depth encording without concate grasp point
@@ -243,10 +244,11 @@ class GraspSystem():
         # CPU save
         #torch.save(self.model.to('cpu').state_dict(), model_path)
 
-    def train(self, train_dataloader, loop_num=10):
-        for epoch in range(2):  # 訓練データを複数回(2周分)学習する
+    def train(self, train_dataloader, loop_num=2):
+        for epoch in range(loop_num):  # 訓練データを複数回(2周分)学習する
             running_loss = 0.0
-            
+            print("bb")
+
             for i, data in enumerate(train_dataloader, 0):
                 # ローダからデータを取得する; データは [inputs, labels] の形で取得される
                 # イテレータを使用していないように見えますが for の内部で使用されています。
@@ -262,12 +264,16 @@ class GraspSystem():
                 self.optimizer.step()
 
                 # 統計を表示する
+                print(i)
+                writer = SummaryWriter(log_dir="./Data/loss")
                 running_loss += loss.item()
-                if i % 2 == 1:    # 2000 ミニバッチ毎に表示する
+                writer.add_scalar("Loss/train", running_loss, epoch)
+                if i % 2 == 1:    # 2 ミニバッチ毎に表示する
                     print('[%d, %5d] loss: %.3f' %
                           (epoch + 1, i + 1, running_loss / 2))
                     running_loss = 0.0
         print('Finished Training')
+        writer.flush()
 
     def test(self):
         pass
@@ -276,7 +282,7 @@ if __name__ == '__main__':
     # parse
     train_flag = True #int(arg.train)
     gs = GraspSystem()
-    loop_num = 1
+    loop_num = 2
 
     # train model or load model
     if train_flag:
