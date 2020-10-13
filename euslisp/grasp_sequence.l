@@ -85,6 +85,8 @@
                (send *tfl* :lookup-transform
                            *base-frame-id* (send msg :header :frame_id)
                            (ros::time 0)))))
+    ;;(print (rpy-angle (send target-point :worldrot)))
+    (setq *cds* cds)
     (when (and cds base->parent)
       ;;(send *tfb* :send-transform
         (send (send base->parent :copy-worldcoords) :transform cds))
@@ -181,11 +183,12 @@
     ;;(setq *rot* (- 1.57 (atan2  (elt grad 1) (elt grad 0))))
     (setq *rot*  (atan2  (elt grad 1) (elt grad 0)))
     ;; pregrasp pos
-
     (setq *pre-pos* (float-vector (elt (scale 2 grad) 0) (elt (scale 2 grad) 1) 20))
-    (print *pre-pos*)
     (setq *reach-pos* (float-vector (elt (scale -0.5 grad) 0) (elt (scale -0.5 grad) 1) -45))
-    (setq *grasp-rot* (float-vector *rot* (elt (send target-point :worldrot) 1) -1.54))
+    ;; pre grasp rotation
+    (setq rdm (+ (/ pi 2) (elt (elt (rpy-angle (send *cds* :rot)) 0) 1)))
+    (setq *grasp-rot* (float-vector *rot* rdm -1.54))
+    (print *grasp-rot*)
 
     (if *grasping-object-p*
         (progn
@@ -225,8 +228,6 @@
                          ;;:rpy (float-vector *rot* 2.0 -1.54)))
                          :rpy *grasp-rot*))
     ;;(send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
-    (print "print target-point")
-    (print (send target-point :worldrot))
     (send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
     (objects (list *pr2* *box* *co-ik-target* *pregrasp-point* *box-arrow*))
     (publish-info "openning gripper...")

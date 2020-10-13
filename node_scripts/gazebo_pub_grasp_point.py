@@ -46,7 +46,9 @@ def choose_point_callback(data):
     But currently, rotation is fixed for test. 
     """
     # euler angle will be strange when converting in eus program. Adjust parameter until solving this problem.  
-    phi_list = [math.pi/2, math.pi*3/4, math.pi]
+    phi_list = [math.pi/2, math.pi*3/4, math.pi-0.1]
+    #phi_list = [math.pi/2, -math.pi*1/4, math.pi/2+1.5]
+    #phi_list = [math.pi*3/4, math.pi/2+1.5]
     theta = 0 #-1.54 
     phi = random.choice(phi_list) #1.2(recentry, 2.0)
     psi = 0
@@ -80,7 +82,7 @@ def choose_point_callback(data):
         writer.writerows(gen) #shape(64751, 3)
     """
 
-    grasp_posrot = np.array((Ax, Ay, Az, theta, phi, psi), dtype='float').reshape(1,6) 
+    grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,4) 
 
 
     """
@@ -93,7 +95,6 @@ def choose_point_callback(data):
     with open(filename, "wb") as f:
         pickle.dump(grasp_posrot, f)
         print("saved grasp point")
-
 
     pub.publish(posestamped)
 
