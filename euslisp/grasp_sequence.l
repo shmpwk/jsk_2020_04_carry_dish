@@ -218,6 +218,12 @@
                            :rpy *grasp-rot*))
       (send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
       (objects (list *pr2* *box* *co-ik-target* *pregrasp-point* *box-arrow*))
+        (progn                                          
+          (setq *grasp-state* "out of reach")      
+          (publish-grasp-state)
+          (publish-info "grasp failed!")          
+          (ros::set-param (format nil "~/judge_grasp_success") 0)) 
+      (get-judge)
       (return-from grasp-target-callback nil))
     ;;(send *co-endeffector-vis* :newcoords (send *pr2* :copy-worldcoords)) 
     (send *pregrasp-point* :newcoords
