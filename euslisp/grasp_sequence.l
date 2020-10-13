@@ -183,8 +183,8 @@
     ;;(setq *rot* (- 1.57 (atan2  (elt grad 1) (elt grad 0))))
     (setq *rot*  (atan2  (elt grad 1) (elt grad 0)))
     ;; pregrasp pos
-    (setq *pre-pos* (float-vector (elt (scale 2 grad) 0) (elt (scale 2 grad) 1) 20))
-    (setq *reach-pos* (float-vector (elt (scale -0.5 grad) 0) (elt (scale -0.5 grad) 1) -45))
+    (setq *pre-pos* (float-vector (elt (scale 3 grad) 0) (elt (scale 3 grad) 1) 100))
+    (setq *reach-pos* (float-vector (elt (scale -1.5 grad) 0) (elt (scale -1.5 grad) 1) -125))
     ;; pre grasp rotation
     (setq rdm (+ (/ pi 2) (elt (elt (rpy-angle (send *cds* :rot)) 0) 1)))
     (setq *grasp-rot* (float-vector *rot* rdm -1.54))
