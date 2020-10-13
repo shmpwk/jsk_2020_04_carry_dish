@@ -15,6 +15,8 @@ import numpy as np
 import csv
 import pickle
 import datetime 
+import math
+import random
 
 def choose_point_callback(data):
     assert isinstance(data, PointCloud2)
@@ -44,10 +46,15 @@ def choose_point_callback(data):
     But currently, rotation is fixed for test. 
     """
     # euler angle will be strange when converting in eus program. Adjust parameter until solving this problem.  
-    theta = 0#-1.54 
-    phi = 0#1.2
+    phi_list = [math.pi/2, math.pi*4/6, math.pi*5/6]
+    theta = 0 #-1.54 
+    phi = random.choice(phi_list) #1.2(recentry, 2.0)
     psi = 0
-    q = tf.transformations.quaternion_from_euler(theta, phi, psi)
+    if phi < 1.6:
+        q_phi = 0
+    else:
+        q_phi = phi
+    q = tf.transformations.quaternion_from_euler(theta, q_phi, psi)
 
     posestamped = PoseStamped()
     pose = posestamped.pose
@@ -77,7 +84,7 @@ def choose_point_callback(data):
         writer.writerows(gen) #shape(64751, 3)
     """
 
-    grasp_posrot = np.array((Ax, Ay, Az, theta, phi, psi), dtype='float').reshape(1,6) 
+    grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,4) 
 
 
     """
@@ -90,7 +97,6 @@ def choose_point_callback(data):
     with open(filename, "wb") as f:
         pickle.dump(grasp_posrot, f)
         print("saved grasp point")
-
 
     pub.publish(posestamped)
 

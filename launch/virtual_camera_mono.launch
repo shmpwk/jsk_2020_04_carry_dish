@@ -53,7 +53,7 @@
     <node name="pointcloud_xyzrgb_to_xyz" pkg="nodelet" type="nodelet" args="standalone jsk_pcl_utils/PointCloudXYZRGBToXYZ">
       <remap from="~input" to="$(arg CLOUD)" />
     </node>
-    <node name="extracted_depth_image_creator1" pkg="nodelet" type="nodelet" args="standalone jsk_pcl/DepthImageCreator">
+    <node name="extracted_depth_image_creator" pkg="nodelet" type="nodelet" args="standalone jsk_pcl/DepthImageCreator">
       <remap from="~input" to="pointcloud_xyzrgb_to_xyz/output" />
       <remap from="~info" to="/virtual_camera_info_publisher/output/camera_info" />
       <rosparam>
