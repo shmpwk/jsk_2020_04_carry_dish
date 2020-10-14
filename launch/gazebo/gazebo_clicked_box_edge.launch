@@ -30,6 +30,7 @@
       <node name="depth_save"
           pkg="jsk_2020_4_carry_dish" type="gazebo_depth_save.py">
       </node> 
+      <include file="$(find jsk_2020_4_carry_dish)/launch/gazebo/gazebo_virtual_camera_mono.launch" />
   </group>
   <group unless="$(arg use_sim)">
       <node name="depth_save"
