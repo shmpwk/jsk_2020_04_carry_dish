@@ -74,7 +74,7 @@ def choose_point_callback(data):
         writer.writerows(gen) #shape(64751, 3)
     """
 
-    grasp_posrot = np.array((Ax, Ay, Az, theta, phi, psi)).reshape(1,6) 
+    grasp_posrot = np.array((Ax, Ay, Az, phi)).reshape(1,4) 
 
 
     """
@@ -85,7 +85,6 @@ def choose_point_callback(data):
     with open("grasp_pointcloud_pos_rot.pkl", "wb") as f:
         pickle.dump(grasp_posrot, f)
         print("saved grasp point")
-
 
     pub.publish(posestamped)
 

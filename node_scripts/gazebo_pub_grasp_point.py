@@ -17,6 +17,7 @@ import pickle
 import datetime 
 import math
 import random
+import time
 
 def choose_point_callback(data):
     assert isinstance(data, PointCloud2)
@@ -93,7 +94,10 @@ def choose_point_callback(data):
         writer.writerows(grasp_posrot) #shape(1, 4)?
         """
     now = datetime.datetime.now()
-    filename = 'Data/grasp_point/grasp_point_' + now.strftime('%Y%m%d_%H%M%S') + '.pkl'
+    #walltime = "{18:}".format(time.time()*1000000000)
+    walltime = str(int(time.time()*1000000000))
+    #filename = 'Data/grasp_point/grasp_point_' + now.strftime('%Y%m%d_%H%M%S') + '.pkl'
+    filename = 'Data/grasp_point/' + walltime + '.pkl'
     with open(filename, "wb") as f:
         pickle.dump(grasp_posrot, f)
         print("saved grasp point")

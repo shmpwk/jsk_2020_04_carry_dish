@@ -218,6 +218,12 @@
                            :rpy *grasp-rot*))
       (send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
       (objects (list *pr2* *box* *co-ik-target* *pregrasp-point* *box-arrow*))
+        (progn                                          
+          (setq *grasp-state* "out of reach")      
+          (publish-grasp-state)
+          (publish-info "grasp failed!")          
+          (ros::set-param (format nil "~/judge_grasp_success") 0)) 
+      (get-judge)
       (return-from grasp-target-callback nil))
     ;;(send *co-endeffector-vis* :newcoords (send *pr2* :copy-worldcoords)) 
     (send *pregrasp-point* :newcoords
@@ -260,7 +266,7 @@
     (publish-info "grasping...")
     (let ((grasp-result (send *ri* :start-grasp *rarm*)))
       (send *ri* :wait-interpolation)
-      (unless (< 5.0 grasp-result)
+      (unless (< 5.5 grasp-result)
         (publish-error "failed to grasp ~A" grasp-result)
         (send *ri* :stop-grasp *rarm* :wait t)
         (publish-info "back to pre grasp...")
@@ -284,7 +290,7 @@
     (send *ri* :wait-interpolation)
     (let ((grasp-result (send *ri* :start-grasp *rarm*)))
       (print grasp-result)
-      (if (< 4.0 grasp-result)   ;;for gazebo (< 0.1 grasp-result)                          
+      (if (< 5.5 grasp-result)   ;;for gazebo (< 0.1 grasp-result)                          
         (progn                                                     
           (setq *grasp-state* "grasp succeeded!")               
           (publish-grasp-state)
