@@ -60,12 +60,11 @@ class MyDataset(Dataset):
         depth_path = "Data/depth_data"
         self.depth_dataset = np.empty((0,230400))
         depth_key = '.pkl'
-        for d_dir_name, d_sub_dirs, d_files in os.walk(depth_path): 
-            for df in d_files:
+        for d_dir_name, d_sub_dirs, d_files in sorted(os.walk(depth_path)): 
+            for df in sorted(d_files):
                 if depth_key == df[-len(depth_key):]:
                     with open(os.path.join(d_dir_name, df), 'rb') as f:
                         ff = pickle.load(f)
-
                         WIDTH = 240
                         HEIGHT = 240 
                         bridge = CvBridge()
@@ -123,8 +122,8 @@ class MyDataset(Dataset):
         judge_path = "Data/judge_data"
         self.judge_dataset = np.empty((0,1))
         judge_key = '.txt'
-        for j_dir_name, j_sub_dirs, j_files in os.walk(judge_path): 
-            for jf in j_files:
+        for j_dir_name, j_sub_dirs, j_files in sorted(os.walk(judge_path)): 
+            for jf in sorted(j_files):
                 if judge_key == jf[-len(judge_key):]:
                     f = open(os.path.join(j_dir_name, jf), 'r')
                     n = f.read()

@@ -10,12 +10,12 @@ import matplotlib.pyplot as plt
 depth_path = "Data/depth_data"
 depth_dataset = np.empty((0,230400))
 depth_key = '.pkl'
-for d_dir_name, d_sub_dirs, d_files in os.walk(depth_path): 
-    for df in d_files:
+for d_dir_name, d_sub_dirs, d_files in sorted(os.walk(depth_path)): 
+    for df in sorted(d_files):
         if depth_key == df[-len(depth_key):]:
             with open(os.path.join(d_dir_name, df), 'rb') as f:
                 ff = pickle.load(f)
-
+                
                 WIDTH = 240
                 HEIGHT = 240 
                 #try:
