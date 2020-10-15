@@ -27,7 +27,7 @@ from torch.utils.tensorboard import SummaryWriter
 class MyDataset(Dataset):
     def __init__(self, transform=None):
         self.transforms = transforms
-        self.datanum = 10
+        self.datanum = 8
         #self.imgfiles = sorted(glob('%s/*.png' % imgpath))
         #self.csvfiles = sorted(glob('%s/*.csv' % csvpath))
 
@@ -59,23 +59,29 @@ class MyDataset(Dataset):
         """
         depth_path = "Data/depth_data"
         self.depth_dataset = np.empty((0,230400))
-        depth_key = '.pkl'
+        depth_key = 'extract_depth_image.pkl'
+        color_key = 'extract_color_image.pkl'
         for d_dir_name, d_sub_dirs, d_files in sorted(os.walk(depth_path)): 
             for df in sorted(d_files):
+                #if depth_key == df[-len(depth_key):]:
                 if depth_key == df[-len(depth_key):]:
                     with open(os.path.join(d_dir_name, df), 'rb') as f:
                         ff = pickle.load(f)
+                        depth_image = ff
                         WIDTH = 240
-                        HEIGHT = 240 
+                        HEIGHT = 240
+                        """
                         bridge = CvBridge()
-                        #try:
-                        #    depth_image = bridge.imgmsg_to_cv2(ff, 'passthrough')
-                        #except CvBridgeError, e:
-                        #    rospy.logerr(e)
+                        try:
+                            depth_image = bridge.imgmsg_to_cv2(ff, 'passthrough')
+                        except CvBridgeError, e:
+                            rospy.logerr(e)
+                        """
+                        """
                         im = ff.reshape((480,640,3))
                         im_gray = 0.299 * im[:, :, 0] + 0.587 * im[:, :, 1] + 0.114 * im[:, :, 2]
                         depth_image = im_gray
-
+                        """
                         h, w = depth_image.shape
 
                         x1 = (w / 2) - WIDTH
@@ -88,14 +94,12 @@ class MyDataset(Dataset):
                             for j in range(x1, x2):
                                 if depth_image.item(i,j) == depth_image.item(i,j):
                                     depth_data = np.append(depth_data, depth_image.item(i,j))
+                                else:
+                                    depth_data = np.append(depth_data, 0)
                                             
-                        #ims = depth_data.reshape((1, 480, 480))
-                        #plt.imshow(np.transpose(ims[0, :, :]))
-                        #plt.show()
-                                    
                         depth_data = np.array(depth_data).reshape((1, 230400))
                         self.depth_dataset = np.append(self.depth_dataset, depth_data, axis=0)
-        self.depth_dataset = self.depth_dataset.reshape((10, 1, 480, 480))
+        self.depth_dataset = self.depth_dataset.reshape((8, 1, 480, 480))
         print("Finished loading all depth data")
         
         # grasp point data size : 10 * 6(4)   
@@ -156,6 +160,9 @@ class MyDataset(Dataset):
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
+        
+        """
+        This imitates alexnet. 
         self.conv1 = nn.Conv2d(1, 96, kernel_size=11, stride=4, padding=2) #入力チャンネル数は1, 出力チャンネル数は96 
         self.conv2 = nn.Conv2d(96, 256, kernel_size=5, padding=2)
         self.conv3 = nn.Conv2d(256, 384, kernel_size=3, padding=1)
@@ -167,15 +174,37 @@ class Net(nn.Module):
         self.fc3 = nn.Linear(4096, 10)
         self.fc4 = nn.Linear(10 + 4, 14)
         self.fc5 = nn.Linear(14, 1) # output is 1 dim scalar probability
-        
+        """
+
+        # dynamics-net (icra2019の紐とか柔軟物を操るやつ) by Mr. Kawaharazuka
+        self.conv1 = nn.Conv2d(1, 4, 3, 2, 1)
+        self.cbn1 = nn.BatchNorm2d(4)
+        self.conv2 = nn.Conv2d(4, 8, 3, 2, 1)
+        self.cbn2 = nn.BatchNorm2d(8)
+        self.conv3 = nn.Conv2d(8, 16, 3, 2, 1)
+        self.cbn3 = nn.BatchNorm2d(16)
+        self.conv4 = nn.Conv2d(16, 32, 3, 2, 1)
+        self.cbn4 = nn.BatchNorm2d(32)
+        self.conv5 = nn.Conv2d(32, 64, 3, 2, 1)
+        self.cbn5 = nn.BatchNorm2d(64)
+        self.fc1 = nn.Linear(256, 64)
+        self.fc2 = nn.Linear(64, 16)
+        self.fc3 = nn.Linear(16, 8)
+        self.fc4 = nn.Linear(8 + 4, 12)
+        self.fc5 = nn.Linear(12, 1) # output is 1 dim scalar probability
 
     # depth encording without concate grasp point
     def forward(self, x, y):
         x = F.max_pool2d(F.relu(self.conv1(x)), 2)
+        x = self.cbn1(x)
         x = F.max_pool2d(F.relu(self.conv2(x)), 2)
+        x = self.cbn2(x)
         x = F.relu(self.conv3(x))
+        x = self.cbn3(x)
         x = F.relu(self.conv4(x))
+        x = self.cbn4(x)
         x = F.max_pool2d(F.relu(self.conv5(x)), 2)
+        x = self.cbn5(x)
         x = x.view(-1, self.num_flat_features(x))
         #depth_data =depth_data.view(depth_data.shape[0], -1)
         print("x", x.shape)
@@ -218,6 +247,7 @@ class GraspSystem():
         self.model = Net()
         self.criterion = nn.BCEWithLogitsLoss()
         self.optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
+        summary(self.model, (1, 480, 480))
 
     def get_batch_train():
         pass
@@ -252,7 +282,8 @@ class GraspSystem():
                 # ローダからデータを取得する; データは [inputs, labels] の形で取得される
                 # イテレータを使用していないように見えますが for の内部で使用されています。
                 depth_data, grasp_point, labels = data 
-                
+                print("depth data", depth_data.shape)
+                print("grasp point", grasp_point.shape)
                 # 勾配を0に初期化する(逆伝播に備える)
                 self.optimizer.zero_grad()
 
