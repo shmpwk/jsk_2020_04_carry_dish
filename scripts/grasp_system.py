@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
 from torch.utils.tensorboard import SummaryWriter
+from torchsummary import summary
 
 class MyDataset(Dataset):
     def __init__(self, transform=None):
