@@ -24,9 +24,21 @@ import cv2
 from cv_bridge import CvBridge, CvBridgeError
 from torch.utils.tensorboard import SummaryWriter
 
+class MyTransform:
+    def __init__(self, hoge):
+        self.hoge = fuga
+    
+    def __call__(self, x):
+        hoge = hoge(self.hoge)
+        return hoge
+        
+
+
 class MyDataset(Dataset):
-    def __init__(self, transform=None):
-        self.transforms = transforms
+    def __init__(self, depth_transform = None, grasp_point_transform = None, judge_transform = None):
+        self.depth_transform = depth_transform
+        self.grasp_point_transform = grasp_point_transform
+        self.judge_transform = judge_transform
         self.datanum = 8
         #self.imgfiles = sorted(glob('%s/*.png' % imgpath))
         #self.csvfiles = sorted(glob('%s/*.csv' % csvpath))
@@ -223,6 +235,16 @@ class Net(nn.Module):
             num_features *= s
         return num_features
 
+class AddGaussianNoise(object):
+    def __init__(self, mean=0., std=1.):
+        self.std = std
+        self.mean = mean
+        
+    def __call__(self, tensor):
+        return tensor + torch.randn(tensor.size()) * self.std + self.mean
+    
+    def __repr__(self):
+        return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
 
 class GraspSystem():
     def __init__(self):
@@ -233,8 +255,12 @@ class GraspSystem():
 
         # Data loader (https://ohke.hateblo.jp/entry/2019/12/28/230000)
         train_dataloader = torch.utils.data.DataLoader(
-            datasets, batch_size=2, shuffle=True,
-            num_workers=2, drop_last=True
+            datasets, 
+            transform=transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5), (0.5)), AddGaussianNoise(0., 1.)]),
+            batch_size=2, 
+            shuffle=True,
+            num_workers=2,
+            drop_last=True
         )
         depth_data, grasp_point, labels = next(iter(train_dataloader))
         print(depth_data.size())  # torch.Size([10, 1, 480, 480])Ç…Ç»Ç¡ÇƒÇ¢ÇÈÇ©
@@ -263,7 +289,6 @@ class GraspSystem():
         self.model.load_state_dict(torch.load(model_path))
         # learn CPU, load GPU
         self.model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
-
 
 
     def save_model(self):
@@ -306,6 +331,10 @@ class GraspSystem():
         writer.flush()
 
     def test(self):
+        for data in testloader:
+            depth_data, grasp_point, labels = data
+            outputs = self.model(depth_data, grasp_point)
+            # lossÇÃgrasp_pointïŒî˜ï™Ç…ëŒÇµÇƒoptimaizationÇ∑ÇÈÅD
         pass
 
 if __name__ == '__main__':
