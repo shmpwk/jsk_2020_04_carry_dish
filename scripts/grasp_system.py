@@ -7,7 +7,10 @@
 # - train model or load model
 # - do test
 # - select simulation or real robot
-
+#from __future__ import absolute_import
+#from __future__ import division
+#from __future__ import print_function
+#from __future__ import unicode_literals
 import numpy as np
 import torch 
 import torchvision
@@ -32,18 +35,19 @@ class MyTransform:
     def __call__(self, x):
         hoge = hoge(self.hoge)
         return hoge
-        
-
 
 class MyDataset(Dataset):
-    def __init__(self, depth_transform = None, grasp_point_transform = None, judge_transform = None):
+    def __init__(self):
+        """
         self.depth_transform = depth_transform
         self.grasp_point_transform = grasp_point_transform
         self.judge_transform = judge_transform
+        """
+        self.dd_transformer = transforms.Compose([transforms.Normalize((0.5,), (0.5,)), AddGaussianNoise(0., 1.)])
+        self.d_transformer= AddGaussianNoise(0., 1.)
         self.datanum = 8
         #self.imgfiles = sorted(glob('%s/*.png' % imgpath))
         #self.csvfiles = sorted(glob('%s/*.csv' % csvpath))
-
         """
         Args:
             dataset_path (str): example
@@ -168,6 +172,10 @@ class MyDataset(Dataset):
         x = torch.from_numpy(x).float()
         y = torch.from_numpy(y).float()
         c = torch.from_numpy(np.array(c)).float()
+        x = self.dd_transformer(x) 
+        y = self.d_transformer(y) 
+        c = self.d_transformer(c) 
+        
         return x, y, c
 
 class Net(nn.Module):
@@ -249,7 +257,7 @@ class AddGaussianNoise(object):
 
 class GraspSystem():
     def __init__(self):
-        pass
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     # load depth_image and grasp_pos_rot data
     def load_data(self, datasets):
@@ -257,28 +265,31 @@ class GraspSystem():
         # Data loader (https://ohke.hateblo.jp/entry/2019/12/28/230000)
         train_dataloader = torch.utils.data.DataLoader(
             datasets, 
-            transform=transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5), (0.5)), AddGaussianNoise(0., 1.)]),
             batch_size=2, 
             shuffle=True,
             num_workers=2,
             drop_last=True
         )
         depth_data, grasp_point, labels = next(iter(train_dataloader))
-        print(depth_data.size())  # torch.Size([10, 1, 480, 480])になっているか
-        print(grasp_point.size())
-        print(labels.size())
+        depth_data = depth_data.to(self.device)
+        grasp_point = grasp_point.to(self.device)
+        labels = labels.to(self.device)
+        print("depth size", depth_data.size())  # torch.Size([10, 1, 480, 480])になっているか
+        print("point size", grasp_point.size())
+        print("judge size", labels.size())
         return train_dataloader
 
     # make Net class model
     def make_model(self):
         self.model = Net()
+        self.model = self.model.to(self.device)
         self.criterion = nn.BCEWithLogitsLoss()
-        self.optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
-        summary(self.model, (1, 480, 480))
+        self.train_optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
+        #self.test_optimizer = optim.SGD(self.model
+        summary(self.model, [(1, 480, 480), (4,)])
 
     def get_batch_train():
         pass
-
 
     def get_test():
         pass
@@ -299,7 +310,7 @@ class GraspSystem():
         # CPU save
         #torch.save(self.model.to('cpu').state_dict(), model_path)
 
-    def train(self, train_dataloader, loop_num=2):
+    def train(self, train_dataloader, loop_num=10):
         for epoch in range(loop_num):  # 訓練データを複数回(2周分)学習する
             running_loss = 0.0
             print("bb")
@@ -308,22 +319,23 @@ class GraspSystem():
                 # ローダからデータを取得する; データは [inputs, labels] の形で取得される
                 # イテレータを使用していないように見えますが for の内部で使用されています。
                 depth_data, grasp_point, labels = data 
-                print("depth data", depth_data.shape)
-                print("grasp point", grasp_point.shape)
+                depth_data = depth_data.to(self.device)
+                grasp_point = grasp_point.to(self.device)
+                labels = labels.to(self.device)
                 # 勾配を0に初期化する(逆伝播に備える)
-                self.optimizer.zero_grad()
+                self.train_optimizer.zero_grad()
 
                 # 順伝播 + 逆伝播 + 最適化(訓練)
                 outputs = self.model(depth_data, grasp_point)
                 loss = self.criterion(outputs.view_as(labels), labels)
                 loss.backward()
-                self.optimizer.step()
+                self.train_optimizer.step()
 
                 # 統計を表示する
                 print(i)
                 writer = SummaryWriter(log_dir="./Data/loss")
                 running_loss += loss.item()
-                writer.add_scalar("Loss/train", running_loss, epoch)
+                writer.add_scalar("Loss/train", running_loss, (epoch + 1) * i)
                 if i % 2 == 1:    # 2 ミニバッチ毎に表示する
                     print('[%d, %5d] loss: %.3f' %
                           (epoch + 1, i + 1, running_loss / 2))
@@ -336,7 +348,13 @@ class GraspSystem():
             depth_data, grasp_point, labels = data
             outputs = self.model(depth_data, grasp_point)
             # lossのgrasp_point偏微分に対してoptimaizationする．
-        pass
+            depth_data.requires_grad(False)
+            grasp_point.requires_grad(True)
+            loss = self.criterion(outputs.view_as(labels), labels)
+            loss.backward()
+            self.train_optimizer.step()
+            # 最適化されたuを元に把持を実行し、その結果を予測と比較する
+       
 
 if __name__ == '__main__':
     # parse
