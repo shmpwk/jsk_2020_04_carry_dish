@@ -45,7 +45,7 @@ class MyDataset(Dataset):
         """
         self.dd_transformer = transforms.Compose([transforms.Normalize((0.5,), (0.5,)), AddGaussianNoise(0., 1.)])
         self.d_transformer= AddGaussianNoise(0., 1.)
-        self.datanum = 8
+        self.datanum = 160
         #self.imgfiles = sorted(glob('%s/*.png' % imgpath))
         #self.csvfiles = sorted(glob('%s/*.csv' % csvpath))
         """
@@ -78,6 +78,7 @@ class MyDataset(Dataset):
         self.depth_dataset = np.empty((0,230400))
         depth_key = 'extract_depth_image.pkl'
         color_key = 'extract_color_image.pkl'
+        tmp_cnt = 0
         for d_dir_name, d_sub_dirs, d_files in sorted(os.walk(depth_path)): 
             for df in sorted(d_files):
                 #if depth_key == df[-len(depth_key):]:
@@ -115,19 +116,38 @@ class MyDataset(Dataset):
                                     depth_data = np.append(depth_data, 0)
                                             
                         depth_data = np.array(depth_data).reshape((1, 230400))
-                        self.depth_dataset = np.append(self.depth_dataset, depth_data, axis=0)
-        self.depth_dataset = self.depth_dataset.reshape((8, 1, 480, 480))
+                        #self.depth_dataset = np.append(self.depth_dataset, depth_data, axis=0)
+                        if (tmp_cnt == 1 or tmp_cnt == 3):
+                            self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (50, 1)).reshape(50, 230400), axis=0)
+                        else:
+                            self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (20, 1)).reshape(20, 230400), axis=0)
+
+                        tmp_cnt += 1
+        self.depth_dataset = self.depth_dataset.reshape((160, 1, 480, 480))
         print("Finished loading all depth data")
         
         # grasp point data size : 10 * 6(4)   
         self.grasp_dataset = np.empty((0,4))
 
-        for file in os.listdir(".ros/Data/grasp_point"):
+        """for file in os.listdir(".ros/Data/grasp_point"):
             with open (".ros/Data/grasp_point/" + file, "rb") as f:
                 ff = pickle.load(f)
                 ff = np.array(ff).reshape((1, 4))
                 self.grasp_dataset = np.append(self.grasp_dataset, ff, axis=0)
+        
+        """
+        grasp_path = ".ros/Data/grasp_point"
+        g_key = '.pkl'
+        for g_dir_name, g_sub_dirs, g_files in sorted(os.walk(grasp_path)): 
+            for gf in sorted(g_files):
+                if g_key == gf[-len(g_key):]:
+                    with open(os.path.join(g_dir_name, gf), 'rb') as f:
+                        ff = pickle.load(f)
+                        ff = np.array(ff).reshape((1, 4))
+                        self.grasp_dataset = np.append(self.grasp_dataset, ff, axis=0)
         print("Finished loading grasp point")         
+        
+        
         # judge data size : 100 * 1
 
         """
@@ -228,7 +248,6 @@ class Net(nn.Module):
         x = self.cbn5(x)
         x = x.view(-1, self.num_flat_features(x))
         #depth_data =depth_data.view(depth_data.shape[0], -1)
-        print("x", x.shape)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
@@ -313,8 +332,6 @@ class GraspSystem():
     def train(self, train_dataloader, loop_num=10):
         for epoch in range(loop_num):  # 訓練データを複数回(2周分)学習する
             running_loss = 0.0
-            print("bb")
-
             for i, data in enumerate(train_dataloader, 0):
                 # ローダからデータを取得する; データは [inputs, labels] の形で取得される
                 # イテレータを使用していないように見えますが for の内部で使用されています。
@@ -332,13 +349,12 @@ class GraspSystem():
                 self.train_optimizer.step()
 
                 # 統計を表示する
-                print(i)
                 writer = SummaryWriter(log_dir="./Data/loss")
                 running_loss += loss.item()
                 writer.add_scalar("Loss/train", running_loss, (epoch + 1) * i)
-                if i % 2 == 1:    # 2 ミニバッチ毎に表示する
+                if i % 100 == 99:    # 2 ミニバッチ毎に表示する
                     print('[%d, %5d] loss: %.3f' %
-                          (epoch + 1, i + 1, running_loss / 2))
+                          (epoch + 1, i + 1, running_loss / 100))
                     running_loss = 0.0
         print('Finished Training')
         writer.flush()
@@ -355,12 +371,11 @@ class GraspSystem():
             self.train_optimizer.step()
             # 最適化されたuを元に把持を実行し、その結果を予測と比較する
        
-
 if __name__ == '__main__':
     # parse
     train_flag = True #int(arg.train)
     gs = GraspSystem()
-    loop_num = 2
+    loop_num = 100
 
     # train model or load model
     if train_flag:
@@ -374,5 +389,4 @@ if __name__ == '__main__':
         pass
     # test
     #gs.start()
-
 
