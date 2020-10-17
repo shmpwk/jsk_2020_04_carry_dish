@@ -45,6 +45,16 @@
       dimension_z: 0.6
       frame_id: head_mount_kinect_rgb_optical_frame
     </rosparam>
+    <!--
+    <rosparam>
+      initial_pos: [0, 0.05, 0.8]
+      initial_rot: [0.99, 0, 0]
+      dimension_x: 0.7
+      dimension_y: 0.3
+      dimension_z: 0.6
+      frame_id: head_mount_kinect_rgb_optical_frame
+    </rosparam>
+    -->
   </node>
   <node name="extract_indices"
         pkg="jsk_pcl_ros" type="extract_indices">

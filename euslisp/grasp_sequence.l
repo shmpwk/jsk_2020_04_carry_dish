@@ -21,6 +21,9 @@
   ;;(send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   ;;(send *ri* :wait-interpolation)
   (send *pr2* :angle-vector #f(299.865 55.4297 53.3196 102.662 -121.542 125.071 -87.0418 -48.2131 -32.0168 -20.2598 -67.6931 -45.3044 -72.9084 -96.2568 -100.018 4.1047 54.75))
+  ;;(send *pr2* :angle-vector #f(66.6328 55.4297 53.3196 102.662 -121.541 125.071 -87.0381 -48.2128 -32.0168 -20.2592 -67.6931 -45.3044 -72.9084 -96.2568 -100.02 3.3427 60.45))
+  ;;(send *pr2* :angle-vector #f(66.5726 55.4297 53.3196 102.662 -121.542 125.071 -87.0381 -48.2128 -32.0168 -20.2598 -67.6931 -45.3044 -72.9051 -96.2568 -100.02 3.3487 56.826))
+
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
   (setq *co-endeffector-vis* (arrow))
@@ -183,8 +186,8 @@
     ;;(setq *rot* (- 1.57 (atan2  (elt grad 1) (elt grad 0))))
     (setq *rot*  (atan2  (elt grad 1) (elt grad 0)))
     ;; pregrasp pos
-    (setq *pre-pos* (float-vector (elt (scale 3 grad) 0) (elt (scale 3 grad) 1) 100))
-    (setq *reach-pos* (float-vector (elt (scale -1.5 grad) 0) (elt (scale -1.5 grad) 1) -125))
+    (setq *pre-pos* (float-vector (elt (scale 3 grad) 0) (elt (scale 3 grad) 1) 50))
+    (setq *reach-pos* (float-vector (elt (scale -1.5 grad) 0) (elt (scale -1.5 grad) 1) -80))
     ;; pre grasp rotation
     (setq rdm (+ (/ pi 2) (elt (elt (rpy-angle (send *cds* :rot)) 0) 1)))
     (setq *grasp-rot* (float-vector *rot* rdm -1.54))
@@ -249,7 +252,7 @@
     (send *co-endeffector-vis* :newcoords (send *pr2* :copy-worldcoords))
     (send *grasp-point* :newcoords 
           (make-coords :pos (v+ (send target-point :worldpos)
-                                (float-vector 0 0 -15)) ;;(-200+105, 0+0, 150-150)
+                                (float-vector 0 0 -30)) ;;(-200+105, 0+0, 150-150)
                        :rpy (float-vector 0 1.2 -1.54)))
     (objects (list *pr2* *box* *co-endeffector-vis* *co-ik-target* *grasp-point* *box-arrow*)))
     
@@ -266,7 +269,8 @@
     (publish-info "grasping...")
     (let ((grasp-result (send *ri* :start-grasp *rarm*)))
       (send *ri* :wait-interpolation)
-      (unless (< 5.5 grasp-result)
+      (print grasp-result)
+      (unless (< 4.5 grasp-result)
         (publish-error "failed to grasp ~A" grasp-result)
         (send *ri* :stop-grasp *rarm* :wait t)
         (publish-info "back to pre grasp...")
@@ -290,7 +294,7 @@
     (send *ri* :wait-interpolation)
     (let ((grasp-result (send *ri* :start-grasp *rarm*)))
       (print grasp-result)
-      (if (< 5.5 grasp-result)   ;;for gazebo (< 0.1 grasp-result)                          
+      (if (< 2.5 grasp-result)   ;;for gazebo (< 0.1 grasp-result)                          
         (progn                                                     
           (setq *grasp-state* "grasp succeeded!")               
           (publish-grasp-state)
@@ -303,7 +307,6 @@
           (ros::set-param (format nil "~/judge_grasp_success") 0)))) 
     (get-judge)
     (print "save judge")
-    (send *ri* :wait-interpolation)
     ;; open glipper
     (send *ri* :stop-grasp *rarm* :wait t)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
