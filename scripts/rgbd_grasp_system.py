@@ -27,6 +27,7 @@ import cv2
 from cv_bridge import CvBridge, CvBridgeError
 from torch.utils.tensorboard import SummaryWriter
 from torchsummary import summary
+from PIL import Image
 
 class MyTransform:
     def __init__(self, hoge):
@@ -69,10 +70,10 @@ class MyDataset(Dataset):
         self.grasp_point_transform = grasp_point_transform
         self.judge_transform = judge_transform
         """
-        self.dd_transformer = transforms.Compose([transforms.Normalize((0.5,), (0.5,)), AddGaussianNoise(0., 0.001)])
+        self.dd_transformer = transforms.Compose([transforms.ToPILImage(), transforms.RandomAffine(degrees=0, translate=(0.001, 0.001)), transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,)), AddGaussianNoise(0., 0.001)])
         self.d_transformer= AddGaussianNoise(0., 0.01)
         self.j_transformer= NormalizedAddGaussianNoise(0., 0.01)
-        self.datanum = 160
+        self.datanum = 160 / 4
         #self.imgfiles = sorted(glob('%s/*.png' % imgpath))
         #self.csvfiles = sorted(glob('%s/*.csv' % csvpath))
         """
@@ -103,12 +104,50 @@ class MyDataset(Dataset):
         """
         depth_path = "Data/depth_data"
         self.depth_dataset = np.empty((0,230400))
+        self.gray_dataset = np.empty((0,230400))
         depth_key = 'extract_depth_image.pkl'
         color_key = 'extract_color_image.pkl'
+        t_cnt = 0
         tmp_cnt = 0
         for d_dir_name, d_sub_dirs, d_files in sorted(os.walk(depth_path)): 
             for df in sorted(d_files):
-                #if depth_key == df[-len(depth_key):]:
+                if color_key == df[-len(color_key):]:
+                    with open(os.path.join(d_dir_name, df), 'rb') as f:
+                        fff = pickle.load(f)
+                        color_image = fff
+                        WIDTH = 240
+                        HEIGHT = 240
+                        """
+                        bridge = CvBridge()
+                        try:
+                            color_image = bridge.imgmsg_to_cv2(ff, 'passthrough')
+                        except CvBridgeError, e:
+                            rospy.logerr(e)
+                        """
+                        im = fff.reshape((480,640,3))
+                        im_gray = 0.299 * im[:, :, 0] + 0.587 * im[:, :, 1] + 0.114 * im[:, :, 2]
+                        h, w = im_gray.shape
+                        x1 = (w / 2) - WIDTH
+                        x2 = (w / 2) + WIDTH
+                        y1 = (h / 2) - HEIGHT
+                        y2 = (h / 2) + HEIGHT
+                        gray_data = np.empty((0,230400))
+
+                        for i in range(y1, y2):
+                            for j in range(x1, x2):
+                                if im_gray.item(i,j) == im_gray.item(i,j):
+                                    gray_data = np.append(gray_data, im_gray.item(i,j))
+                                else:
+                                    gray_data = np.append(gray_data, 0)
+                                            
+                        gray_data = np.array(gray_data).reshape((1, 230400))
+                        #self.depth_dataset = np.append(self.depth_dataset, depth_data, axis=0)
+                        if (t_cnt == 1 or t_cnt == 3):
+                            self.gray_dataset = np.append(self.gray_dataset, np.tile(gray_data, (50, 1)).reshape(50, 230400), axis=0)
+                        else:
+                            self.gray_dataset = np.append(self.gray_dataset, np.tile(gray_data, (20, 1)).reshape(20, 230400), axis=0)
+                        t_cnt += 1
+
                 if depth_key == df[-len(depth_key):]:
                     with open(os.path.join(d_dir_name, df), 'rb') as f:
                         ff = pickle.load(f)
@@ -150,6 +189,10 @@ class MyDataset(Dataset):
 
                         tmp_cnt += 1
         self.depth_dataset = self.depth_dataset.reshape((160, 1, 480, 480))
+        self.gray_dataset = self.gray_dataset.reshape((160, 1, 480, 480))
+
+        self.gray_depth_dataset = np.concatenate([self.depth_dataset, self.gray_dataset], 1)
+        print("gray depth dataset", self.gray_depth_dataset.shape)
         print("Finished loading all depth data")
         
         # grasp point data size : 10 * 6(4)   
@@ -196,7 +239,7 @@ class MyDataset(Dataset):
                     self.judge_dataset = np.append(self.judge_dataset, int(n))
         print("Finished loading judge data")
 
-        print(self.depth_dataset.shape)
+        print(self.gray_depth_dataset.shape)
         print(self.grasp_dataset.shape)
         print(self.judge_dataset.shape)
 
@@ -204,16 +247,9 @@ class MyDataset(Dataset):
         return self.datanum #should be dataset size / batch size
 
     def __getitem__(self, idx):
-        x = self.depth_dataset[idx]
+        x = self.gray_depth_dataset[idx]
         y = self.grasp_dataset[idx]
         c = self.judge_dataset[idx]
-        """
-        y = pd.read_csv(self.csvfiles[idx], header=None),
-        yy = np.array(yy, dtype=np.float32)[0]
-        x = self.transform(x) if self.transform else x
-        c = yy[1:]
-        y = yy[:1]
-        """
         x = torch.from_numpy(x).float()
         y = torch.from_numpy(y).float()
         c = torch.from_numpy(np.array(c)).float()
@@ -243,7 +279,7 @@ class Net(nn.Module):
         """
 
         # dynamics-net (icra2019‚Ì•R‚Æ‚©_“î•¨‚ð‘€‚é‚â‚Â) by Mr. Kawaharazuka
-        self.conv1 = nn.Conv2d(1, 4, 3, 2, 1)
+        self.conv1 = nn.Conv2d(2, 4, 3, 2, 1)
         self.cbn1 = nn.BatchNorm2d(4)
         self.conv2 = nn.Conv2d(4, 8, 3, 2, 1)
         self.cbn2 = nn.BatchNorm2d(8)
@@ -303,19 +339,18 @@ class GraspSystem():
         # Data loader (https://ohke.hateblo.jp/entry/2019/12/28/230000)
         train_dataloader = torch.utils.data.DataLoader(
             datasets, 
-            batch_size=2, 
+            batch_size=4, 
             shuffle=True,
             num_workers=2,
             drop_last=True
         )
         depth_data, grasp_point, labels = next(iter(train_dataloader))
         # Show img
-        print("shape", depth_data.shape)
         img = torchvision.utils.make_grid(depth_data)
         img = img / 2 + 0.5  # [-1,1] ‚ð [0,1] ‚Ö–ß‚·(³‹K‰»‰ðœ)
         npimg = img.numpy()  # torch.Tensor ‚©‚ç numpy ‚Ö•ÏŠ·
         ims = npimg#.reshape((1, 480, 480))
-        plt.imshow(np.transpose(ims[0, :, :])) # ƒ`ƒƒƒ“ƒlƒ‹‚ðÅŒã‚É•À‚Ñ•Ï‚¦‚é((C,X,Y) -> (X,Y,C))
+        plt.imshow(np.transpose(ims[1, :, :])) # ƒ`ƒƒƒ“ƒlƒ‹‚ðÅŒã‚É•À‚Ñ•Ï‚¦‚é((C,X,Y) -> (X,Y,C))
         plt.show() #•\Ž¦
         # Show label
         print(' '.join('%5s' % labels[j] for j in range(2)))
@@ -335,7 +370,7 @@ class GraspSystem():
         self.train_optimizer = optim.Adam(self.model.parameters(), lr=0.001)
         #self.train_optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
         #self.test_optimizer = optim.SGD(self.model
-        summary(self.model, [(1, 480, 480), (4,)])
+        summary(self.model, [(2, 480, 480), (4,)])
 
     def get_batch_train():
         pass
