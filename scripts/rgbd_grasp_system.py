@@ -27,6 +27,7 @@ import cv2
 from cv_bridge import CvBridge, CvBridgeError
 from torch.utils.tensorboard import SummaryWriter
 from torchsummary import summary
+from PIL import Image
 
 class MyTransform:
     def __init__(self, hoge):
@@ -69,10 +70,10 @@ class MyDataset(Dataset):
         self.grasp_point_transform = grasp_point_transform
         self.judge_transform = judge_transform
         """
-        self.dd_transformer = transforms.Compose([transforms.Normalize((0.5,), (0.5,)), AddGaussianNoise(0., 0.001)])
+        self.dd_transformer = transforms.Compose([transforms.ToPILImage(), transforms.RandomAffine(degrees=0, translate=(0.001, 0.001)), transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,)), AddGaussianNoise(0., 0.001)])
         self.d_transformer= AddGaussianNoise(0., 0.01)
         self.j_transformer= NormalizedAddGaussianNoise(0., 0.01)
-        self.datanum = 160
+        self.datanum = 160 / 4
         #self.imgfiles = sorted(glob('%s/*.png' % imgpath))
         #self.csvfiles = sorted(glob('%s/*.csv' % csvpath))
         """
@@ -338,19 +339,18 @@ class GraspSystem():
         # Data loader (https://ohke.hateblo.jp/entry/2019/12/28/230000)
         train_dataloader = torch.utils.data.DataLoader(
             datasets, 
-            batch_size=2, 
+            batch_size=4, 
             shuffle=True,
             num_workers=2,
             drop_last=True
         )
         depth_data, grasp_point, labels = next(iter(train_dataloader))
         # Show img
-        print("shape", depth_data.shape)
         img = torchvision.utils.make_grid(depth_data)
         img = img / 2 + 0.5  # [-1,1] を [0,1] へ戻す(正規化解除)
         npimg = img.numpy()  # torch.Tensor から numpy へ変換
         ims = npimg#.reshape((1, 480, 480))
-        plt.imshow(np.transpose(ims[0, :, :])) # チャンネルを最後に並び変える((C,X,Y) -> (X,Y,C))
+        plt.imshow(np.transpose(ims[1, :, :])) # チャンネルを最後に並び変える((C,X,Y) -> (X,Y,C))
         plt.show() #表示
         # Show label
         print(' '.join('%5s' % labels[j] for j in range(2)))
