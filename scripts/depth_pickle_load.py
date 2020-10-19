@@ -10,8 +10,9 @@ from cv_bridge import CvBridge, CvBridgeError
 
 depth_path = "Data/depth_data"
 depth_dataset = np.empty((0,230400))
-depth_key = 'extract_depth_image.pkl'
-color_key = 'extract_color_image.pkl'
+#depth_key = 'extract_depth_image.pkl'
+#color_key = 'extract_color_image.pkl'
+depth_key = '.pkl'
 for d_dir_name, d_sub_dirs, d_files in sorted(os.walk(depth_path)): 
     for df in sorted(d_files):
         #if depth_key == df[-len(depth_key):]:
@@ -19,8 +20,8 @@ for d_dir_name, d_sub_dirs, d_files in sorted(os.walk(depth_path)):
             with open(os.path.join(d_dir_name, df), 'rb') as f:
                 ff = pickle.load(f)
                 depth_image = ff
-                WIDTH = 240
-                HEIGHT = 240
+                WIDTH = 100#240
+                HEIGHT = 100#240
                 """
                 bridge = CvBridge()
                 try:
@@ -48,7 +49,7 @@ for d_dir_name, d_sub_dirs, d_files in sorted(os.walk(depth_path)):
                         else:
                             depth_data = np.append(depth_data, 0)
                                     
-                ims = depth_data.reshape((1, 480, 480))
+                ims = depth_data.reshape((1, 200, 200)) #480, 480))
                 print(ims)
                 plt.imshow(np.transpose(ims[0, :, :]))
                 plt.show()
