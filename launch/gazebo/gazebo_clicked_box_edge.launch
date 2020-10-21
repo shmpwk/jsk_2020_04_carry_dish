@@ -38,6 +38,7 @@
       </node> 
 
       <include file="$(find jsk_2020_4_carry_dish)/launch/virtual_camera_mono.launch" />
+      <include file="$(find jsk_2020_4_carry_dish)/launch/heightmap_converter.launch" />
   </group>
 
   <node name="depth_image_creator"
@@ -98,7 +99,7 @@
   <node name="publish_grasp_point"
       pkg="jsk_2020_4_carry_dish" type="gazebo_pub_grasp_point.py" args="$(arg use_sim)">
   </node>    
-  <include file="$(find jsk_2020_4_carry_dish)/launch/gazebo/gazebo_depth_data_collection.launch" >
+  <include file="$(find jsk_2020_4_carry_dish)/launch/depth_data_collection.launch" >
       <arg name="use_sim" value="$(arg use_sim)"/>
   </include>
 
