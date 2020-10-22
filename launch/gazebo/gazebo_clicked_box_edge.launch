@@ -38,7 +38,8 @@
       </node> 
 
       <include file="$(find jsk_2020_4_carry_dish)/launch/virtual_camera_mono.launch" />
-      <include file="$(find jsk_2020_4_carry_dish)/launch/heightmap_converter.launch" />
+      <!--include file="$(find jsk_2020_4_carry_dish)/launch/heightmap_morphological_filtering.launch" /-->
+      <include file="$(find jsk_pcl_ros)/sample/sample_heightmap_morphological_filtering.launch" />
   </group>
 
   <node name="depth_image_creator"

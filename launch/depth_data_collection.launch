@@ -7,7 +7,7 @@
   <arg unless="$(arg use_sim)" name="rgb_name" default="/kinect_head_remote/rgb/image_rect_color"/>
   <arg     if="$(arg use_sim)" name="depth_name" default="/head_mount_kinect/depth/image_raw"/>
   <!--arg unless="$(arg use_sim)" name="depth_name" default="/kinect_head/depth/image_raw"/-->
-  <arg unless="$(arg use_sim)" name="depth_name" default="/colorize_float_image/output"/>
+  <arg unless="$(arg use_sim)" name="depth_name" default="/heightmap_morphological_filtering/output"/>
   <arg name="extract_color_name" default="/extracted_depth_image_creator/output_image"/>
   <arg name="extract_depth_name" default="/extracted_depth_image_creator/output"/>
  

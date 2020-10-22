@@ -17,7 +17,7 @@ import datetime
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string(
-        'depth_topic', '/kinect_head_remote/depth_registered/image_rect', 'depth topic name')
+        'depth_topic', '/colorize_float_image/output', 'depth topic name')
 
 def ImageCallback(depth_data):
     WIDTH = 50
