@@ -19,6 +19,23 @@ import math
 import random
 import time
 
+def transform_world2local(source):
+    """
+    Transform from world (or camera frame?) to local (segmentation_decomposeroutput00 or projected point?)/
+    """
+    target_pose = TransformStamped()
+    listener = tf.TransformListener()
+    listener.waitForTransform(target_frame, source_frame, rospy.Time(), rospy.Duration(4.0))
+    tf = listener.transformPose(source_frame, targett_frame, rospy.Time(0))
+    pub = rospy.Publisher('endcrd', Posestamped, queue_size = 10)
+    pub.publish(tf)
+
+    t = tf.Transformer(True, rospy.Duration(10.0))
+    t.setTransform(source)
+    t.lookupTransform("/segmentation_decomposeroutput00", "head_mount_kinect_rgb_optical_frame", rospy.Time(0))
+    return t.pose
+
+
 def choose_point_callback(data):
     assert isinstance(data, PointCloud2)
     """
@@ -84,6 +101,7 @@ def choose_point_callback(data):
         writer = csv.writer(f)
         writer.writerows(gen) #shape(64751, 3)
     """
+    print("transformed!!!!!", transform_world2local(posestamped))
 
     grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,4) 
 
