@@ -25,9 +25,11 @@ if __name__ == '__main__':
     pubs = []
     subs = []
     for i, topic in enumerate(topics):
-        print(topic)
+        rospy.loginfo(topic)
         topic = rospy.resolve_name(topic)
         msg_class = get_topic_class(topic, blocking=True)[0]
+        rospy.loginfo(msg_class)
+        rospy.loginfo(topic)
         pub = rospy.Publisher(
             '~pub_{0:0>2}'.format(i), msg_class, queue_size=1)
         pubs.append(pub)

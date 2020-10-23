@@ -23,18 +23,22 @@ def transform_world2local(source):
     """
     Transform from world (or camera frame?) to local (segmentation_decomposeroutput00 or projected point?)/
     """
-    target_pose = TransformStamped()
+    #target_pose = TransformStamped()
     listener = tf.TransformListener()
-    listener.waitForTransform(target_frame, source_frame, rospy.Time(), rospy.Duration(4.0))
-    tf = listener.transformPose(source_frame, targett_frame, rospy.Time(0))
-    pub = rospy.Publisher('endcrd', Posestamped, queue_size = 10)
-    pub.publish(tf)
+    target_frame = "segmentation_decomposeroutput00"
+    source_frame = "head_mount_kinect_rgb_optical_frame"
+    listener.waitForTransform(target_frame, source_frame, rospy.Time.now(), rospy.Duration(2.0))
+    listener.lookupTransform(target_frame, source_frame, rospy.Time.now())
+    target = listener.transformPose(target_frame, source)
+    pub.publish(target)
+    print("aa")
 
+    """
     t = tf.Transformer(True, rospy.Duration(10.0))
     t.setTransform(source)
-    t.lookupTransform("/segmentation_decomposeroutput00", "head_mount_kinect_rgb_optical_frame", rospy.Time(0))
+    t.lookupTransform("segmentation_decomposeroutput00", "head_mount_kinect_rgb_optical_frame", rospy.Time(0))
     return t.pose
-
+    """
 
 def choose_point_callback(data):
     assert isinstance(data, PointCloud2)
@@ -88,7 +92,6 @@ def choose_point_callback(data):
     header.frame_id = "head_mount_kinect_rgb_optical_frame"
     print("data.header.frame_id", data.header.frame_id)
     print("publish grasp point")
-
     """
     Save 
     pointcloud in boundingbox
@@ -101,8 +104,8 @@ def choose_point_callback(data):
         writer = csv.writer(f)
         writer.writerows(gen) #shape(64751, 3)
     """
-    print("transformed!!!!!", transform_world2local(posestamped))
-
+    #print("transformed!!!!!", transform_world2local(posestamped))
+    transform_world2local(posestamped)
     grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,4) 
 
 
@@ -112,14 +115,12 @@ def choose_point_callback(data):
         writer.writerows(grasp_posrot) #shape(1, 4)?
         """
     now = datetime.datetime.now()
-    #walltime = "{18:}".format(time.time()*1000000000)
     walltime = str(int(time.time()*1000000000))
     #filename = 'Data/grasp_point/grasp_point_' + now.strftime('%Y%m%d_%H%M%S') + '.pkl'
     filename = 'Data/grasp_point/' + walltime + '.pkl'
     with open(filename, "wb") as f:
         pickle.dump(grasp_posrot, f)
         print("saved grasp point")
-
     pub.publish(posestamped)
 
 if __name__=="__main__":
@@ -129,10 +130,12 @@ if __name__=="__main__":
         #rospy.Subscriber('supervoxel_segmentation/output/cloud', PointCloud2, choose_point_callback, queue_size=1000)
         rospy.Subscriber('/organized_edge_detector/output', PointCloud2, choose_point_callback, queue_size=1000)
         pub = rospy.Publisher('/grasp_point', PoseStamped, queue_size=100)
-        """while not rospy.is_shutdown():
+        """
+        while not rospy.is_shutdown():
             data = rospy.wait_for_message('supervoxel_segmentation/output/cloud', PointCloud2)
             choose_point_callback(data)
-            break"""
+            break
+        """
         rospy.spin()
     except rospy.ROSInterruptException: pass
 
