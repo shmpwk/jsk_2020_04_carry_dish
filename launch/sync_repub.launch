@@ -1,0 +1,11 @@
+<launch>
+    <node name="sync_repub"
+        pkg="jsk_2020_4_carry_dish" type="sync_repub.py">
+        <rosparam>
+            topics: ["/heightmap_morphological_filtering/output", "/virtual_camera_info_publisher/output/camera_info"]
+            approximate_sync: False
+            queue_size: 100   
+            slop: 0.1
+        </rosparam>
+    </node>
+</launch>
