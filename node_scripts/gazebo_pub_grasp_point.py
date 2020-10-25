@@ -123,6 +123,7 @@ def choose_point_callback(data):
         pickle.dump(grasp_posrot, f)
         print("saved grasp point")
     pub.publish(posestamped)
+    #pub.publish(box_posestamped)
 
 if __name__=="__main__":
     #subscribe edge pointcloud data
