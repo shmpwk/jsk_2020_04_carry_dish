@@ -27,11 +27,12 @@ def transform_world2local(source):
     listener = tf.TransformListener()
     target_frame = "segmentation_decomposeroutput00"
     source_frame = "head_mount_kinect_rgb_optical_frame"
-    listener.waitForTransform(target_frame, source_frame, rospy.Time.now(), rospy.Duration(2.0))
-    listener.lookupTransform(target_frame, source_frame, rospy.Time.now())
+    listener.waitForTransform(target_frame, source_frame, rospy.Time(0), rospy.Duration(2.0))
+    #listener.lookupTransform(target_frame, source_frame, rospy.Time(0))
     target = listener.transformPose(target_frame, source)
-    pub.publish(target)
     print("aa")
+    return target
+    #pub.publish(target)
 
     """
     t = tf.Transformer(True, rospy.Duration(10.0))
@@ -88,7 +89,7 @@ def choose_point_callback(data):
     pose.orientation.z = q[2]
     pose.orientation.w = q[3]
     header = posestamped.header
-    header.stamp = rospy.Time.now()
+    header.stamp = rospy.Time(0)
     header.frame_id = "head_mount_kinect_rgb_optical_frame"
     print("data.header.frame_id", data.header.frame_id)
     print("publish grasp point")
@@ -105,7 +106,7 @@ def choose_point_callback(data):
         writer.writerows(gen) #shape(64751, 3)
     """
     #print("transformed!!!!!", transform_world2local(posestamped))
-    transform_world2local(posestamped)
+    #box_posestamped = transform_world2local(posestamped)
     grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,4) 
 
 
