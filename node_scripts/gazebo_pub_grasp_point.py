@@ -50,7 +50,8 @@ def choose_point_callback(data):
     gen = point_cloud2.read_points(data, field_names = ("x", "y", "z"), skip_nans=True)
     length = 1 
     A = np.arange(3, dtype=float).reshape(1,3)
-    
+
+    # Whole edge (x,y,z) points
     for l in gen:
         l = np.array(l, dtype='float')
         l = l.reshape(1,3)
@@ -58,6 +59,7 @@ def choose_point_callback(data):
         print("A", A)
         length += 1
             
+    # Randomly choose one grasp point
     idx = np.random.randint(length, size=1) #To do : change 10 to data length
     Ax = A[idx, 0]
     Ay = A[idx, 1]
@@ -111,7 +113,6 @@ def choose_point_callback(data):
     Ay = box_posestamped.pose.position.y
     Az = box_posestamped.pose.position.z
     grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,4) 
-
 
     """
     with open('grasp_pointcloud_pos_rot.csv', 'w') as f: 
