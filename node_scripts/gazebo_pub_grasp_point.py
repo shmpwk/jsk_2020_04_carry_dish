@@ -106,7 +106,10 @@ def choose_point_callback(data):
         writer.writerows(gen) #shape(64751, 3)
     """
     #print("transformed!!!!!", transform_world2local(posestamped))
-    #box_posestamped = transform_world2local(posestamped)
+    box_posestamped = transform_world2local(posestamped)
+    Ax = box_posestamped.pose.position.x
+    Ay = box_posestamped.pose.position.y
+    Az = box_posestamped.pose.position.z
     grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,4) 
 
 
@@ -122,8 +125,8 @@ def choose_point_callback(data):
     with open(filename, "wb") as f:
         pickle.dump(grasp_posrot, f)
         print("saved grasp point")
+    #pub.publish(posestamped)
     pub.publish(posestamped)
-    #pub.publish(box_posestamped)
 
 if __name__=="__main__":
     #subscribe edge pointcloud data
