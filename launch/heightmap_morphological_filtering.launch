@@ -8,7 +8,12 @@
   <node name="heightmap_morphological_filtering"
         pkg="nodelet" type="nodelet"
         args="load jsk_pcl/HeightmapMorphologicalFiltering sample_manager">
-    <remap from="~input" to="heightmap_converter/output"/>
+        <remap from="~input" to="heightmap_converter/output"/>
+        <rosparam>
+            mask_size: 10
+            max_variance: 10
+            use_bilateral: true
+        </rosparam>
   </node>
 
   <group if="$(arg gui)">

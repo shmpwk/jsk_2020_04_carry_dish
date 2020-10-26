@@ -24,7 +24,7 @@
           msg_class: sensor_msgs/Image
           fname: heightmap_image.pkl
           savetype: DepthImage
-    </rosparam>
+   </rosparam>
   </node>
   <!--
         - name: $(arg rgb_name)
@@ -35,5 +35,13 @@
           msg_class: sensor_msgs/Image
           fname: depth_image_raw.pkl
           savetype: DepthImage
-          -->
+        - name: $(arg extract_color_name)
+          msg_class: sensor_msgs/Image
+          fname: extract_color_image.pkl
+          savetype: DepthImage
+        - name: $(arg extract_depth_name)
+          msg_class: sensor_msgs/Image
+          fname: extract_depth_image.pkl
+          savetype: DepthImage
+         -->
 </launch>
