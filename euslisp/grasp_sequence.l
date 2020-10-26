@@ -78,9 +78,10 @@
 
 ;; one-shot-subscribe but not use now
 (defun sub-grasp-point ()
-    (let* (
+    (let*(
          (msg (one-shot-subscribe "/grasp_point" geometry_msgs::PoseStamped
-                                  :after-stamp (ros::time 0)))
+                                  ;;:after-stamp (ros::time 0)))
+                                  ))
          (cds (when msg (ros::tf-pose->coords (send msg :pose))))
          (base->parent
            (when msg
@@ -285,16 +286,9 @@
     ;;(send *pr2* :head :look-at-hand *rarm*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
-  
-    (setq *grasp-state* "placing")
-    (publish-grasp-state)
-    (publish-info "placing ...")
-    (send *pr2* *rarm* :move-end-pos #f(0 0 -230) :world)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-    (send *ri* :wait-interpolation)
     (let ((grasp-result (send *ri* :start-grasp *rarm*)))
       (print grasp-result)
-      (if (< 2.5 grasp-result)   ;;for gazebo (< 0.1 grasp-result)                          
+      (if (< 0 grasp-result)   ;;for gazebo (< 0.1 grasp-result)                          
         (progn                                                     
           (setq *grasp-state* "grasp succeeded!")               
           (publish-grasp-state)
@@ -305,6 +299,13 @@
           (publish-grasp-state)
           (publish-info "grasp failed!")          
           (ros::set-param (format nil "~/judge_grasp_success") 0)))) 
+ 
+    (setq *grasp-state* "placing")
+    (publish-grasp-state)
+    (publish-info "placing ...")
+    (send *pr2* *rarm* :move-end-pos #f(0 0 -230) :world)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+    (send *ri* :wait-interpolation)
     (get-judge)
     (print "save judge")
     ;; open glipper
