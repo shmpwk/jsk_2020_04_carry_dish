@@ -24,6 +24,7 @@ import os
 import pickle
 import matplotlib.pyplot as plt
 import cv2
+import math
 from cv_bridge import CvBridge, CvBridgeError
 from torch.utils.tensorboard import SummaryWriter
 from torchsummary import summary
@@ -46,6 +47,26 @@ class AddGaussianNoise(object):
     
     def __repr__(self):
         return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
+
+class InflateGraspPoint(object):
+    def __init__(self, grasp_point):
+        self.aug_grasp_point = np.zeros((10, 4))
+        self.x = grasp_point[[0]]
+        self.y = grasp_point[[1]]
+        self.z = grasp_point[[2]]
+        self.theta = grasp_point[[3]]
+
+    def calc(self):
+        r = math.sqrt(self.x**2 + self.y**2)
+        rad = math.atan2(self.y, self.x)
+        rad_delta = math.pi/5
+        X = np.zeros(10)
+        Y = np.zeros(10)
+        for i in range(10):
+            X[i] = r * math.cos(rad + rad_delta*i)
+            Y[i] = r * math.sin(rad + rad_delta*i)
+            self.aug_grasp_point[i, :] = np.array((X[i], Y[i], self.z, self.theta))
+        return self.aug_grasp_point
 
 class NormalizedAddGaussianNoise(object):
     def __init__(self, mean=0., std=1.):
@@ -72,7 +93,7 @@ class MyDataset(Dataset):
         self.dd_transformer = transforms.Compose([transforms.Normalize((0.5,), (0.5,)), AddGaussianNoise(0., 0.001)])
         self.d_transformer= AddGaussianNoise(0., 0.01)
         self.j_transformer= NormalizedAddGaussianNoise(0., 0.01)
-        self.datanum = 160
+        self.datanum = 1600
         #self.imgfiles = sorted(glob('%s/*.png' % imgpath))
         #self.csvfiles = sorted(glob('%s/*.csv' % csvpath))
         """
@@ -143,13 +164,15 @@ class MyDataset(Dataset):
                                             
                         depth_data = np.array(depth_data).reshape((1, 230400))
                         #self.depth_dataset = np.append(self.depth_dataset, depth_data, axis=0)
-                        if (tmp_cnt == 1 or tmp_cnt == 3):
-                            self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (50, 1)).reshape(50, 230400), axis=0)
-                        else:
-                            self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (20, 1)).reshape(20, 230400), axis=0)
+                        # depth image is now considered as same if using same plate.
+                        # Now 50*100 or 20*100
 
+                        if (tmp_cnt == 1 or tmp_cnt == 3):
+                            self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (500, 1)).reshape(500, 230400), axis=0)
+                        else:
+                            self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (200, 1)).reshape(200, 230400), axis=0)
                         tmp_cnt += 1
-        self.depth_dataset = self.depth_dataset.reshape((160, 1, 480, 480))
+        self.depth_dataset = self.depth_dataset.reshape((1600, 1, 480, 480))
         print("Finished loading all depth data")
         
         # grasp point data size : 10 * 6(4)   
@@ -169,12 +192,15 @@ class MyDataset(Dataset):
                 if g_key == gf[-len(g_key):]:
                     with open(os.path.join(g_dir_name, gf), 'rb') as f:
                         ff = pickle.load(f)
-                        ff = np.array(ff).reshape((1, 4))
-                        self.grasp_dataset = np.append(self.grasp_dataset, ff, axis=0)
+                        #ff = np.array(ff).reshape((1, 4))
+                        ff = np.array(ff).reshape((4))
+                        fff = InflateGraspPoint(ff)
+                        #fff = np.append(fff, np.tile(fff, (10, 1)).reshape(10, 4), axis=0)
+                        fff = np.array(fff.calc())
+                        self.grasp_dataset = np.append(self.grasp_dataset, fff, axis=0) # Should change from ff to fff
         print("Finished loading grasp point")         
         
         # judge data size : 100 * 1
-
         """
         judge_path = "~/Data"
         self.judge_dataset = np.empty((0,1))
@@ -192,10 +218,11 @@ class MyDataset(Dataset):
             for jf in sorted(j_files):
                 if judge_key == jf[-len(judge_key):]:
                     f = open(os.path.join(j_dir_name, jf), 'r')
-                    n = f.read()
-                    self.judge_dataset = np.append(self.judge_dataset, int(n))
+                    n = int(f.read())
+                    n = np.atleast_2d(n)
+                    nn = np.append(n, np.tile(n, (9, 1)).reshape(9, 1), axis=0)
+                    self.judge_dataset = np.append(self.judge_dataset, nn)
         print("Finished loading judge data")
-
         print(self.depth_dataset.shape)
         print(self.grasp_dataset.shape)
         print(self.judge_dataset.shape)
@@ -383,9 +410,9 @@ class GraspSystem():
                 writer = SummaryWriter(log_dir="./Data/loss")
                 running_loss += loss.item()
                 writer.add_scalar("Loss/train", loss.item(), tensorboard_cnt) #(epoch + 1) * i)
-                if i % 100 == 99:    # 2 ミニバッチ毎に表示する
+                if i % 1000 == 999:    # 2 ミニバッチ毎に表示する
                     print('[%d, %5d] loss: %.3f' %
-                          (epoch + 1, i + 1, running_loss / 100))
+                          (epoch + 1, i + 1, running_loss / 1000))
                     running_loss = 0.0
                 tensorboard_cnt += 1
         print('Finished Training')
