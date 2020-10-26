@@ -16,6 +16,7 @@ import torch
 import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
+import math
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from torchvision import transforms
@@ -48,6 +49,26 @@ class AddGaussianNoise(object):
     def __repr__(self):
         return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
 
+class InflateGraspPoint(object):
+    def __init__(self, grasp_point):
+        self.aug_grasp_point = np.zeros((10, 4))
+        self.x = grasp_point[[0]]
+        self.y = grasp_point[[1]]
+        self.z = grasp_point[[2]]
+        self.theta = grasp_point[[3]]
+
+    def calc(self):
+        r = math.sqrt(self.x**2 + self.y**2)
+        rad = math.atan2(self.y, self.x)
+        rad_delta = math.pi/5
+        X = np.zeros(10)
+        Y = np.zeros(10)
+        for i in range(10):
+            X[i] = r * math.cos(rad + rad_delta*i)
+            Y[i] = r * math.sin(rad + rad_delta*i)
+            self.aug_grasp_point[i, :] = np.array((X[i], Y[i], self.z, self.theta))
+        return self.aug_grasp_point
+
 class NormalizedAddGaussianNoise(object):
     def __init__(self, mean=0., std=1.):
         self.std = std
@@ -73,7 +94,7 @@ class MyDataset(Dataset):
         self.dd_transformer = transforms.Compose([transforms.ToPILImage(), transforms.RandomAffine(degrees=0, translate=(0.001, 0.001)), transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,)), AddGaussianNoise(0., 0.001)])
         self.d_transformer= AddGaussianNoise(0., 0.01)
         self.j_transformer= NormalizedAddGaussianNoise(0., 0.01)
-        self.datanum = 160 / 4
+        self.datanum = 1600 / 4
         #self.imgfiles = sorted(glob('%s/*.png' % imgpath))
         #self.csvfiles = sorted(glob('%s/*.csv' % csvpath))
         """
@@ -103,9 +124,9 @@ class MyDataset(Dataset):
         self.depth_dataset = self.depth_dataset.reshape((10, 1, 200, 200))
         """
         depth_path = "Data/depth_data"
-        self.depth_dataset = np.empty((0,230400))
-        self.gray_dataset = np.empty((0,230400))
-        depth_key = 'extract_depth_image.pkl'
+        self.depth_dataset = np.empty((0,16384)) #230400))
+        self.gray_dataset = np.empty((0,16384)) #230400))
+        depth_key = 'heightmap_image.pkl'
         color_key = 'extract_color_image.pkl'
         t_cnt = 0
         tmp_cnt = 0
@@ -115,8 +136,8 @@ class MyDataset(Dataset):
                     with open(os.path.join(d_dir_name, df), 'rb') as f:
                         fff = pickle.load(f)
                         color_image = fff
-                        WIDTH = 240
-                        HEIGHT = 240
+                        WIDTH = 64#240
+                        HEIGHT = 64#240
                         """
                         bridge = CvBridge()
                         try:
@@ -125,13 +146,16 @@ class MyDataset(Dataset):
                             rospy.logerr(e)
                         """
                         im = fff.reshape((480,640,3))
+                        pil_im = Image.fromarray(np.uint8(im))
+                        pil_im = pil_im.resize((129, 172))
+                        im = np.asarray(pil_im)
                         im_gray = 0.299 * im[:, :, 0] + 0.587 * im[:, :, 1] + 0.114 * im[:, :, 2]
                         h, w = im_gray.shape
                         x1 = (w / 2) - WIDTH
                         x2 = (w / 2) + WIDTH
                         y1 = (h / 2) - HEIGHT
                         y2 = (h / 2) + HEIGHT
-                        gray_data = np.empty((0,230400))
+                        gray_data = np.empty((0,16384))
 
                         for i in range(y1, y2):
                             for j in range(x1, x2):
@@ -140,20 +164,20 @@ class MyDataset(Dataset):
                                 else:
                                     gray_data = np.append(gray_data, 0)
                                             
-                        gray_data = np.array(gray_data).reshape((1, 230400))
+                        gray_data = np.array(gray_data).reshape((1, 16384)) #230400))
                         #self.depth_dataset = np.append(self.depth_dataset, depth_data, axis=0)
                         if (t_cnt == 1 or t_cnt == 3):
-                            self.gray_dataset = np.append(self.gray_dataset, np.tile(gray_data, (50, 1)).reshape(50, 230400), axis=0)
+                            self.gray_dataset = np.append(self.gray_dataset, np.tile(gray_data, (500, 1)).reshape(500, 16384), axis=0)
                         else:
-                            self.gray_dataset = np.append(self.gray_dataset, np.tile(gray_data, (20, 1)).reshape(20, 230400), axis=0)
+                            self.gray_dataset = np.append(self.gray_dataset, np.tile(gray_data, (200, 1)).reshape(200, 16384), axis=0)
                         t_cnt += 1
 
                 if depth_key == df[-len(depth_key):]:
                     with open(os.path.join(d_dir_name, df), 'rb') as f:
                         ff = pickle.load(f)
                         depth_image = ff
-                        WIDTH = 240
-                        HEIGHT = 240
+                        WIDTH = 64#240
+                        HEIGHT = 64#240
                         """
                         bridge = CvBridge()
                         try:
@@ -166,12 +190,14 @@ class MyDataset(Dataset):
                         im_gray = 0.299 * im[:, :, 0] + 0.587 * im[:, :, 1] + 0.114 * im[:, :, 2]
                         depth_image = im_gray
                         """
+                        im = ff.reshape((128,128,2))
+                        depth_image = im[:, :, 0]
                         h, w = depth_image.shape
                         x1 = (w / 2) - WIDTH
                         x2 = (w / 2) + WIDTH
                         y1 = (h / 2) - HEIGHT
                         y2 = (h / 2) + HEIGHT
-                        depth_data = np.empty((0,230400))
+                        depth_data = np.empty((0,16384)) #230400))
 
                         for i in range(y1, y2):
                             for j in range(x1, x2):
@@ -179,17 +205,16 @@ class MyDataset(Dataset):
                                     depth_data = np.append(depth_data, depth_image.item(i,j))
                                 else:
                                     depth_data = np.append(depth_data, 0)
-                                            
-                        depth_data = np.array(depth_data).reshape((1, 230400))
+                        depth_data = np.array(depth_data).reshape((1, 16384)) #230400))
                         #self.depth_dataset = np.append(self.depth_dataset, depth_data, axis=0)
                         if (tmp_cnt == 1 or tmp_cnt == 3):
-                            self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (50, 1)).reshape(50, 230400), axis=0)
+                            self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (500, 1)).reshape(500, 16384), axis=0)
                         else:
-                            self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (20, 1)).reshape(20, 230400), axis=0)
+                            self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (200, 1)).reshape(200, 16384), axis=0)
 
                         tmp_cnt += 1
-        self.depth_dataset = self.depth_dataset.reshape((160, 1, 480, 480))
-        self.gray_dataset = self.gray_dataset.reshape((160, 1, 480, 480))
+        self.depth_dataset = self.depth_dataset.reshape((1600, 1, 128, 128))
+        self.gray_dataset = self.gray_dataset.reshape((1600, 1, 128, 128))
 
         self.gray_depth_dataset = np.concatenate([self.depth_dataset, self.gray_dataset], 1)
         print("gray depth dataset", self.gray_depth_dataset.shape)
@@ -212,8 +237,12 @@ class MyDataset(Dataset):
                 if g_key == gf[-len(g_key):]:
                     with open(os.path.join(g_dir_name, gf), 'rb') as f:
                         ff = pickle.load(f)
-                        ff = np.array(ff).reshape((1, 4))
-                        self.grasp_dataset = np.append(self.grasp_dataset, ff, axis=0)
+                        #ff = np.array(ff).reshape((1, 4))
+                        ff = np.array(ff).reshape((4))
+                        fff = InflateGraspPoint(ff)
+                        #fff = np.append(fff, np.tile(fff, (10, 1)).reshape(10, 4), axis=0)
+                        fff = np.array(fff.calc())
+                        self.grasp_dataset = np.append(self.grasp_dataset, fff, axis=0)
         print("Finished loading grasp point")         
         
         # judge data size : 100 * 1
@@ -235,8 +264,10 @@ class MyDataset(Dataset):
             for jf in sorted(j_files):
                 if judge_key == jf[-len(judge_key):]:
                     f = open(os.path.join(j_dir_name, jf), 'r')
-                    n = f.read()
-                    self.judge_dataset = np.append(self.judge_dataset, int(n))
+                    n = int(f.read())
+                    n = np.atleast_2d(n)
+                    nn = np.append(n, np.tile(n, (9, 1)).reshape(9, 1), axis=0)
+                    self.judge_dataset = np.append(self.judge_dataset, nn)
         print("Finished loading judge data")
 
         print(self.gray_depth_dataset.shape)
@@ -287,9 +318,10 @@ class Net(nn.Module):
         self.cbn3 = nn.BatchNorm2d(16)
         self.conv4 = nn.Conv2d(16, 32, 3, 2, 1)
         self.cbn4 = nn.BatchNorm2d(32)
-        self.conv5 = nn.Conv2d(32, 64, 3, 2, 1)
-        self.cbn5 = nn.BatchNorm2d(64)
-        self.fc1 = nn.Linear(256, 64)
+        #self.conv5 = nn.Conv2d(32, 64, 3, 2, 1)
+        #self.cbn5 = nn.BatchNorm2d(64)
+        #self.fc1 = nn.Linear(256, 64)
+        self.fc1 = nn.Linear(128, 64)
         self.fc2 = nn.Linear(64, 16)
         self.fc3 = nn.Linear(16, 8)
         self.fc4 = nn.Linear(8 + 4, 12)
@@ -305,8 +337,8 @@ class Net(nn.Module):
         x = self.cbn3(x)
         x = F.relu(self.conv4(x))
         x = self.cbn4(x)
-        x = F.max_pool2d(F.relu(self.conv5(x)), 2)
-        x = self.cbn5(x)
+        #x = F.max_pool2d(F.relu(self.conv5(x)), 2)
+        #x = self.cbn5(x)
         x = x.view(-1, self.num_flat_features(x))
         #depth_data =depth_data.view(depth_data.shape[0], -1)
         x = F.relu(self.fc1(x))
@@ -370,7 +402,7 @@ class GraspSystem():
         self.train_optimizer = optim.Adam(self.model.parameters(), lr=0.001)
         #self.train_optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
         #self.test_optimizer = optim.SGD(self.model
-        summary(self.model, [(2, 480, 480), (4,)])
+        summary(self.model, [(2, 128, 128), (4,)])
 
     def get_batch_train():
         pass
@@ -390,11 +422,12 @@ class GraspSystem():
     def save_model(self):
         model_path = 'model.pth'
         # GPU save
-        #torch.save(self.model.state_dict(), PATH)
+        torch.save(self.model.state_dict(), model_path)
         # CPU save
         #torch.save(self.model.to('cpu').state_dict(), model_path)
+        print("Finished Saving model")
 
-    def train(self, train_dataloader, loop_num=10):
+    def train(self, train_dataloader, loop_num):
         tensorboard_cnt = 0
         for epoch in range(loop_num):  # åPó˚ÉfÅ[É^Çï°êîâÒ(2é¸ï™)äwèKÇ∑ÇÈ
             running_loss = 0.0
@@ -426,7 +459,7 @@ class GraspSystem():
         print('Finished Training')
         writer.flush()
 
-    def test(self):
+    def test(self, test_loader):
         for data in testloader:
             depth_data, grasp_point, labels = data
             outputs = self.model(depth_data, grasp_point)
@@ -449,10 +482,11 @@ if __name__ == '__main__':
         datasets = MyDataset()
         train_dataloader = gs.load_data(datasets)
         gs.make_model()
-        gs.train(train_dataloader, loop_num)
+        gs.train(train_dataloader, loop_num=2)
         gs.save_model()
     else:
-        pass
+        gs.load_model()
+        gs.test(test_loader)
     # test
     #gs.start()
 
