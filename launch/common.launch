@@ -19,7 +19,7 @@
 
   <include file="$(find jsk_2020_4_carry_dish)/launch/gazebo/gazebo_clicked_box_edge.launch">
       <arg name="gui" value="false" />
-      <arg name="test_flag" value="false"/>
+      <arg name="test_flag" value="$(arg test_flag)"/>
   </include>
 
 </launch>
