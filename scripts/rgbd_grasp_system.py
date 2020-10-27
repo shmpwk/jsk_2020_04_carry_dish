@@ -422,7 +422,10 @@ class GraspSystem():
     def save_model(self):
         model_path = 'model.pth'
         # GPU save
-        torch.save(self.model.state_dict(), model_path)
+        ## Save only parameter
+        #torch.save(self.model.state_dict(), model_path)
+        ## Save whole model
+        torch.save(self.model, model_path)
         # CPU save
         #torch.save(self.model.to('cpu').state_dict(), model_path)
         print("Finished Saving model")
@@ -446,6 +449,9 @@ class GraspSystem():
                 loss = self.criterion(outputs.view_as(labels), labels)
                 loss.backward()
                 self.train_optimizer.step()
+                aa = torch.max(outputs.data, labels)
+                print("a", aa)
+                #print("b", b)
 
                 # ìùåvÇï\é¶Ç∑ÇÈ
                 writer = SummaryWriter(log_dir="./Data/loss")

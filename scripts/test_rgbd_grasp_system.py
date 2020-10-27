@@ -12,7 +12,19 @@ from torchvision import transforms
 #import jsk_2020_4_carry_dish
 #from scripts import Net
 import torch.optim as optim
+from torch.utils.tensorboard import SummaryWriter
+from torchsummary import summary
 import os
+import rospy
+from sensor_msgs.msg import PointCloud2
+from geometry_msgs.msg import PoseStamped
+import tf
+import random
+import time
+import datetime
+from sensor_msgs import point_cloud2 
+import pickle
+from PIL import Image
 
 class Net(nn.Module):
     def __init__(self):
@@ -82,16 +94,19 @@ class Net(nn.Module):
 
 class TestSystem():
     def __init__(self):
-        pass
-    def load_model(self):
+        
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         model_path = 'model.pth'
+        self.model = torch.load(model_path)
+        self.criterion = nn.BCEWithLogitsLoss()
+        self.test_optimizer = optim.Adam(self.model.parameters(), lr=0.001)
+    def load_model(self):
         # learn GPU, load GPU
-        self.model = Net()
-        self.model = self.model.load_state_dict(torch.load(model_path))
+        #self.model = Net()
+        #self.model = self.model.load_state_dict(torch.load(model_path))
         ## learn CPU, load GPU
         #self.model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
-        self.criterion = nn.BCEWithLogitsLoss()
-        self.train_optimizer = optim.Adam(self.model.parameters(), lr=0.001)
+        self.model.eval()
         #self.train_optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
         #self.test_optimizer = optim.SGD(self.model
         summary(self.model, [(2, 128, 128), (4,)])
@@ -176,31 +191,34 @@ class TestSystem():
                                     depth_data = np.append(depth_data, 0)
                         depth_data = np.array(depth_data).reshape((1, 16384)) #230400))
                         #self.depth_dataset = np.append(self.depth_dataset, depth_data, axis=0)
-        self.depth_dataset = self.depth_data.reshape((1, 1, 128, 128))
-        self.gray_dataset = self.gray_data.reshape((1, 1, 128, 128))
-
+        self.depth_dataset = depth_data.reshape((1, 1, 128, 128))
+        self.gray_dataset = gray_data.reshape((1, 1, 128, 128))
         self.gray_depth_dataset = np.concatenate([self.depth_dataset, self.gray_dataset], 1)
+        return self.gray_depth_dataset
         print("Finished loading all depth data")
  
     def test(self, grasp_point):
-        self.model.eval()
-        depth_data = load_depth
+        depth_data = self.load_depth()
+        depth_data = depth_data.reshape(1, 2, 128, 128)
+        depth_data = torch.from_numpy(depth_data).float()
+        grasp_point = grasp_point.reshape(1, 4)
+        grasp_point = torch.from_numpy(grasp_point).float()
+        depth_data = depth_data.to(self.device)
+        grasp_point = grasp_point.to(self.device)
         outputs = self.model(depth_data, grasp_point)
-        labels = 1
+        labels =  torch.from_numpy(np.array(1)).float()
         # lossのgrasp_point偏微分に対してoptimaizationする．
-        depth_data.requires_grad(False)
-        grasp_point.requires_grad(True)
+        depth_data.requires_grad = False
+        grasp_point.requires_grad = True
         loss = self.criterion(outputs.view_as(labels), labels)
         loss.backward()
-        self.train_optimizer.step()
+        self.test_optimizer.step()
         _, inferred_grasp_point = torch.max(outputs.grasp_point, 1)
 
         return inferred_grasp_point
         # 最適化されたuを元に把持を実行し、その結果を予測と比較する
 
 def inferred_point_callback(data):
-    assert isinstance(data, PointCloud2)
-
     gen = point_cloud2.read_points(data, field_names = ("x", "y", "z"), skip_nans=True)
     length = 1 
     A = np.arange(3, dtype=float).reshape(1,3)
@@ -209,7 +227,6 @@ def inferred_point_callback(data):
         l = np.array(l, dtype='float')
         l = l.reshape(1,3)
         A = np.append(A, l, axis=0)
-        print("A", A)
         length += 1
 
     # Randomly choose one grasp point
@@ -227,7 +244,8 @@ def inferred_point_callback(data):
     theta = 0 #-1.54 
     phi = random.choice(phi_list) #1.2(recentry, 2.0)
     psi = 0
-    random_grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,4) 
+    random_grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,1,4) #reshape(1,4) 
+    
     # inference
     ts = TestSystem()
     inferred_grasp_point = ts.test(random_grasp_posrot)
