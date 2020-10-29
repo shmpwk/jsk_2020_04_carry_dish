@@ -39,7 +39,9 @@
 
       <include file="$(find jsk_2020_4_carry_dish)/launch/virtual_camera_mono.launch" />
       <!--include file="$(find jsk_2020_4_carry_dish)/launch/heightmap_morphological_filtering.launch" /-->
-      <include file="$(find jsk_2020_4_carry_dish)/launch/heightmap_morphological_filtering.launch" />
+      <include file="$(find jsk_2020_4_carry_dish)/launch/heightmap_morphological_filtering.launch">
+          <arg name="gui" value="true"/>
+      </include>
   </group>
 
   <node name="depth_image_creator"
@@ -111,11 +113,9 @@
   <include file="$(find jsk_2020_4_carry_dish)/launch/depth_data_collection.launch" >
       <arg name="use_sim" value="$(arg use_sim)"/>
   </include>
-  <!--
   <include file="$(find jsk_2020_4_carry_dish)/launch/gazebo/gazebo_grasp_data_collection.launch" >
       <arg name="use_sim" value="$(arg use_sim)"/>
   </include>
-  -->
   
   <group if="$(arg gui)">
     <node name="normal_concatenater"

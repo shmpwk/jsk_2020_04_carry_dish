@@ -17,7 +17,7 @@
     <rosparam subst_value="true">
       message_filters: true
       approximate_sync: true
-      queue_size: 10000
+      queue_size: 1000000000
       method: request
       save_dir: ~/Data/depth_data
       topics:
