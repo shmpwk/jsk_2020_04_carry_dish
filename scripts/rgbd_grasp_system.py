@@ -445,12 +445,15 @@ class GraspSystem():
                 self.train_optimizer.zero_grad()
 
                 # ‡“`”d + ‹t“`”d + Å“K‰»(ŒP—û)
+                grasp_point.requires_grad = True
                 outputs = self.model(depth_data, grasp_point)
                 loss = self.criterion(outputs.view_as(labels), labels)
-                loss.backward()
+                loss.backward(retain_graph=False)
                 self.train_optimizer.step()
                 aa = torch.max(outputs.data, labels)
-                print("a", aa)
+                g_grasp_point = grasp_point.grad
+                #print(g_grasp_point)
+                #print("a", aa)
                 #print("b", b)
 
                 # “Œv‚ğ•\¦‚·‚é

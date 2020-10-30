@@ -31,6 +31,7 @@
           pkg="jsk_2020_4_carry_dish" type="gazebo_depth_save.py">
       </node> 
       <include file="$(find jsk_2020_4_carry_dish)/launch/gazebo/gazebo_virtual_camera_mono.launch" />
+      <include file="$(find jsk_2020_4_carry_dish)/launch/heightmap_morphological_filtering.launch"/>
   </group>
   <group unless="$(arg use_sim)">
       <node name="depth_save"
@@ -38,9 +39,9 @@
       </node> 
 
       <include file="$(find jsk_2020_4_carry_dish)/launch/virtual_camera_mono.launch" />
-      <!--include file="$(find jsk_2020_4_carry_dish)/launch/heightmap_morphological_filtering.launch" /-->
       <include file="$(find jsk_2020_4_carry_dish)/launch/heightmap_morphological_filtering.launch">
           <arg name="gui" value="true"/>
+          <arg name="use_sim" default="$(arg use_sim)"/>
       </include>
   </group>
 

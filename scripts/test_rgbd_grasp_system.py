@@ -25,26 +25,16 @@ import datetime
 from sensor_msgs import point_cloud2 
 import pickle
 from PIL import Image
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
+import sklearn
+from sklearn.neighbors import NearestNeighbors 
+import seaborn as sns
+sns.set_style("darkgrid")
 
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        
-        """
-        This imitates alexnet. 
-        self.conv1 = nn.Conv2d(1, 96, kernel_size=11, stride=4, padding=2) #入力チャンネル数は1, 出力チャンネル数は96 
-        self.conv2 = nn.Conv2d(96, 256, kernel_size=5, padding=2)
-        self.conv3 = nn.Conv2d(256, 384, kernel_size=3, padding=1)
-        self.conv4 = nn.Conv2d(384, 384, kernel_size=3, padding=1)
-        self.conv5 = nn.Conv2d(384, 256, kernel_size=3, padding=1)
-        #self.fc1 = nn.Linear(256 * 6 * 6, 4096)
-        self.fc1 = nn.Linear(50176, 4096)
-        self.fc2 = nn.Linear(4096, 4096)
-        self.fc3 = nn.Linear(4096, 10)
-        self.fc4 = nn.Linear(10 + 4, 14)
-        self.fc5 = nn.Linear(14, 1) # output is 1 dim scalar probability
-        """
-
         # dynamics-net (icra2019の紐とか柔軟物を操るやつ) by Mr. Kawaharazuka
         self.conv1 = nn.Conv2d(2, 4, 3, 2, 1)
         self.cbn1 = nn.BatchNorm2d(4)
@@ -94,7 +84,6 @@ class Net(nn.Module):
 
 class TestSystem():
     def __init__(self):
-        
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         model_path = 'model.pth'
         self.model = torch.load(model_path)
@@ -121,7 +110,9 @@ class TestSystem():
         t_cnt = 0
         tmp_cnt = 0
         for d_dir_name, d_sub_dirs, d_files in sorted(os.walk(depth_path), reverse=True): 
-            for df in sorted(d_files, reverse=True):
+            for df in d_files: #sorted(d_files, reverse=True):
+                print("df", df)
+                print(d_dir_name)
                 if color_key == df[-len(color_key):]:
                     with open(os.path.join(d_dir_name, df), 'rb') as f:
                         fff = pickle.load(f)
@@ -191,6 +182,7 @@ class TestSystem():
                                     depth_data = np.append(depth_data, 0)
                         depth_data = np.array(depth_data).reshape((1, 16384)) #230400))
                         #self.depth_dataset = np.append(self.depth_dataset, depth_data, axis=0)
+            break
         self.depth_dataset = depth_data.reshape((1, 1, 128, 128))
         self.gray_dataset = gray_data.reshape((1, 1, 128, 128))
         self.gray_depth_dataset = np.concatenate([self.depth_dataset, self.gray_dataset], 1)
@@ -205,30 +197,57 @@ class TestSystem():
         grasp_point = torch.from_numpy(grasp_point).float()
         depth_data = depth_data.to(self.device)
         grasp_point = grasp_point.to(self.device)
+        depth_data.requires_grad = False
+        grasp_point.requires_grad = True
         outputs = self.model(depth_data, grasp_point)
         labels =  torch.from_numpy(np.array(1)).float()
         # lossのgrasp_point偏微分に対してoptimaizationする．
-        depth_data.requires_grad = False
-        grasp_point.requires_grad = True
         loss = self.criterion(outputs.view_as(labels), labels)
         loss.backward()
         self.test_optimizer.step()
-        _, inferred_grasp_point = torch.max(outputs.grasp_point, 1)
-
+        #_, inferred_grasp_point = torch.max(outputs.grasp_point, 1)
+        gamma = 1
+        print("grad", grasp_point.grad)
+        inferred_grasp_point = grasp_point - gamma * grasp_point.grad
+        inferred_grasp_point = inferred_grasp_point.to('cpu').detach().numpy().copy()
+        print("inferred_grasp_point", inferred_grasp_point)
         return inferred_grasp_point
         # 最適化されたuを元に把持を実行し、その結果を予測と比較する
+
+def nearest_point(points, inferred_point):
+    fig = plt.figure()
+    ax = Axes3D(fig)
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_zlabel("Z")
+    ax.plot(points[:,0], points[:,1], points[:,2], marker='o', linestyle='None') 
+    #print(points)
+    #plt.show()
+    test_datapoint = inferred_point.tolist()
+    #print(test_datapoint)
+    #test_datapoint = [4.3, 2.7, 4.2]
+    k = 1
+    knn_model = NearestNeighbors(n_neighbors=k, algorithm='ball_tree').fit(points)
+    distances, indices = knn_model.kneighbors([test_datapoint])
+    #print("K Nearest Neighbors:")
+    for rank, index in enumerate(indices[0][:k], start=1):
+        print(points[index])
+    ax.plot(points[indices][0][:][:, 0], points[indices][0][:][:, 1], points[indices][0][:][:, 2], marker='o', color='k') 
+    ax.plot([test_datapoint[0]], [test_datapoint[1]], [test_datapoint[2]], marker='x', color='k')
+    #plt.show()
+    return points[index] 
 
 def inferred_point_callback(data):
     gen = point_cloud2.read_points(data, field_names = ("x", "y", "z"), skip_nans=True)
     length = 1 
-    A = np.arange(3, dtype=float).reshape(1,3)
+    A = np.empty(3, dtype=float).reshape(1,3)
     # Whole edge (x,y,z) points
     for l in gen:
         l = np.array(l, dtype='float')
         l = l.reshape(1,3)
         A = np.append(A, l, axis=0)
         length += 1
-
+    
     # Randomly choose one grasp point
     idx = np.random.randint(length, size=1) #To do : change 10 to data length
     Ax = A[idx, 0]
@@ -246,14 +265,17 @@ def inferred_point_callback(data):
     psi = 0
     random_grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,1,4) #reshape(1,4) 
     
-    # inference
+    # Inference!
     ts = TestSystem()
     inferred_grasp_point = ts.test(random_grasp_posrot)
-    #ts.pub_inferred_grasp_point(inferred_grasp_point)
-    Ax = inferred_grasp_point[0]
-    Ay = inferred_grasp_point[1]
-    Az = inferred_grasp_point[2]
+    inferred_grasp_point = inferred_grasp_point.reshape(4)
+    # Find nearest edge point based on inferred point
+    nearest = nearest_point(A, inferred_grasp_point[:3:])
+    Ax = nearest[0]
+    Ay = nearest[1]
+    Az = nearest[2]
     phi = inferred_grasp_point[3]
+    # When converting from here to eus, 
     if phi < 1.6:
         q_phi = 0
     else:
@@ -271,12 +293,22 @@ def inferred_point_callback(data):
     header = posestamped.header
     header.stamp = rospy.Time(0)
     header.frame_id = "head_mount_kinect_rgb_optical_frame"
+    # grasp_posrot is actual grasp point
+    grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,4) 
+    # inferred_posrot is a inferred point but not for grasping
+    inferred_posrot = np.array((inferred_grasp_point[0], inferred_grasp_point[1], inferred_grasp_point[2], inferred_grasp_point[3])) 
+    
+    # Save grasp_posrot and inferred_posrot
     now = datetime.datetime.now()
     walltime = str(int(time.time()*1000000000))
     filename = 'Data/inferred_grasp_point/' + walltime + '.pkl'
     with open(filename, "wb") as f:
         pickle.dump(grasp_posrot, f)
         print("saved inferred grasp point")
+    filename = 'Data/inferred_point/' + walltime + '.pkl'
+    with open(filename, "wb") as ff:
+        pickle.dump(inferred_posrot, ff)
+        print("saved inferred point")
     pub.publish(posestamped)
 
 if __name__ == '__main__':
