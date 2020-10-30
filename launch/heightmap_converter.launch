@@ -1,6 +1,8 @@
 <launch>
   <arg name="gui" default="true"/>
-
+  <arg name="use_sim" default="true"/> 
+  <arg unless="$(arg use_sim)" name="DEPTH_POINTS" value="/kinect_head/depth_registered/points"/>
+  <arg if="$(arg use_sim)" name="DEPTH_POINTS" value="/head_mount_kinect/depth_registered/points"/>
   <node name="heightmap_manager"
         pkg="nodelet" type="nodelet"
         args="manager"/>
@@ -8,7 +10,7 @@
   <node name="heightmap_converter"
         pkg="nodelet" type="nodelet"
         args="load jsk_pcl/HeightmapConverter sample_manager">
-    <remap from="~input" to="/kinect_head/depth_registered/points"/>
+    <remap from="~input" to="$(arg DEPTH_POINTS)"/>
     <rosparam>
       use_projected_center: true
       fixed_frame_id: base_footprint
