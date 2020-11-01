@@ -105,8 +105,8 @@ class TestSystem():
         depth_path = "Data/depth_data"
         self.depth_dataset = np.empty((0,16384)) #230400))
         self.gray_dataset = np.empty((0,16384)) #230400))
-        depth_key = 'heightmap_image.pkl'
-        color_key = 'extract_color_image.pkl'
+        depth_key = 'test_morpholog_image.pkl'
+        color_key = 'test_extract_color_image.pkl'
         t_cnt = 0
         tmp_cnt = 0
         for d_dir_name, d_sub_dirs, d_files in sorted(os.walk(depth_path), reverse=True): 

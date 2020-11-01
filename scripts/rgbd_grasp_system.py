@@ -491,7 +491,7 @@ if __name__ == '__main__':
         datasets = MyDataset()
         train_dataloader = gs.load_data(datasets)
         gs.make_model()
-        gs.train(train_dataloader, loop_num=2)
+        gs.train(train_dataloader, loop_num=100)
         gs.save_model()
     else:
         gs.load_model()

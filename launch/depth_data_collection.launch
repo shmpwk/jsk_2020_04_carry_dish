@@ -23,8 +23,14 @@
       topics:
         - name: /heightmap_morphological_filtering/output
           msg_class: sensor_msgs/Image
-          fname: morphological_image.pkl
+          fname: test_morphological_image.pkl
           savetype: DepthImage
+        - name: $(arg extract_color_name)
+          msg_class: sensor_msgs/Image
+          fname: test_extract_color_image.pkl
+          savetype: DepthImage
+    </rosparam>
+      <!--
         - name: /colorize_float_image_heightmap/output
           msg_class: sensor_msgs/Image
           fname: heightmap_image.pkl
@@ -37,14 +43,10 @@
           msg_class: sensor_msgs/Image
           fname: rgb_image_rect_color.png
           savetype: ColorImage
-        - name: $(arg extract_color_name)
-          msg_class: sensor_msgs/Image
-          fname: extract_color_image.pkl
-          savetype: DepthImage
         - name: $(arg extract_depth_name)
           msg_class: sensor_msgs/Image
           fname: extract_depth_image.pkl
           savetype: DepthImage
-    </rosparam>
-  </node>
+       -->
+ </node>
 </launch>

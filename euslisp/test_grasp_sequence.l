@@ -90,6 +90,7 @@
                            *base-frame-id* (send msg :header :frame_id)
                            (ros::time 0)))))
     ;;(print (rpy-angle (send target-point :worldrot)))
+    (print "aaaaaaaaaaaaaaaaaaaaaaaaa")
     (setq *cds* cds)
     (when (and cds base->parent)
       ;;(send *tfb* :send-transform
