@@ -85,7 +85,7 @@ class Net(nn.Module):
 class TestSystem():
     def __init__(self):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        model_path = 'model.pth'
+        model_path = 'Data/trained_model/model_202011011657.pth'
         self.model = torch.load(model_path)
         self.criterion = nn.BCEWithLogitsLoss()
         self.test_optimizer = optim.Adam(self.model.parameters(), lr=0.001)
@@ -105,8 +105,10 @@ class TestSystem():
         depth_path = "Data/depth_data"
         self.depth_dataset = np.empty((0,16384)) #230400))
         self.gray_dataset = np.empty((0,16384)) #230400))
-        depth_key = 'test_morpholog_image.pkl'
+        depth_key = 'test_morphological_image.pkl'
         color_key = 'test_extract_color_image.pkl'
+        #depth_key = 'heightmap_image.pkl'
+        #color_key = 'extract_color_image.pkl'
         t_cnt = 0
         tmp_cnt = 0
         for d_dir_name, d_sub_dirs, d_files in sorted(os.walk(depth_path), reverse=True): 
@@ -215,16 +217,16 @@ class TestSystem():
         # 最適化されたuを元に把持を実行し、その結果を予測と比較する
 
 def nearest_point(points, inferred_point):
+    """
     fig = plt.figure()
     ax = Axes3D(fig)
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
     ax.set_zlabel("Z")
     ax.plot(points[:,0], points[:,1], points[:,2], marker='o', linestyle='None') 
-    #print(points)
     #plt.show()
+    """
     test_datapoint = inferred_point.tolist()
-    #print(test_datapoint)
     #test_datapoint = [4.3, 2.7, 4.2]
     k = 1
     knn_model = NearestNeighbors(n_neighbors=k, algorithm='ball_tree').fit(points)
@@ -232,9 +234,11 @@ def nearest_point(points, inferred_point):
     #print("K Nearest Neighbors:")
     for rank, index in enumerate(indices[0][:k], start=1):
         print(points[index])
+    """ 
     ax.plot(points[indices][0][:][:, 0], points[indices][0][:][:, 1], points[indices][0][:][:, 2], marker='o', color='k') 
     ax.plot([test_datapoint[0]], [test_datapoint[1]], [test_datapoint[2]], marker='x', color='k')
     #plt.show()
+    """
     return points[index] 
 
 def inferred_point_callback(data):

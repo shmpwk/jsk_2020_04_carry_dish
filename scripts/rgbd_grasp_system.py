@@ -29,6 +29,8 @@ from cv_bridge import CvBridge, CvBridgeError
 from torch.utils.tensorboard import SummaryWriter
 from torchsummary import summary
 from PIL import Image
+import time
+import datetime
 
 class MyTransform:
     def __init__(self, hoge):
@@ -123,7 +125,7 @@ class MyDataset(Dataset):
                 self.depth_dataset = np.append(self.depth_dataset, ff, axis=0)
         self.depth_dataset = self.depth_dataset.reshape((10, 1, 200, 200))
         """
-        depth_path = "Data/depth_data"
+        depth_path = "Data/depth_data_train"
         self.depth_dataset = np.empty((0,16384)) #230400))
         self.gray_dataset = np.empty((0,16384)) #230400))
         depth_key = 'heightmap_image.pkl'
@@ -420,7 +422,9 @@ class GraspSystem():
 
 
     def save_model(self):
-        model_path = 'model.pth'
+        now = datetime.datetime.now()  
+        filename = 'Data/trained_model/model_' + now.strftime('%Y%m%d_%H%M%S') + '.pth'
+        model_path = filename
         # GPU save
         ## Save only parameter
         #torch.save(self.model.state_dict(), model_path)
@@ -484,14 +488,14 @@ if __name__ == '__main__':
     # parse
     train_flag = True #int(arg.train)
     gs = GraspSystem()
-    loop_num = 100
+    loop_num = 95
 
     # train model or load model
     if train_flag:
         datasets = MyDataset()
         train_dataloader = gs.load_data(datasets)
         gs.make_model()
-        gs.train(train_dataloader, loop_num=100)
+        gs.train(train_dataloader, loop_num)
         gs.save_model()
     else:
         gs.load_model()
