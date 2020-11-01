@@ -435,7 +435,9 @@ class GraspSystem():
         print("Finished Saving model")
 
     def train(self, train_dataloader, loop_num):
+        now = datetime.datetime.now()  
         tensorboard_cnt = 0
+        log_dir = './Data/loss/loss_' + now.strftime('%Y%m%d_%H%M%S')
         for epoch in range(loop_num):  # 訓練データを複数回(2周分)学習する
             running_loss = 0.0
             for i, data in enumerate(train_dataloader, 0):
@@ -461,7 +463,7 @@ class GraspSystem():
                 #print("b", b)
 
                 # 統計を表示する
-                writer = SummaryWriter(log_dir="./Data/loss")
+                writer = SummaryWriter(log_dir)
                 running_loss += loss.item()
                 writer.add_scalar("Loss/train", loss.item(), tensorboard_cnt) #(epoch + 1) * i)
                 if i % 100 == 99:    # 2 ミニバッチ毎に表示する
@@ -488,7 +490,7 @@ if __name__ == '__main__':
     # parse
     train_flag = True #int(arg.train)
     gs = GraspSystem()
-    loop_num = 95
+    loop_num = 1
 
     # train model or load model
     if train_flag:
