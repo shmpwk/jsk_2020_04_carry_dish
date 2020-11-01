@@ -78,7 +78,8 @@
 
 ;; one-shot-subscribe but not use now
 (defun sub-grasp-point ()
-    (let*(
+  (print "one shot")  
+  (let*(
          (msg (one-shot-subscribe "/grasp_point" geometry_msgs::PoseStamped
                                   ;;:after-stamp (ros::time 0)))
                                   ))
@@ -171,6 +172,7 @@
   ;;(let ((target-point (grasp-point-cb msg))
     (target-box (bounding-box->cube msg)))
     ;;(let ((target-point (bounding-box->cube msg)))
+    ;;(print "sub point")
     ;;(print target-point) ;;t
     (print "save depth")
     (unless target-point
@@ -191,8 +193,11 @@
     (setq *pre-pos* (float-vector (elt (scale 3 grad) 0) (elt (scale 3 grad) 1) 50))
     (setq *reach-pos* (float-vector (elt (scale -1.5 grad) 0) (elt (scale -1.5 grad) 1) -80))
     ;; pre grasp rotation
-    (setq rdm (+ (/ pi 2) (elt (elt (rpy-angle (send *cds* :rot)) 0) 1)))
+    (print (rpy-angle (send *cds* :rot)))  
+    ;;(setq rdm (+ (/ pi 2) (elt (elt (rpy-angle (send *cds* :rot)) 0) 1)))
+    (setq rdm (elt (elt (rpy-angle (send *cds* :rot)) 1) 1))
     (setq *grasp-rot* (float-vector *rot* rdm -1.54))
+    (print "actual grasp point")
     (print *grasp-rot*)
 
     (if *grasping-object-p*
