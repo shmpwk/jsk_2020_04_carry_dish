@@ -7,3 +7,7 @@
 *.png
 *.pkl
 *.swo
+*sample-robot-model.l
+*ik.l
+*virtual-joints.l
+
