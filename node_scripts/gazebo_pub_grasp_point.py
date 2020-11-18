@@ -27,19 +27,10 @@ def transform_world2local(source):
     listener = tf.TransformListener()
     target_frame = "segmentation_decomposeroutput00"
     source_frame = "head_mount_kinect_rgb_optical_frame"
-    listener.waitForTransform(target_frame, source_frame, rospy.Time(0), rospy.Duration(2.0))
+    listener.waitForTransform(target_frame, source_frame, rospy.Time(0), rospy.Duration(10.0))
     #listener.lookupTransform(target_frame, source_frame, rospy.Time(0))
     target = listener.transformPose(target_frame, source)
-    print("aa")
     return target
-    #pub.publish(target)
-
-    """
-    t = tf.Transformer(True, rospy.Duration(10.0))
-    t.setTransform(source)
-    t.lookupTransform("segmentation_decomposeroutput00", "head_mount_kinect_rgb_optical_frame", rospy.Time(0))
-    return t.pose
-    """
 
 def choose_point_callback(data):
     assert isinstance(data, PointCloud2)
@@ -72,13 +63,18 @@ def choose_point_callback(data):
     """
     # euler angle will be strange when converting in eus program. Adjust parameter until solving this problem.  
     phi_list = [math.pi/2, math.pi*4/6, math.pi*5/6]
+    #phi_list = [math.pi/2]
     theta = 0 #-1.54 
-    phi = random.choice(phi_list) #1.2(recentry, 2.0)
+    phi = random.choice(phi_list)
     psi = 0
+    """
+    maybe not need anymore
     if phi < 1.6:
         q_phi = 0
     else:
         q_phi = phi
+    """
+    q_phi = phi
     q = tf.transformations.quaternion_from_euler(theta, q_phi, psi)
 
     posestamped = PoseStamped()
@@ -126,7 +122,6 @@ def choose_point_callback(data):
     with open(filename, "wb") as f:
         pickle.dump(grasp_posrot, f)
         print("saved grasp point")
-    #pub.publish(posestamped)
     pub.publish(posestamped)
 
 if __name__=="__main__":

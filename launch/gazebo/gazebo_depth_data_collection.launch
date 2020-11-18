@@ -18,6 +18,7 @@
       message_filters: true
       approximate_sync: true
       method: request
+      queue_size: 10000
       save_dir: ~/Data/depth_data
       topics:
         - name: $(arg extract_color_name)
