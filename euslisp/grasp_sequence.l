@@ -21,9 +21,6 @@
   ;;(send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   ;;(send *ri* :wait-interpolation)
   (send *pr2* :angle-vector #f(299.865 55.4297 53.3196 102.662 -121.542 125.071 -87.0418 -48.2131 -32.0168 -20.2598 -67.6931 -45.3044 -72.9084 -96.2568 -100.018 4.1047 54.75))
-  ;;(send *pr2* :angle-vector #f(66.6328 55.4297 53.3196 102.662 -121.541 125.071 -87.0381 -48.2128 -32.0168 -20.2592 -67.6931 -45.3044 -72.9084 -96.2568 -100.02 3.3427 60.45))
-  ;;(send *pr2* :angle-vector #f(66.5726 55.4297 53.3196 102.662 -121.542 125.071 -87.0381 -48.2128 -32.0168 -20.2598 -67.6931 -45.3044 -72.9051 -96.2568 -100.02 3.3487 56.826))
-
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
   (setq *co-endeffector-vis* (arrow))
@@ -100,11 +97,6 @@
 
 ;;(ros::subscribe "grasp_point" geometry_msgs::posestamped #'grasp-point-cb)
 
-;; 対象物を持ち上げられたか否か判断する
-(defun judge-grasp-success ()
-  ;;service call
-  )
-
 (defun publish-status (msg-type fmt)
   (let ((color
          (case msg-type
@@ -170,14 +162,11 @@
     (target-box (bounding-box->cube msg)))
     ;;(let ((target-point (bounding-box->cube msg)))
     ;;(print target-point) ;;t
-    (get-depth)
+    ;;(get-depth)
     (print "save depth")
     (unless target-point
       (ros::ros-logerr "target point is nil !!")
       (return-from grasp-target-callback nil))
-    ;;(send *pr2* *rarm* :move-end-pos #f(0 0 100) :world)
-    ;;(send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-    ;;(send *ri* :wait-interpolation)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
     ;; gradient from grasp point to the middle of the box
@@ -190,8 +179,10 @@
     (setq *pre-pos* (float-vector (elt (scale 3 grad) 0) (elt (scale 3 grad) 1) 50))
     (setq *reach-pos* (float-vector (elt (scale -1.5 grad) 0) (elt (scale -1.5 grad) 1) -80))
     ;; pre grasp rotation
-    (setq rdm (+ (/ pi 2) (elt (elt (rpy-angle (send *cds* :rot)) 0) 1)))
+    ;;(setq rdm (+ (/ pi 2) (elt (elt (rpy-angle (send *cds* :rot)) 0) 1)))
+    (setq rdm (elt (elt (rpy-angle (send *cds* :rot)) 1) 1))
     (setq *grasp-rot* (float-vector *rot* rdm -1.54))
+    (print "actual grasp point")
     (print *grasp-rot*)
 
     (if *grasping-object-p*
@@ -208,8 +199,6 @@
                                   *pre-pos*)
                                   ;;(float-vector -100 0 50))
                          ;;:rpy (float-vector 0 1.2 -1.54)) ;;success(0 1.2 -1.54)
-                         ;;:rpy (float-vector *rot* 2.0 -1.54))
-                         ;;:rpy (float-vector -1.57 1.2 -1.54))
                          :rpy *grasp-rot*)
             )
       (publish-error "out of reach...")
@@ -218,7 +207,6 @@
                                     *pre-pos*)
                                     ;;(float-vector -100 0 150))
                            ;;:rpy (float-vector -1.57 1.2 -1.54)))
-                           ;;:rpy (float-vector *rot* 2.0 -1.54)))
                            :rpy *grasp-rot*))
       (send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
       (objects (list *pr2* *box* *co-ik-target* *pregrasp-point* *box-arrow*))
@@ -235,7 +223,6 @@
                                   ;;(float-vector -100 0 150))
                                   *pre-pos*)
                          ;;:rpy (float-vector 0 1.2 -1.54)))
-                         ;;:rpy (float-vector *rot* 2.0 -1.54)))
                          :rpy *grasp-rot*))
     ;;(send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
     (send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
@@ -289,7 +276,7 @@
     (send *ri* :wait-interpolation)
     (let ((grasp-result (send *ri* :start-grasp *rarm*)))
       (print grasp-result)
-      (if (< 0 grasp-result)   ;;for gazebo (< 0.1 grasp-result)                          
+      (if (< 5 grasp-result)   ;;for gazebo (< 0.1 grasp-result)                          
         (progn                                                     
           (setq *grasp-state* "grasp succeeded!")               
           (publish-grasp-state)
