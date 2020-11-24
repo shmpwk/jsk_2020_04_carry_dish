@@ -19,6 +19,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from torchvision import transforms
+from torchvision.transforms import functional as tvf
 import torch.optim as optim
 import os
 import pickle
@@ -41,6 +42,39 @@ class AddGaussianNoise(object):
     def __repr__(self):
         return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
 
+class RotateImage(object):
+    def __init__(self, image_dataset):
+        #image = np.array(image_dataset)
+        self.dataset = image_dataset
+        #self.rotated_dataset = np.empty((16384)).reshape(1,1,128,128) #230400))
+        self.rotated_dataset = np.empty((10000)).reshape(1,1,100,100) #230400))
+        self.times = 10
+        self.datanum = image_dataset.shape[0]
+   
+    def calc(self):
+        rad_delta = 180/(self.times/2) #math.pi/(self.times/2)
+        rotation_num = 0
+        for i in range(self.datanum):
+            #for rotation_num in range(self.times):
+            #    rotated_image = tvf.rotate(self.dataset[i,:,:,:], angle=rad_delta*rotation_num)
+            #    self.rotated_dataset.append(rotated_image)
+            if rotation_num == self.times:
+                rotation_num = 0
+            totensor = transforms.ToTensor()
+            topil = transforms.ToPILImage()
+            pilimg = topil(np.transpose(self.dataset[i,:,:,:], (1,2,0)).astype(np.float32))
+            print(np.transpose(self.dataset[i,:,:,:], (1,2,0)).astype(np.float32).shape)
+            pilimg = topil(np.empty(100*100).reshape(100,100,1).astype(np.float32))
+            print(rad_delta*rotation_num)
+            print(totensor(np.empty(100*100).reshape(100,1,100).astype(np.float32)).shape)
+            rotated_image = tvf.rotate(pilimg, angle=90)#float(rad_delta*rotation_num))
+            rotated_image = np.array(rotated_image).reshape(1,1,100,100)
+            np.append(self.rotated_dataset, rotated_image, axis=0)
+            rotation_num += 1
+        print(self.rotated_dataset)
+        print("================")
+        return self.rotated_dataset
+
 class InflateGraspPoint(object):
     def __init__(self, grasp_point):
         self.aug_grasp_point = np.zeros((10, 4))
@@ -48,14 +82,15 @@ class InflateGraspPoint(object):
         self.y = grasp_point[[1]]
         self.z = grasp_point[[2]]
         self.theta = grasp_point[[3]]
+        self.times = 10
 
     def calc(self):
         r = math.sqrt(self.x**2 + self.y**2)
         rad = math.atan2(self.y, self.x)
-        rad_delta = math.pi/5
-        X = np.zeros(10)
-        Y = np.zeros(10)
-        for i in range(10):
+        rad_delta = math.pi/(self.times/2)
+        X = np.zeros(self.times)
+        Y = np.zeros(self.times)
+        for i in range(self.times):
             X[i] = r * math.cos(rad + rad_delta*i)
             Y[i] = r * math.sin(rad + rad_delta*i)
             self.aug_grasp_point[i, :] = np.array((X[i], Y[i], self.z, self.theta))
@@ -83,7 +118,8 @@ class MyDataset(Dataset):
         self.grasp_point_transform = grasp_point_transform
         self.judge_transform = judge_transform
         """
-        self.dd_transformer = transforms.Compose([transforms.Normalize((0.5,), (0.5,)), AddGaussianNoise(0., 0.001)])
+        self.dd_transformer = transforms.Compose([transforms.ToPILImage(), transforms.RandomAffine(degrees=0, translate=(0.001, 0.001)), transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,)), AddGaussianNoise(0., 0.001)])
+        #self.dd_transformer = transforms.Compose([transforms.Normalize((0.5,), (0.5,)), AddGaussianNoise(0., 0.001)])
         self.d_transformer= AddGaussianNoise(0., 0.01)
         self.j_transformer= NormalizedAddGaussianNoise(0., 0.01)
         self.datanum = 1630 / 4
@@ -158,6 +194,13 @@ class MyDataset(Dataset):
                                     depth_data = np.append(depth_data, 0)
                         depth_data = np.array(depth_data).reshape((1, 16384)) #230400))
                         #self.depth_dataset = np.append(self.depth_dataset, depth_data, axis=0)
+                        #this is tmp 11/24
+                        totensor = transforms.ToTensor()
+                        topil = transforms.ToPILImage()
+                        depth_data = depth_data.reshape(1,1,128,128)
+                        pilimg = topil(np.transpose(depth_data[0,:,:,:], (1,2,0)).astype(np.float32))
+                        rotated_image = tvf.rotate(pilimg, angle=90)
+                        
                         if (tmp_cnt == 1 or tmp_cnt == 3):
                             self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (500, 1)).reshape(500, 16384), axis=0)
                         elif (tmp_cnt == 4):
@@ -203,6 +246,8 @@ class MyDataset(Dataset):
                         """
         #self.depth_dataset = self.depth_dataset.reshape((1600, 1, 480, 480))
         self.depth_dataset = self.depth_dataset.reshape((1630, 1, 128, 128))
+        #rotimg = RotateImage(self.depth_dataset)
+        #self.depth_dataset = np.array(rotimg.calc())
         print("Finished loading all depth data")
         
         # grasp point data size : 10 * 6(4)   
@@ -353,7 +398,7 @@ class GraspSystem():
         # Data loader (https://ohke.hateblo.jp/entry/2019/12/28/230000)
         train_dataloader = torch.utils.data.DataLoader(
             datasets, 
-            batch_size=8, 
+            batch_size=4, 
             shuffle=True,
             num_workers=2,
             drop_last=True
