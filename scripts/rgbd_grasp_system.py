@@ -32,14 +32,6 @@ from PIL import Image
 import time
 import datetime
 
-class MyTransform:
-    def __init__(self, hoge):
-        self.hoge = fuga
-    
-    def __call__(self, x):
-        hoge = hoge(self.hoge)
-        return hoge
-
 class AddGaussianNoise(object):
     def __init__(self, mean=0., std=1.):
         self.std = std
@@ -97,15 +89,12 @@ class MyDataset(Dataset):
         self.d_transformer= AddGaussianNoise(0., 0.01)
         self.j_transformer= NormalizedAddGaussianNoise(0., 0.01)
         self.datanum = 1600 / 4
-        #self.imgfiles = sorted(glob('%s/*.png' % imgpath))
-        #self.csvfiles = sorted(glob('%s/*.csv' % csvpath))
         """
         Args:
             dataset_path (str): example
                 /home/Data
         
         """
-        # depth_data_size(10) * (32*32)
         """
         # Can depth image (not PIL )use transform? : No, so you should convert from numpy.
 
@@ -115,17 +104,7 @@ class MyDataset(Dataset):
         """
         
         # It was copied from scripts/depth_pickle_load.py
-        """
-        self.depth_dataset = np.empty((0,40000))
-
-        for file in os.listdir(".ros/Data/gazebo_depth_image"):
-            with open (".ros/Data/gazebo_depth_image/" + file, "rb") as f:
-                ff = pickle.load(f)
-                ff = np.array(ff).reshape((1, 40000))
-                self.depth_dataset = np.append(self.depth_dataset, ff, axis=0)
-        self.depth_dataset = self.depth_dataset.reshape((10, 1, 200, 200))
-        """
-        depth_path = "Data/depth_data_train"
+        depth_path = "Data/depth_data"
         self.depth_dataset = np.empty((0,16384)) #230400))
         self.gray_dataset = np.empty((0,16384)) #230400))
         depth_key = 'heightmap_image.pkl'
@@ -135,6 +114,7 @@ class MyDataset(Dataset):
         for d_dir_name, d_sub_dirs, d_files in sorted(os.walk(depth_path)): 
             for df in sorted(d_files):
                 if color_key == df[-len(color_key):]:
+                    print("d", d_dir_name)
                     with open(os.path.join(d_dir_name, df), 'rb') as f:
                         fff = pickle.load(f)
                         color_image = fff
@@ -149,7 +129,7 @@ class MyDataset(Dataset):
                         """
                         im = fff.reshape((480,640,3))
                         pil_im = Image.fromarray(np.uint8(im))
-                        pil_im = pil_im.resize((129, 172))
+                        pil_im = pil_im.resize((129, 172)) #画像サイズを小さくする．129*127=16383, 128*128=16384
                         im = np.asarray(pil_im)
                         im_gray = 0.299 * im[:, :, 0] + 0.587 * im[:, :, 1] + 0.114 * im[:, :, 2]
                         h, w = im_gray.shape
@@ -170,6 +150,8 @@ class MyDataset(Dataset):
                         #self.depth_dataset = np.append(self.depth_dataset, depth_data, axis=0)
                         if (t_cnt == 1 or t_cnt == 3):
                             self.gray_dataset = np.append(self.gray_dataset, np.tile(gray_data, (500, 1)).reshape(500, 16384), axis=0)
+                        elif (tmp_cnt == 4):
+                            self.gray_dataset = np.append(self.gray_dataset, np.tile(gray_data, (230, 1)).reshape(230, 16384), axis=0)
                         else:
                             self.gray_dataset = np.append(self.gray_dataset, np.tile(gray_data, (200, 1)).reshape(200, 16384), axis=0)
                         t_cnt += 1
@@ -211,12 +193,14 @@ class MyDataset(Dataset):
                         #self.depth_dataset = np.append(self.depth_dataset, depth_data, axis=0)
                         if (tmp_cnt == 1 or tmp_cnt == 3):
                             self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (500, 1)).reshape(500, 16384), axis=0)
+                        elif (tmp_cnt == 4):
+                            self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (230, 1)).reshape(230, 16384), axis=0)
                         else:
                             self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (200, 1)).reshape(200, 16384), axis=0)
 
                         tmp_cnt += 1
-        self.depth_dataset = self.depth_dataset.reshape((1600, 1, 128, 128))
-        self.gray_dataset = self.gray_dataset.reshape((1600, 1, 128, 128))
+        self.depth_dataset = self.depth_dataset.reshape((1630, 1, 128, 128))
+        self.gray_dataset = self.gray_dataset.reshape((1630, 1, 128, 128))
 
         self.gray_depth_dataset = np.concatenate([self.depth_dataset, self.gray_dataset], 1)
         print("gray depth dataset", self.gray_depth_dataset.shape)
@@ -237,9 +221,9 @@ class MyDataset(Dataset):
         for g_dir_name, g_sub_dirs, g_files in sorted(os.walk(grasp_path)): 
             for gf in sorted(g_files):
                 if g_key == gf[-len(g_key):]:
+                    print("g", g_dir_name)
                     with open(os.path.join(g_dir_name, gf), 'rb') as f:
                         ff = pickle.load(f)
-                        #ff = np.array(ff).reshape((1, 4))
                         ff = np.array(ff).reshape((4))
                         fff = InflateGraspPoint(ff)
                         #fff = np.append(fff, np.tile(fff, (10, 1)).reshape(10, 4), axis=0)
@@ -248,23 +232,13 @@ class MyDataset(Dataset):
         print("Finished loading grasp point")         
         
         # judge data size : 100 * 1
-
-        """
-        judge_path = "~/Data"
-        self.judge_dataset = np.empty((0,1))
-        judge_key = '.txt'
-        for j_dir_name. j_sub_dirs, j_files in os.walk(judge_path): 
-            for jf in j_files:
-                if judge_key == jf[-len(judge_key):]:
-                    np.append(self.judge_dataset, hf, axis=0)
-        """
-
         judge_path = "Data/judge_data"
         self.judge_dataset = np.empty((0,1))
         judge_key = '.txt'
         for j_dir_name, j_sub_dirs, j_files in sorted(os.walk(judge_path)): 
             for jf in sorted(j_files):
                 if judge_key == jf[-len(judge_key):]:
+                    print("j", j_dir_name)
                     f = open(os.path.join(j_dir_name, jf), 'r')
                     n = int(f.read())
                     n = np.atleast_2d(n)
@@ -289,7 +263,6 @@ class MyDataset(Dataset):
         x = self.dd_transformer(x) 
         y = self.d_transformer(y) 
         c = self.j_transformer(c) 
-        
         return x, y, c
 
 class Net(nn.Module):
@@ -383,8 +356,10 @@ class GraspSystem():
         img = torchvision.utils.make_grid(depth_data)
         img = img / 2 + 0.5  # [-1,1] を [0,1] へ戻す(正規化解除)
         npimg = img.numpy()  # torch.Tensor から numpy へ変換
-        ims = npimg#.reshape((1, 480, 480))
+        ims = npimg #.reshape((1, 480, 480))
         plt.imshow(np.transpose(ims[1, :, :])) # チャンネルを最後に並び変える((C,X,Y) -> (X,Y,C))
+        plt.show() #表示
+        plt.imshow(np.transpose(ims[0, :, :])) # チャンネルを最後に並び変える((C,X,Y) -> (X,Y,C))
         plt.show() #表示
         # Show label
         print(' '.join('%5s' % labels[j] for j in range(2)))
@@ -405,12 +380,6 @@ class GraspSystem():
         #self.train_optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
         #self.test_optimizer = optim.SGD(self.model
         summary(self.model, [(2, 128, 128), (4,)])
-
-    def get_batch_train():
-        pass
-
-    def get_test():
-        pass
 
     # load traind Network model
     def load_model():
@@ -456,11 +425,7 @@ class GraspSystem():
                 loss = self.criterion(outputs.view_as(labels), labels)
                 loss.backward(retain_graph=False)
                 self.train_optimizer.step()
-                aa = torch.max(outputs.data, labels)
                 g_grasp_point = grasp_point.grad
-                #print(g_grasp_point)
-                #print("a", aa)
-                #print("b", b)
 
                 # 統計を表示する
                 writer = SummaryWriter(log_dir)
@@ -490,7 +455,7 @@ if __name__ == '__main__':
     # parse
     train_flag = True #int(arg.train)
     gs = GraspSystem()
-    loop_num = 1
+    loop_num = 100
 
     # train model or load model
     if train_flag:

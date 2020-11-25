@@ -268,7 +268,7 @@ def inferred_point_callback(data):
     phi = random.choice(phi_list) #1.2(recentry, 2.0)
     psi = 0
     random_grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,1,4) #reshape(1,4) 
-    
+    print("random grasp posrost", random_grasp_posrot) 
     # Inference!
     ts = TestSystem()
     inferred_grasp_point = ts.test(random_grasp_posrot)
