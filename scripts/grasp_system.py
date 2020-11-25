@@ -44,10 +44,8 @@ class AddGaussianNoise(object):
 
 class RotateImage(object):
     def __init__(self, image_dataset):
-        #image = np.array(image_dataset)
         self.dataset = image_dataset
-        #self.rotated_dataset = np.empty((16384)).reshape(1,1,128,128) #230400))
-        self.rotated_dataset = np.empty((10000)).reshape(1,1,100,100) #230400))
+        self.rotated_dataset = np.empty((16384)).reshape(1,1,128,128) #230400))
         self.times = 10
         self.datanum = image_dataset.shape[0]
    
@@ -55,24 +53,14 @@ class RotateImage(object):
         rad_delta = 180/(self.times/2) #math.pi/(self.times/2)
         rotation_num = 0
         for i in range(self.datanum):
-            #for rotation_num in range(self.times):
-            #    rotated_image = tvf.rotate(self.dataset[i,:,:,:], angle=rad_delta*rotation_num)
-            #    self.rotated_dataset.append(rotated_image)
             if rotation_num == self.times:
                 rotation_num = 0
-            totensor = transforms.ToTensor()
             topil = transforms.ToPILImage()
             pilimg = topil(np.transpose(self.dataset[i,:,:,:], (1,2,0)).astype(np.float32))
-            print(np.transpose(self.dataset[i,:,:,:], (1,2,0)).astype(np.float32).shape)
-            pilimg = topil(np.empty(100*100).reshape(100,100,1).astype(np.float32))
-            print(rad_delta*rotation_num)
-            print(totensor(np.empty(100*100).reshape(100,1,100).astype(np.float32)).shape)
-            rotated_image = tvf.rotate(pilimg, angle=90)#float(rad_delta*rotation_num))
-            rotated_image = np.array(rotated_image).reshape(1,1,100,100)
-            np.append(self.rotated_dataset, rotated_image, axis=0)
+            rotated_image = pilimg.rotate(angle=rad_delta*rotation_num)
+            rotated_image = np.array(rotated_image).reshape(1,1,128,128)
+            self.rotated_dataset = np.append(self.rotated_dataset, rotated_image, axis=0)
             rotation_num += 1
-        print(self.rotated_dataset)
-        print("================")
         return self.rotated_dataset
 
 class InflateGraspPoint(object):
@@ -123,8 +111,6 @@ class MyDataset(Dataset):
         self.d_transformer= AddGaussianNoise(0., 0.01)
         self.j_transformer= NormalizedAddGaussianNoise(0., 0.01)
         self.datanum = 1630 / 4
-        #self.imgfiles = sorted(glob('%s/*.png' % imgpath))
-        #self.csvfiles = sorted(glob('%s/*.csv' % csvpath))
         """
         Args:
             dataset_path (str): example
@@ -194,13 +180,6 @@ class MyDataset(Dataset):
                                     depth_data = np.append(depth_data, 0)
                         depth_data = np.array(depth_data).reshape((1, 16384)) #230400))
                         #self.depth_dataset = np.append(self.depth_dataset, depth_data, axis=0)
-                        #this is tmp 11/24
-                        totensor = transforms.ToTensor()
-                        topil = transforms.ToPILImage()
-                        depth_data = depth_data.reshape(1,1,128,128)
-                        pilimg = topil(np.transpose(depth_data[0,:,:,:], (1,2,0)).astype(np.float32))
-                        rotated_image = tvf.rotate(pilimg, angle=90)
-                        
                         if (tmp_cnt == 1 or tmp_cnt == 3):
                             self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (500, 1)).reshape(500, 16384), axis=0)
                         elif (tmp_cnt == 4):
@@ -246,8 +225,8 @@ class MyDataset(Dataset):
                         """
         #self.depth_dataset = self.depth_dataset.reshape((1600, 1, 480, 480))
         self.depth_dataset = self.depth_dataset.reshape((1630, 1, 128, 128))
-        #rotimg = RotateImage(self.depth_dataset)
-        #self.depth_dataset = np.array(rotimg.calc())
+        rotimg = RotateImage(self.depth_dataset)
+        self.depth_dataset = np.array(rotimg.calc())
         print("Finished loading all depth data")
         
         # grasp point data size : 10 * 6(4)   
