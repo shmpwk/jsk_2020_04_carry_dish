@@ -4,15 +4,16 @@
         pkg="jsk_data" type="data_collection_server.py"
         output="screen" if="$(arg collect_data)">
     <rosparam subst_value="true">
+      message_filters: true
       approximate_sync: true
-      queue_size: 10000
+      queue_size: 100
       method: request
       save_dir: ~/
       topics:
-        - name: /colorize_float_image_heightmap/output
+        - name: /colorize_float_image_filtered_heightmap/output 
           msg_class: sensor_msgs/Image
-          fname: heightmap_image.pkl
-          savetype: DepthImage
+          fname: heightmap_image.png
+          savetype: ColorImage
     </rosparam>
   </node>
 </launch>
