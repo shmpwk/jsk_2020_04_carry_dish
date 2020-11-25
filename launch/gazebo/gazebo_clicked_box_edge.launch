@@ -111,11 +111,9 @@
       </node>   
   </group>
   -->
-  <!--
   <include file="$(find jsk_2020_4_carry_dish)/launch/depth_data_collection.launch" >
       <arg name="use_sim" value="$(arg use_sim)"/>
   </include>
-  -->
   <include file="$(find jsk_2020_4_carry_dish)/launch/gazebo/gazebo_grasp_data_collection.launch" >
       <arg name="use_sim" value="$(arg use_sim)"/>
   </include>

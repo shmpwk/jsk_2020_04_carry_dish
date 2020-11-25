@@ -21,19 +21,18 @@
       method: request
       save_dir: ~/Data/depth_data
       topics:
-        - name: /heightmap_morphological_filtering/output
+        - name: /colorize_float_image_heightmap/output
           msg_class: sensor_msgs/Image
-          fname: morphological_image.pkl
-          savetype: DepthImage
+          fname: heightmap_image.png
+          savetype: ColorImage
+   </rosparam>
+      <!--
         - name: $(arg extract_color_name)
           msg_class: sensor_msgs/Image
           fname: extract_color_image.pkl
-          savetype: DepthImage
-    </rosparam>
-      <!--
-        - name: /colorize_float_image_heightmap/output
+          savetype: DepthImage       - name: /heightmap_morphological_filtering/output
           msg_class: sensor_msgs/Image
-          fname: heightmap_image.pkl
+          fname: morphological_image.pkl
           savetype: DepthImage
         - name: $(arg depth_name)
           msg_class: sensor_msgs/Image
