@@ -61,6 +61,10 @@ for d_dir_name, d_sub_dirs, d_files in sorted(os.walk(depth_path)):
                 im = ff.reshape((480,640,3))
                 pil_im = Image.fromarray(np.uint8(im))
                 pil_im = pil_im.resize((129, 172))
+                
+                plt.imshow(pil_im)
+                #plt.imshow(pil_im[0, :, :])
+                plt.show()
                 im = np.asarray(pil_im)
                 im_gray = 0.299 * im[:, :, 0] + 0.587 * im[:, :, 1] + 0.114 * im[:, :, 2]
 
