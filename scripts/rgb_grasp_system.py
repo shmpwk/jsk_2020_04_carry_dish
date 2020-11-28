@@ -216,7 +216,7 @@ class MyDataset(Dataset):
                             self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (500, 1)).reshape(500, 16384*3), axis=0)
                         elif (tmp_cnt == 4):
                             #self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (230, 1)).reshape(230, 16384), axis=0)
-                            self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (230, 1)).reshape(230, 16384*3), axis=0)
+                            self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (200, 1)).reshape(200, 16384*3), axis=0)
                         else:
                             #self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (200, 1)).reshape(200, 16384), axis=0)
                             self.depth_dataset = np.append(self.depth_dataset, np.tile(depth_data, (200, 1)).reshape(200, 16384*3), axis=0)
@@ -257,8 +257,8 @@ class MyDataset(Dataset):
                         tmp_cnt += 1
                         """
         #self.depth_dataset = self.depth_dataset.reshape((1600, 1, 480, 480))
-        #self.depth_dataset = self.depth_dataset.reshape((1630, 1, 128, 128))
-        self.depth_dataset = self.depth_dataset.reshape((1630, 3, 128, 128))
+        self.depth_dataset = self.depth_dataset.reshape((1600, 3, 128, 128))
+        #self.depth_dataset = self.depth_dataset.reshape((1630, 3, 128, 128))
         rotimg = RotateImage(self.depth_dataset)
         #self.depth_dataset = np.array(rotimg.calc())
         print("Finished loading all depth data")
