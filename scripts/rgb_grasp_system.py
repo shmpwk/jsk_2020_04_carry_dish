@@ -388,7 +388,8 @@ class Net(nn.Module):
     def forward(self, x, y):
         x = F.max_pool2d(F.relu(self.conv1(x)), 2)
         x = self.cbn1(x)
-        x = F.max_pool2d(F.relu(self.conv2(x)), 2)
+        #x = F.max_pool2d(F.relu(self.conv2(x)), 2)
+        x = F.relu(self.conv2(x))
         x = self.cbn2(x)
         x = F.relu(self.conv3(x))
         x = self.cbn3(x)
@@ -401,9 +402,10 @@ class Net(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
+        x = F.relu(self.fc4(x))
         z = torch.cat((x, y), dim=1)
-        z = F.relu(self.fc4(z))
-        z = self.fc5(z)
+        z = F.relu(self.fc5(z))
+        z = self.fc6(z)
         """
         x = F.max_pool2d(F.relu(self.conv1(x)), 2)
         x = self.cbn1(x)
@@ -441,8 +443,6 @@ class GraspSystem():
     def imshow(self, img):
         img = img / 2 + 0.5  # [-1,1] を [0,1] へ戻す(正規化解除)
         npimg = img.numpy()  # torch.Tensor から numpy へ変換
-        print(npimg.shape)
-        print("=============")
         #plt.imshow(np.transpose(npimg, (1, 2, 0)))  # チャンネルを最後に並び変える((C,X,Y) -> (X,Y,C))
         plt.imshow(npimg[0,:,:,:])  # チャンネルを最後に並び変える((C,X,Y) -> (X,Y,C))
         plt.show()  # 表示
@@ -461,17 +461,17 @@ class GraspSystem():
         # Show img
         print("shape", depth_data.shape)
         imgs = torchvision.utils.make_grid(depth_data)
-        print(imgs.shape)
         #img = img / 2 + 0.5 # [-1,1] を [0,1] へ戻す(正規化解除)
         #npimg = img.numpy() # torch.Tensor から numpy へ変換
         #plt.imshow(np.transpose(npimg[0, :, :])) # チャンネルを最後に並び変える((C,X,Y) -> (X,Y,C))
-        self.imshow(imgs) #チャンネルを最後に並び変える((C,X,Y) -> (X,Y,C))
+        #self.imshow(imgs) #チャンネルを最後に並び変える((C,X,Y) -> (X,Y,C))
+        """
+        # Show image
         im = depth_data[1,:,:,:].numpy()
         im = im.reshape(128,128,3)
-        print("===")
         plt.imshow(im)
         plt.show()
-
+        """
         #plt.show() #表示
         # Show label
         #print(' '.join('%5s' % labels[j] for j in range(2)))
@@ -526,6 +526,13 @@ class GraspSystem():
                 depth_data = depth_data.to(self.device)
                 grasp_point = grasp_point.to(self.device)
                 labels = labels.to(self.device)
+                """
+                # 画像を表示
+                im = depth_data[1,:,:,:].to('cpu').detach().numpy().copy()
+                im = im.reshape(128,128,3)
+                plt.imshow(im)
+                plt.show()
+                """
                 # 勾配を0に初期化する(逆伝播に備える)
                 self.train_optimizer.zero_grad()
 
