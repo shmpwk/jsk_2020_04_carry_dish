@@ -21,7 +21,7 @@
       method: request
       save_dir: ~/Data/depth_data
       topics:
-        - name: /colorize_float_image_heightmap/output
+        - name: /colorize_float_image_filtered_heightmap/output
           msg_class: sensor_msgs/Image
           fname: heightmap_image.png
           savetype: ColorImage

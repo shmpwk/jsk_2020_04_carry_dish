@@ -63,7 +63,7 @@ def choose_point_callback(data):
     """
     # euler angle will be strange when converting in eus program. Adjust parameter until solving this problem.  
     phi_list = [math.pi/2, math.pi*4/6, math.pi*5/6]
-    #phi_list = [math.pi/2]
+    #phi_list = [math.pi*4/6,math.pi*5/6]
     theta = 0 #-1.54 
     phi = random.choice(phi_list)
     psi = 0

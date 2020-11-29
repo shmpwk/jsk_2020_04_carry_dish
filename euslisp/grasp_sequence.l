@@ -276,7 +276,7 @@
     (send *ri* :wait-interpolation)
     (let ((grasp-result (send *ri* :start-grasp *rarm*)))
       (print grasp-result)
-      (if (< 5 grasp-result)   ;;for gazebo (< 0.1 grasp-result)                          
+      (if (< 4 grasp-result)   ;;for gazebo (< 0.1 grasp-result)                          
         (progn                                                     
           (setq *grasp-state* "grasp succeeded!")               
           (publish-grasp-state)
