@@ -36,7 +36,7 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         # dynamics-net (icra2019の紐とか柔軟物を操るやつ) by Mr. Kawaharazuka
-        self.conv1 = nn.Conv2d(2, 4, 3, 2, 1)
+        self.conv1 = nn.Conv2d(3, 4, 3, 2, 1)
         self.cbn1 = nn.BatchNorm2d(4)
         self.conv2 = nn.Conv2d(4, 8, 3, 2, 1)
         self.cbn2 = nn.BatchNorm2d(8)
@@ -44,35 +44,37 @@ class Net(nn.Module):
         self.cbn3 = nn.BatchNorm2d(16)
         self.conv4 = nn.Conv2d(16, 32, 3, 2, 1)
         self.cbn4 = nn.BatchNorm2d(32)
-        #self.conv5 = nn.Conv2d(32, 64, 3, 2, 1)
-        #self.cbn5 = nn.BatchNorm2d(64)
-        #self.fc1 = nn.Linear(256, 64)
-        self.fc1 = nn.Linear(128, 64)
-        self.fc2 = nn.Linear(64, 16)
-        self.fc3 = nn.Linear(16, 8)
-        self.fc4 = nn.Linear(8 + 4, 12)
-        self.fc5 = nn.Linear(12, 1) # output is 1 dim scalar probability
+        self.conv5 = nn.Conv2d(32, 64, 3, 2, 1)
+        self.cbn5 = nn.BatchNorm2d(64)
+        self.fc1 = nn.Linear(256, 128)
+        self.fc2 = nn.Linear(128, 64)
+        self.fc3 = nn.Linear(64, 16)
+        self.fc4 = nn.Linear(16, 8)
+        self.fc5 = nn.Linear(8 + 4, 12)
+        self.fc6 = nn.Linear(12, 1) # output is 1 dim scalar probability
 
     # depth encording without concate grasp point
     def forward(self, x, y):
         x = F.max_pool2d(F.relu(self.conv1(x)), 2)
         x = self.cbn1(x)
-        x = F.max_pool2d(F.relu(self.conv2(x)), 2)
+        #x = F.max_pool2d(F.relu(self.conv2(x)), 2)
+        x = F.relu(self.conv2(x))
         x = self.cbn2(x)
         x = F.relu(self.conv3(x))
         x = self.cbn3(x)
         x = F.relu(self.conv4(x))
         x = self.cbn4(x)
-        #x = F.max_pool2d(F.relu(self.conv5(x)), 2)
-        #x = self.cbn5(x)
+        x = F.relu(self.conv5(x))
+        x = self.cbn5(x)
         x = x.view(-1, self.num_flat_features(x))
         #depth_data =depth_data.view(depth_data.shape[0], -1)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
+        x = F.relu(self.fc4(x))
         z = torch.cat((x, y), dim=1)
-        z = F.relu(self.fc4(z))
-        z = self.fc5(z)
+        z = F.relu(self.fc5(z))
+        z = self.fc6(z)
         return z
    
     def num_flat_features(self, x):
@@ -98,100 +100,10 @@ class TestSystem():
         self.model.eval()
         #self.train_optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
         #self.test_optimizer = optim.SGD(self.model
-        summary(self.model, [(2, 128, 128), (4,)])
+        summary(self.model, [(3, 128, 128), (4,)])
 
     def load_depth(self):
         # imageは，subscribeではなく，最新のpickleをloadする．
-        """
-        depth_path = "Data/depth_data"
-        self.depth_dataset = np.empty((0,16384)) #230400))
-        self.gray_dataset = np.empty((0,16384)) #230400))
-        depth_key = 'test_morphological_image.pkl'
-        color_key = 'test_extract_color_image.pkl'
-        #depth_key = 'heightmap_image.pkl'
-        #color_key = 'extract_color_image.pkl'
-        t_cnt = 0
-        tmp_cnt = 0
-        for d_dir_name, d_sub_dirs, d_files in sorted(os.walk(depth_path), reverse=True): 
-            for df in d_files: #sorted(d_files, reverse=True):
-                print("df", df)
-                print(d_dir_name)
-                if color_key == df[-len(color_key):]:
-                    with open(os.path.join(d_dir_name, df), 'rb') as f:
-                        fff = pickle.load(f)
-                        color_image = fff
-                        WIDTH = 64#240
-                        HEIGHT = 64#240
-                        """
-                        bridge = CvBridge()
-                        try:
-                            color_image = bridge.imgmsg_to_cv2(ff, 'passthrough')
-                        except CvBridgeError, e:
-                            rospy.logerr(e)
-                        """
-                        im = fff.reshape((480,640,3))
-                        pil_im = Image.fromarray(np.uint8(im))
-                        pil_im = pil_im.resize((129, 172))
-                        im = np.asarray(pil_im)
-                        im_gray = 0.299 * im[:, :, 0] + 0.587 * im[:, :, 1] + 0.114 * im[:, :, 2]
-                        h, w = im_gray.shape
-                        x1 = (w / 2) - WIDTH
-                        x2 = (w / 2) + WIDTH
-                        y1 = (h / 2) - HEIGHT
-                        y2 = (h / 2) + HEIGHT
-                        gray_data = np.empty((0,16384))
-
-                        for i in range(y1, y2):
-                            for j in range(x1, x2):
-                                if im_gray.item(i,j) == im_gray.item(i,j):
-                                    gray_data = np.append(gray_data, im_gray.item(i,j))
-                                else:
-                                    gray_data = np.append(gray_data, 0)
-                                            
-                        gray_data = np.array(gray_data).reshape((1, 16384)) #230400))
-
-                if depth_key == df[-len(depth_key):]:
-                    with open(os.path.join(d_dir_name, df), 'rb') as f:
-                        ff = pickle.load(f)
-                        depth_image = ff
-                        WIDTH = 64#240
-                        HEIGHT = 64#240
-                        """
-                        bridge = CvBridge()
-                        try:
-                            depth_image = bridge.imgmsg_to_cv2(ff, 'passthrough')
-                        except CvBridgeError, e:
-                            rospy.logerr(e)
-                        """
-                        """
-                        im = ff.reshape((480,640,3))
-                        im_gray = 0.299 * im[:, :, 0] + 0.587 * im[:, :, 1] + 0.114 * im[:, :, 2]
-                        depth_image = im_gray
-                        """
-                        im = ff.reshape((128,128,2))
-                        depth_image = im[:, :, 0]
-                        h, w = depth_image.shape
-                        x1 = (w / 2) - WIDTH
-                        x2 = (w / 2) + WIDTH
-                        y1 = (h / 2) - HEIGHT
-                        y2 = (h / 2) + HEIGHT
-                        depth_data = np.empty((0,16384)) #230400))
-
-                        for i in range(y1, y2):
-                            for j in range(x1, x2):
-                                if depth_image.item(i,j) == depth_image.item(i,j):
-                                    depth_data = np.append(depth_data, depth_image.item(i,j))
-                                else:
-                                    depth_data = np.append(depth_data, 0)
-                        depth_data = np.array(depth_data).reshape((1, 16384)) #230400))
-                        #self.depth_dataset = np.append(self.depth_dataset, depth_data, axis=0)
-            break
-        self.depth_dataset = depth_data.reshape((1, 1, 128, 128))
-        self.gray_dataset = gray_data.reshape((1, 1, 128, 128))
-        self.gray_depth_dataset = np.concatenate([self.depth_dataset, self.gray_dataset], 1)
-        return self.gray_depth_dataset
-        print("Finished loading all depth data")
-        """
  
         depth_path = "Data/depth_data"
         #self.depth_dataset = np.empty((0,230400))
@@ -242,7 +154,7 @@ class TestSystem():
  
     def test(self, grasp_point):
         depth_data = self.load_depth()
-        depth_data = depth_data.reshape(1, 2, 128, 128)
+        depth_data = depth_data.reshape(1, 3, 128, 128)
         depth_data = torch.from_numpy(depth_data).float()
         grasp_point = grasp_point.reshape(1, 4)
         grasp_point = torch.from_numpy(grasp_point).float()
@@ -356,6 +268,7 @@ def inferred_point_callback(data):
     walltime = str(int(time.time()*1000000000))
     filename = 'Data/inferred_grasp_point/' + walltime + '.pkl'
     with open(filename, "wb") as f:
+        
         pickle.dump(grasp_posrot, f)
         print("saved inferred grasp point")
     filename = 'Data/inferred_point/' + walltime + '.pkl'
