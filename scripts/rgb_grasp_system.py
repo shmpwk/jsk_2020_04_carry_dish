@@ -547,8 +547,8 @@ class GraspSystem():
                 running_loss += loss.item()
                 writer.add_scalar("Loss/train", loss.item(), tensorboard_cnt) #(epoch + 1) * i)
                 if i % 100 == 99:    # 2 ミニバッチ毎に表示する
-                    print('[%d, %5d] loss: %.3f' %
-                          (epoch + 1, i + 1, running_loss / 100))
+                    #print('[%d, %5d] loss: %.3f' %
+                    #      (epoch + 1, i + 1, running_loss / 100))
                     running_loss = 0.0
                 tensorboard_cnt += 1
         print('Finished Training')
@@ -570,7 +570,7 @@ if __name__ == '__main__':
     # parse
     train_flag = True #int(arg.train)
     gs = GraspSystem()
-    loop_num = 100
+    loop_num = 99
     # train model or load model
     if train_flag:
         datasets = MyDataset()
