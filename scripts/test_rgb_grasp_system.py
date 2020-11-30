@@ -67,7 +67,7 @@ class Net(nn.Module):
         x = F.relu(self.conv5(x))
         x = self.cbn5(x)
         x = x.view(-1, self.num_flat_features(x))
-        #depth_data =depth_data.view(depth_data.shape[0], -1)
+        #self.depth_data =self.depth_data.view(self.depth_data.shape[0], -1)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
@@ -87,7 +87,7 @@ class Net(nn.Module):
 class TestSystem():
     def __init__(self):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        model_path = 'Data/trained_model/model_202011011657.pth'
+        model_path = 'Data/trained_model/model_20201130_134113.pth'
         self.model = torch.load(model_path)
         self.criterion = nn.BCEWithLogitsLoss()
         self.test_optimizer = optim.Adam(self.model.parameters(), lr=0.001)
@@ -105,16 +105,16 @@ class TestSystem():
     def load_depth(self):
         # imageは，subscribeではなく，最新のpickleをloadする．
  
-        depth_path = "Data/depth_data"
-        #self.depth_dataset = np.empty((0,230400))
-        #self.depth_dataset = np.empty((0,16384)) #230400))
-        self.depth_dataset = np.empty((0,16384*3)) #230400))
-        #depth_key = 'heightmap_image.pkl'
+        depth_path = "Data/test_depth_data"
+        #self.self.depth_dataset = np.empty((0,16384)) #230400))
+        #self.self.depth_dataset = np.empty((0,16384*3)) #230400))
         depth_key = 'heightmap_image.png'
         color_key = 'extract_color_image.pkl'
         tmp_cnt = 0
         for d_dir_name, d_sub_dirs, d_files in sorted(os.walk(depth_path)): 
             for df in sorted(d_files):
+                print("df", df)
+                print(d_dir_name)
                 if depth_key == df[-len(depth_key):]:
                     with open(os.path.join(d_dir_name, df), 'rb') as f:
                         #im = pickle.load(f)
@@ -132,37 +132,38 @@ class TestSystem():
                         x2 = (w / 2) + WIDTH
                         y1 = (h / 2) - HEIGHT
                         y2 = (h / 2) + HEIGHT
-                        #depth_data = np.empty((0,16384)) #230400))
-                        depth_data = np.empty((0,16384*3)) #230400))
+                        #self.depth_data = np.empty((0,16384)) #230400))
+                        self.depth_data = np.empty((0,16384*3)) #230400))
                         for i in range(y1, y2):
                             for j in range(x1, x2):
                                 if depth_image.getpixel((i,j)) == depth_image.getpixel((i,j)):
-                                    depth_data = np.append(depth_data, depth_image.getpixel((i,j)))
+                                    self.depth_data = np.append(self.depth_data, depth_image.getpixel((i,j)))
                                 else:
-                                    depth_data = np.append(depth_data, 0)
+                                    self.depth_data = np.append(self.depth_data, 0)
 
-                        #depth_data = np.array(depth_data).reshape((1, 16384)) #230400))
-                        depth_data = np.array(depth_data).reshape((1, 3*16384)) #230400))
-                        #self.depth_dataset = np.append(self.depth_dataset, depth_data, axis=0)
-        #self.depth_dataset = self.depth_dataset.reshape((1600, 1, 480, 480))
-        self.depth_dataset = self.depth_dataset.reshape((1, 3, 128, 128))
-        #self.depth_dataset = self.depth_dataset.reshape((1630, 3, 128, 128))
-        #rotimg = RotateImage(self.depth_dataset)
-        #self.depth_dataset = np.array(rotimg.calc())
+                        #self.depth_data = np.array(self.depth_data).reshape((1, 16384)) #230400))
+                        self.depth_data = np.array(self.depth_data).reshape((1, 3*16384)) #230400))
+                        #self.self.depth_dataset = np.append(self.self.depth_dataset, self.depth_data, axis=0)
+        #self.self.depth_dataset = self.self.depth_dataset.reshape((1600, 1, 480, 480))
+        #self.self.depth_dataset = self.self.depth_dataset.reshape((1, 3, 128, 128))
+        self.depth_data = self.depth_data.reshape((1, 3, 128, 128))
+        #self.self.depth_dataset = self.self.depth_dataset.reshape((1630, 3, 128, 128))
+        #rotimg = RotateImage(self.self.depth_dataset)
+        #self.self.depth_dataset = np.array(rotimg.calc())
         print("Finished loading all depth data")
-        return self.depth_dataset
+        return self.depth_data
  
     def test(self, grasp_point):
-        depth_data = self.load_depth()
-        depth_data = depth_data.reshape(1, 3, 128, 128)
-        depth_data = torch.from_numpy(depth_data).float()
+        self.depth_data = self.load_depth()
+        self.depth_data = self.depth_data.reshape(1, 3, 128, 128)
+        self.depth_data = torch.from_numpy(self.depth_data).float()
         grasp_point = grasp_point.reshape(1, 4)
         grasp_point = torch.from_numpy(grasp_point).float()
-        depth_data = depth_data.to(self.device)
+        self.depth_data = self.depth_data.to(self.device)
         grasp_point = grasp_point.to(self.device)
-        depth_data.requires_grad = False
+        self.depth_data.requires_grad = False
         grasp_point.requires_grad = True
-        outputs = self.model(depth_data, grasp_point)
+        outputs = self.model(self.depth_data, grasp_point)
         labels =  torch.from_numpy(np.array(1)).float()
         # lossのgrasp_point偏微分に対してoptimaizationする．
         loss = self.criterion(outputs.view_as(labels), labels)
@@ -224,6 +225,7 @@ def inferred_point_callback(data):
     But currently, rotation is fixed for test. 
     """
     # euler angle will be strange when converting in eus program. Adjust parameter until solving this problem.  
+    #phi_list = [math.pi/2, math.pi*4/6, math.pi*5/6]
     phi_list = [math.pi/2, math.pi*4/6, math.pi*5/6]
     theta = 0 #-1.54 
     phi = random.choice(phi_list) #1.2(recentry, 2.0)
@@ -239,13 +241,19 @@ def inferred_point_callback(data):
     Ax = nearest[0]
     Ay = nearest[1]
     Az = nearest[2]
-    phi = inferred_grasp_point[3]
+    phi = inferred_grasp_point[3] - 0.5
     # When converting from here to eus, 
+    """
     if phi < 1.6:
         q_phi = 0
     else:
         q_phi = phi
-    q = tf.transformations.quaternion_from_euler(theta, q_phi, psi)
+    """
+    if (phi < 1.6):
+        phi = 1.6
+    elif (phi > 2.6):
+        phi = 2.6
+    q = tf.transformations.quaternion_from_euler(theta, phi, psi)
     posestamped = PoseStamped()
     pose = posestamped.pose
     pose.position.x = Ax
@@ -260,6 +268,7 @@ def inferred_point_callback(data):
     header.frame_id = "head_mount_kinect_rgb_optical_frame"
     # grasp_posrot is actual grasp point
     grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,4) 
+    print("nearest_inferred_grasp_point", grasp_posrot)
     # inferred_posrot is a inferred point but not for grasping
     inferred_posrot = np.array((inferred_grasp_point[0], inferred_grasp_point[1], inferred_grasp_point[2], inferred_grasp_point[3])) 
     
