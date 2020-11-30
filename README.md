@@ -63,16 +63,33 @@ $ roseus euslisp/grasp_sequence.l
 $ roslaunch jsk_2020_4_carry_dish gazebo_clicked_box_edge.launch use_sim:=false gui:=false
 ```
 ### Train the model
+When the input image is rgbd
 ```
 $ python ~/my_ws/src/jsk_2020_04_carry_dish/scripts/rgbd_grasp_system.py
 ```
+When the input image is rgb
+```
+$ python ~/my_ws/src/jsk_2020_04_carry_dish/scripts/rgb_grasp_system.py
+```
+or
+```
+$ python ~/my_ws/src/jsk_2020_04_carry_dish/scripts/rgb_grasp_system_2.py
+```
+which depends on the dataset size.
 
 ### When inferrence,
 ```
 $ roslaunch jsk_2020_4_carry_dish realpr2_tabletop.launch
 $ roseus euslisp/test_grasp_sequence.l 
 $ roslaunch jsk_2020_4_carry_dish gazebo_clicked_box_edge.launch use_sim:=false gui:=false
+```
+When using rgbd image,
+```
 $ python ~/my_ws/src/jsk_2020_04_carry_dish/scripts/test_rgbd_grasp_system.py 
+```
+When using rgb image,
+```
+$ python ~/my_ws/src/jsk_2020_04_carry_dish/scripts/test_rgb_grasp_system.py 
 ```
 
 - scripts/grasp_system.py : learning system

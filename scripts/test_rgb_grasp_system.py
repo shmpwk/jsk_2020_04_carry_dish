@@ -36,7 +36,7 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         # dynamics-net (icra2019の紐とか柔軟物を操るやつ) by Mr. Kawaharazuka
-        self.conv1 = nn.Conv2d(2, 4, 3, 2, 1)
+        self.conv1 = nn.Conv2d(3, 4, 3, 2, 1)
         self.cbn1 = nn.BatchNorm2d(4)
         self.conv2 = nn.Conv2d(4, 8, 3, 2, 1)
         self.cbn2 = nn.BatchNorm2d(8)
@@ -44,35 +44,37 @@ class Net(nn.Module):
         self.cbn3 = nn.BatchNorm2d(16)
         self.conv4 = nn.Conv2d(16, 32, 3, 2, 1)
         self.cbn4 = nn.BatchNorm2d(32)
-        #self.conv5 = nn.Conv2d(32, 64, 3, 2, 1)
-        #self.cbn5 = nn.BatchNorm2d(64)
-        #self.fc1 = nn.Linear(256, 64)
-        self.fc1 = nn.Linear(128, 64)
-        self.fc2 = nn.Linear(64, 16)
-        self.fc3 = nn.Linear(16, 8)
-        self.fc4 = nn.Linear(8 + 4, 12)
-        self.fc5 = nn.Linear(12, 1) # output is 1 dim scalar probability
+        self.conv5 = nn.Conv2d(32, 64, 3, 2, 1)
+        self.cbn5 = nn.BatchNorm2d(64)
+        self.fc1 = nn.Linear(256, 128)
+        self.fc2 = nn.Linear(128, 64)
+        self.fc3 = nn.Linear(64, 16)
+        self.fc4 = nn.Linear(16, 8)
+        self.fc5 = nn.Linear(8 + 4, 12)
+        self.fc6 = nn.Linear(12, 1) # output is 1 dim scalar probability
 
     # depth encording without concate grasp point
     def forward(self, x, y):
         x = F.max_pool2d(F.relu(self.conv1(x)), 2)
         x = self.cbn1(x)
-        x = F.max_pool2d(F.relu(self.conv2(x)), 2)
+        #x = F.max_pool2d(F.relu(self.conv2(x)), 2)
+        x = F.relu(self.conv2(x))
         x = self.cbn2(x)
         x = F.relu(self.conv3(x))
         x = self.cbn3(x)
         x = F.relu(self.conv4(x))
         x = self.cbn4(x)
-        #x = F.max_pool2d(F.relu(self.conv5(x)), 2)
-        #x = self.cbn5(x)
+        x = F.relu(self.conv5(x))
+        x = self.cbn5(x)
         x = x.view(-1, self.num_flat_features(x))
-        #depth_data =depth_data.view(depth_data.shape[0], -1)
+        #self.depth_data =self.depth_data.view(self.depth_data.shape[0], -1)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
+        x = F.relu(self.fc4(x))
         z = torch.cat((x, y), dim=1)
-        z = F.relu(self.fc4(z))
-        z = self.fc5(z)
+        z = F.relu(self.fc5(z))
+        z = self.fc6(z)
         return z
    
     def num_flat_features(self, x):
@@ -85,7 +87,7 @@ class Net(nn.Module):
 class TestSystem():
     def __init__(self):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        model_path = 'Data/trained_model/model_202011011657.pth'
+        model_path = 'Data/trained_model/model_20201130_134113.pth'
         self.model = torch.load(model_path)
         self.criterion = nn.BCEWithLogitsLoss()
         self.test_optimizer = optim.Adam(self.model.parameters(), lr=0.001)
@@ -98,111 +100,21 @@ class TestSystem():
         self.model.eval()
         #self.train_optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
         #self.test_optimizer = optim.SGD(self.model
-        summary(self.model, [(2, 128, 128), (4,)])
+        summary(self.model, [(3, 128, 128), (4,)])
 
     def load_depth(self):
         # imageは，subscribeではなく，最新のpickleをloadする．
-        """
-        depth_path = "Data/depth_data"
-        self.depth_dataset = np.empty((0,16384)) #230400))
-        self.gray_dataset = np.empty((0,16384)) #230400))
-        depth_key = 'test_morphological_image.pkl'
-        color_key = 'test_extract_color_image.pkl'
-        #depth_key = 'heightmap_image.pkl'
-        #color_key = 'extract_color_image.pkl'
-        t_cnt = 0
-        tmp_cnt = 0
-        for d_dir_name, d_sub_dirs, d_files in sorted(os.walk(depth_path), reverse=True): 
-            for df in d_files: #sorted(d_files, reverse=True):
-                print("df", df)
-                print(d_dir_name)
-                if color_key == df[-len(color_key):]:
-                    with open(os.path.join(d_dir_name, df), 'rb') as f:
-                        fff = pickle.load(f)
-                        color_image = fff
-                        WIDTH = 64#240
-                        HEIGHT = 64#240
-                        """
-                        bridge = CvBridge()
-                        try:
-                            color_image = bridge.imgmsg_to_cv2(ff, 'passthrough')
-                        except CvBridgeError, e:
-                            rospy.logerr(e)
-                        """
-                        im = fff.reshape((480,640,3))
-                        pil_im = Image.fromarray(np.uint8(im))
-                        pil_im = pil_im.resize((129, 172))
-                        im = np.asarray(pil_im)
-                        im_gray = 0.299 * im[:, :, 0] + 0.587 * im[:, :, 1] + 0.114 * im[:, :, 2]
-                        h, w = im_gray.shape
-                        x1 = (w / 2) - WIDTH
-                        x2 = (w / 2) + WIDTH
-                        y1 = (h / 2) - HEIGHT
-                        y2 = (h / 2) + HEIGHT
-                        gray_data = np.empty((0,16384))
-
-                        for i in range(y1, y2):
-                            for j in range(x1, x2):
-                                if im_gray.item(i,j) == im_gray.item(i,j):
-                                    gray_data = np.append(gray_data, im_gray.item(i,j))
-                                else:
-                                    gray_data = np.append(gray_data, 0)
-                                            
-                        gray_data = np.array(gray_data).reshape((1, 16384)) #230400))
-
-                if depth_key == df[-len(depth_key):]:
-                    with open(os.path.join(d_dir_name, df), 'rb') as f:
-                        ff = pickle.load(f)
-                        depth_image = ff
-                        WIDTH = 64#240
-                        HEIGHT = 64#240
-                        """
-                        bridge = CvBridge()
-                        try:
-                            depth_image = bridge.imgmsg_to_cv2(ff, 'passthrough')
-                        except CvBridgeError, e:
-                            rospy.logerr(e)
-                        """
-                        """
-                        im = ff.reshape((480,640,3))
-                        im_gray = 0.299 * im[:, :, 0] + 0.587 * im[:, :, 1] + 0.114 * im[:, :, 2]
-                        depth_image = im_gray
-                        """
-                        im = ff.reshape((128,128,2))
-                        depth_image = im[:, :, 0]
-                        h, w = depth_image.shape
-                        x1 = (w / 2) - WIDTH
-                        x2 = (w / 2) + WIDTH
-                        y1 = (h / 2) - HEIGHT
-                        y2 = (h / 2) + HEIGHT
-                        depth_data = np.empty((0,16384)) #230400))
-
-                        for i in range(y1, y2):
-                            for j in range(x1, x2):
-                                if depth_image.item(i,j) == depth_image.item(i,j):
-                                    depth_data = np.append(depth_data, depth_image.item(i,j))
-                                else:
-                                    depth_data = np.append(depth_data, 0)
-                        depth_data = np.array(depth_data).reshape((1, 16384)) #230400))
-                        #self.depth_dataset = np.append(self.depth_dataset, depth_data, axis=0)
-            break
-        self.depth_dataset = depth_data.reshape((1, 1, 128, 128))
-        self.gray_dataset = gray_data.reshape((1, 1, 128, 128))
-        self.gray_depth_dataset = np.concatenate([self.depth_dataset, self.gray_dataset], 1)
-        return self.gray_depth_dataset
-        print("Finished loading all depth data")
-        """
  
-        depth_path = "Data/depth_data"
-        #self.depth_dataset = np.empty((0,230400))
-        #self.depth_dataset = np.empty((0,16384)) #230400))
-        self.depth_dataset = np.empty((0,16384*3)) #230400))
-        #depth_key = 'heightmap_image.pkl'
+        depth_path = "Data/test_depth_data"
+        #self.self.depth_dataset = np.empty((0,16384)) #230400))
+        #self.self.depth_dataset = np.empty((0,16384*3)) #230400))
         depth_key = 'heightmap_image.png'
         color_key = 'extract_color_image.pkl'
         tmp_cnt = 0
         for d_dir_name, d_sub_dirs, d_files in sorted(os.walk(depth_path)): 
             for df in sorted(d_files):
+                print("df", df)
+                print(d_dir_name)
                 if depth_key == df[-len(depth_key):]:
                     with open(os.path.join(d_dir_name, df), 'rb') as f:
                         #im = pickle.load(f)
@@ -220,37 +132,38 @@ class TestSystem():
                         x2 = (w / 2) + WIDTH
                         y1 = (h / 2) - HEIGHT
                         y2 = (h / 2) + HEIGHT
-                        #depth_data = np.empty((0,16384)) #230400))
-                        depth_data = np.empty((0,16384*3)) #230400))
+                        #self.depth_data = np.empty((0,16384)) #230400))
+                        self.depth_data = np.empty((0,16384*3)) #230400))
                         for i in range(y1, y2):
                             for j in range(x1, x2):
                                 if depth_image.getpixel((i,j)) == depth_image.getpixel((i,j)):
-                                    depth_data = np.append(depth_data, depth_image.getpixel((i,j)))
+                                    self.depth_data = np.append(self.depth_data, depth_image.getpixel((i,j)))
                                 else:
-                                    depth_data = np.append(depth_data, 0)
+                                    self.depth_data = np.append(self.depth_data, 0)
 
-                        #depth_data = np.array(depth_data).reshape((1, 16384)) #230400))
-                        depth_data = np.array(depth_data).reshape((1, 3*16384)) #230400))
-                        #self.depth_dataset = np.append(self.depth_dataset, depth_data, axis=0)
-        #self.depth_dataset = self.depth_dataset.reshape((1600, 1, 480, 480))
-        self.depth_dataset = self.depth_dataset.reshape((1, 3, 128, 128))
-        #self.depth_dataset = self.depth_dataset.reshape((1630, 3, 128, 128))
-        #rotimg = RotateImage(self.depth_dataset)
-        #self.depth_dataset = np.array(rotimg.calc())
+                        #self.depth_data = np.array(self.depth_data).reshape((1, 16384)) #230400))
+                        self.depth_data = np.array(self.depth_data).reshape((1, 3*16384)) #230400))
+                        #self.self.depth_dataset = np.append(self.self.depth_dataset, self.depth_data, axis=0)
+        #self.self.depth_dataset = self.self.depth_dataset.reshape((1600, 1, 480, 480))
+        #self.self.depth_dataset = self.self.depth_dataset.reshape((1, 3, 128, 128))
+        self.depth_data = self.depth_data.reshape((1, 3, 128, 128))
+        #self.self.depth_dataset = self.self.depth_dataset.reshape((1630, 3, 128, 128))
+        #rotimg = RotateImage(self.self.depth_dataset)
+        #self.self.depth_dataset = np.array(rotimg.calc())
         print("Finished loading all depth data")
-        return self.depth_dataset
+        return self.depth_data
  
     def test(self, grasp_point):
-        depth_data = self.load_depth()
-        depth_data = depth_data.reshape(1, 2, 128, 128)
-        depth_data = torch.from_numpy(depth_data).float()
+        self.depth_data = self.load_depth()
+        self.depth_data = self.depth_data.reshape(1, 3, 128, 128)
+        self.depth_data = torch.from_numpy(self.depth_data).float()
         grasp_point = grasp_point.reshape(1, 4)
         grasp_point = torch.from_numpy(grasp_point).float()
-        depth_data = depth_data.to(self.device)
+        self.depth_data = self.depth_data.to(self.device)
         grasp_point = grasp_point.to(self.device)
-        depth_data.requires_grad = False
+        self.depth_data.requires_grad = False
         grasp_point.requires_grad = True
-        outputs = self.model(depth_data, grasp_point)
+        outputs = self.model(self.depth_data, grasp_point)
         labels =  torch.from_numpy(np.array(1)).float()
         # lossのgrasp_point偏微分に対してoptimaizationする．
         loss = self.criterion(outputs.view_as(labels), labels)
@@ -312,6 +225,7 @@ def inferred_point_callback(data):
     But currently, rotation is fixed for test. 
     """
     # euler angle will be strange when converting in eus program. Adjust parameter until solving this problem.  
+    #phi_list = [math.pi/2, math.pi*4/6, math.pi*5/6]
     phi_list = [math.pi/2, math.pi*4/6, math.pi*5/6]
     theta = 0 #-1.54 
     phi = random.choice(phi_list) #1.2(recentry, 2.0)
@@ -327,13 +241,19 @@ def inferred_point_callback(data):
     Ax = nearest[0]
     Ay = nearest[1]
     Az = nearest[2]
-    phi = inferred_grasp_point[3]
+    phi = inferred_grasp_point[3] - 0.5
     # When converting from here to eus, 
+    """
     if phi < 1.6:
         q_phi = 0
     else:
         q_phi = phi
-    q = tf.transformations.quaternion_from_euler(theta, q_phi, psi)
+    """
+    if (phi < 1.6):
+        phi = 1.6
+    elif (phi > 2.6):
+        phi = 2.6
+    q = tf.transformations.quaternion_from_euler(theta, phi, psi)
     posestamped = PoseStamped()
     pose = posestamped.pose
     pose.position.x = Ax
@@ -348,6 +268,7 @@ def inferred_point_callback(data):
     header.frame_id = "head_mount_kinect_rgb_optical_frame"
     # grasp_posrot is actual grasp point
     grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,4) 
+    print("nearest_inferred_grasp_point", grasp_posrot)
     # inferred_posrot is a inferred point but not for grasping
     inferred_posrot = np.array((inferred_grasp_point[0], inferred_grasp_point[1], inferred_grasp_point[2], inferred_grasp_point[3])) 
     
@@ -356,6 +277,7 @@ def inferred_point_callback(data):
     walltime = str(int(time.time()*1000000000))
     filename = 'Data/inferred_grasp_point/' + walltime + '.pkl'
     with open(filename, "wb") as f:
+        
         pickle.dump(grasp_posrot, f)
         print("saved inferred grasp point")
     filename = 'Data/inferred_point/' + walltime + '.pkl'
