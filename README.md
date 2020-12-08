@@ -92,7 +92,3 @@ When using rgb image,
 $ python ~/my_ws/src/jsk_2020_04_carry_dish/scripts/test_rgb_grasp_system.py 
 ```
 
-- scripts/grasp_system.py : learning system
-- scripts/pub_grasp_point.py
-- scripts/pointcloud_to_csv.py
-- euslisp/grasp_sequence.l
