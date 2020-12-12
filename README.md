@@ -57,11 +57,20 @@ roseus pr2-tabletop-object-grasp-dual-success.l
 
 ## grasp learning
 ### When training,
+#### with real PR2 robot
 ```
 $ roslaunch jsk_2020_4_carry_dish realpr2_tabletop.launch
 $ roseus euslisp/grasp_sequence.l 
 $ roslaunch jsk_2020_4_carry_dish gazebo_clicked_box_edge.launch use_sim:=false gui:=false
 ```
+
+#### with simulator
+```
+$ roslaunch jsk_2020_4_carry_dish common.launch
+$ roseus euslisp/grasp_sequence.l 
+$ roslaunch jsk_2020_4_carry_dish gazebo_clicked_box_edge.launch use_sim:=true gui:=false
+```
+
 ### Train the model
 When the input image is rgbd
 ```
