@@ -100,4 +100,13 @@ When using rgb image,
 ```
 $ python ~/my_ws/src/jsk_2020_04_carry_dish/scripts/test_rgb_grasp_system.py 
 ```
-
+### Demo
+```
+$ roslaunch jsk_2020_4_carry_dish realpr2_tabletop.launch
+$ roseus euslisp/grasp_move_sequence.l 
+$ roslaunch jsk_2020_4_carry_dish gazebo_clicked_box_edge.launch use_sim:=false gui:=false
+```
+After finishing tidying up, stop eus program and then execute
+```
+$ euslisp/pr2-tabletop-object-grasp-dual-tray-pick.l
+```
