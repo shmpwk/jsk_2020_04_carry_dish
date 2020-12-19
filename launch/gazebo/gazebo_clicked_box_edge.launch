@@ -80,10 +80,32 @@
     </node>
   </group>
  
+  
+  <!-- extract right side point cloud -->
+  <node name="extract_right_pcl"
+      pkg="jsk_2020_4_carry_dish" type="bbox_divider.py">
+  </node> 
+  
+  <node name="right_box_attention_clipper"
+        pkg="nodelet" type="nodelet"
+        args="standalone jsk_pcl/AttentionClipper">
+        <remap from="~input/points" to="/selected_pointcloud" />
+        <remap from="~input/box" to="/divided_bbox" />
+  </node>
+
+  <node name="right_box_extract_indices"
+        pkg="jsk_pcl_ros" type="extract_indices">
+    <remap from="~input" to="/selected_pointcloud" />
+    <remap from="~indices" to="right_box_attention_clipper/output/point_indices" />
+    <rosparam>
+      keep_organized: true
+    </rosparam>
+  </node>
+
   <node name="organized_edge_detector"
          pkg="nodelet" type="nodelet"
         args="load jsk_pcl/OrganizedEdgeDetector sample_manager">
-        <remap from="~input" to="/selected_pointcloud"/>
+        <remap from="~input" to="/right_box_extract_indices/output"/>
     <rosparam>
       publish_normal: true
       use_nan_boundary: true
