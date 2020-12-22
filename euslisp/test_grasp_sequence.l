@@ -20,7 +20,9 @@
   ;;(send *pr2* :reset-manip-pose)
   ;;(send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   ;;(send *ri* :wait-interpolation)
-  (send *pr2* :angle-vector #f(299.865 55.4297 53.3196 102.662 -121.542 125.071 -87.0418 -48.2131 -32.0168 -20.2598 -67.6931 -45.3044 -72.9084 -96.2568 -100.018 4.1047 54.75))
+  ;;(send *pr2* :angle-vector #f(299.865 55.4297 53.3196 102.662 -121.542 125.071 -87.0418 -48.2131 -32.0168 -20.2598 -67.6931 -45.3044 -72.9084 -96.2568 -100.018 4.1047 54.75))
+  ;;(send *pr2* :angle-vector #f(299.789 55.4297 53.3196 102.662 -121.541 125.071 -87.0426 -48.2131 -32.0168 -20.2592 -67.6931 -45.3044 -72.9084 -96.2581 -100.017 3.0787 60.2702))
+  (send *pr2* :angle-vector #f(299.621 121.396 48.589 101.118 -121.542 132.021 -107.883 -36.5066 -31.575 -19.8811 -61.5465 -44.6159 -73.0576 -96.6719 -99.728 0.252701 63.078))
   ;;(send *pr2* :angle-vector #f(66.6328 55.4297 53.3196 102.662 -121.541 125.071 -87.0381 -48.2128 -32.0168 -20.2592 -67.6931 -45.3044 -72.9084 -96.2568 -100.02 3.3427 60.45))
   ;;(send *pr2* :angle-vector #f(66.5726 55.4297 53.3196 102.662 -121.542 125.071 -87.0381 -48.2128 -32.0168 -20.2598 -67.6931 -45.3044 -72.9051 -96.2568 -100.02 3.3487 56.826))
 
@@ -307,10 +309,11 @@
           (publish-info "grasp failed!")          
           (ros::set-param (format nil "~/judge_grasp_success") 0)))) 
  
+    (send *ri* :go-pos-unsafe 0 -0.6 0)
     (setq *grasp-state* "placing")
     (publish-grasp-state)
     (publish-info "placing ...")
-    (send *pr2* *rarm* :move-end-pos #f(0 0 -230) :world)
+    (send *pr2* *rarm* :move-end-pos #f(50 0 -220) :world)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
     (get-judge)
@@ -326,6 +329,7 @@
     (setq *grasp-state* "returning")
     (publish-grasp-state)
     (pr2-pregrasp-pose)
+    (send *ri* :go-pos-unsafe 0 0.6 0)
     (publish-info "click tabletop object!")
   )
 
