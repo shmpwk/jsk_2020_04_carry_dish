@@ -80,7 +80,6 @@
 
 ;; one-shot-subscribe but not use now
 (defun sub-grasp-point ()
-  (print "one shot")  
   (let*(
          (msg (one-shot-subscribe "/grasp_point" geometry_msgs::PoseStamped
                                   ;;:after-stamp (ros::time 0)))
@@ -93,7 +92,6 @@
                            *base-frame-id* (send msg :header :frame_id)
                            (ros::time 0)))))
     ;;(print (rpy-angle (send target-point :worldrot)))
-    (print "aaaaaaaaaaaaaaaaaaaaaaaaa")
     (setq *cds* cds)
     (when (and cds base->parent)
       ;;(send *tfb* :send-transform
@@ -168,7 +166,7 @@
   )
 
 (defun grasp-target-callback (msg)
-  (get-depth)
+  ;;(get-depth)
   (print "clicked")
   (let ((target-point (sub-grasp-point))
   ;;(let ((target-point (grasp-point-cb msg))
@@ -309,7 +307,7 @@
           (publish-info "grasp failed!")          
           (ros::set-param (format nil "~/judge_grasp_success") 0)))) 
  
-    (send *ri* :go-pos-unsafe 0 -0.6 0)
+    ;;(send *ri* :go-pos-unsafe 0 -0.6 0)
     (setq *grasp-state* "placing")
     (publish-grasp-state)
     (publish-info "placing ...")
@@ -329,7 +327,7 @@
     (setq *grasp-state* "returning")
     (publish-grasp-state)
     (pr2-pregrasp-pose)
-    (send *ri* :go-pos-unsafe 0 0.6 0)
+    ;;(send *ri* :go-pos-unsafe 0 0.6 0)
     (publish-info "click tabletop object!")
   )
 

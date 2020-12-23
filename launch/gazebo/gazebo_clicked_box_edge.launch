@@ -84,16 +84,16 @@
  
   <!-- extract right side point cloud -->
   <group if="$(arg dish_mode)">
-      <node name="extract_right_pcl"
+      <node name="extract_dish__pcl"
           pkg="jsk_2020_4_carry_dish" type="bbox_divider.py">
       </node> 
   </group>
   <group unless="$(arg dish_mode)">
-      <node name="extract_right_pcl"
+      <node name="extract_cutlery_pcl"
           pkg="jsk_2020_4_carry_dish" type="bbox_center.py">
       </node> 
   </group>
-  <group unless="$(arg dual_mode)">
+  <group if="$(arg dual_mode)">
       <node name="extract_right_pcl"
           pkg="jsk_2020_4_carry_dish" type="bbox_edge.py">
       </node> 

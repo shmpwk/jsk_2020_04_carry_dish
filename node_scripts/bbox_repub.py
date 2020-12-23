@@ -17,19 +17,27 @@ flags.DEFINE_string(
 def divided_box_cb(msg):
     div_box = msg
     if (dFLAGS.obj == 'dish'):
-        pass
-    
+        if (msg.dimensions.x > msg.dimensions.y):
+            div_box.pose.position.x = msg.pose.position.x + msg.dimensions.x / 4
+            div_box.dimensions.y = msg.dimensions.y / 2
+        else:
+            div_box.dimensions.x = msg.dimensions.x / 2
+            div_box.pose.position.y = msg.pose.position.y + msg.dimensions.y / 4
+        
     elif (dFLAGS.obj == 'cutlery'):
         if (msg.dimensions.x > msg.dimensions.y):
-            div_box.dimensions.x = msg.dimensions.x / 50
+            div_box.dimensions.x = msg.dimensions.x / 80
         else:
-            div_box.dimensions.y = msg.dimensions.y / 50
+            div_box.dimensions.y = msg.dimensions.y / 80
      
     elif (dFLAGS.obj == 'tray'):
-        div_box.pose.position.y = msg.pose.position.y - msg.dimensions.y / 8 * 7
-        div_box.dimensions.x = msg.dimensions.x / 6
-        div_box.dimensions.y = msg.dimensions.y 
-
+        if (msg.dimensions.x > msg.dimensions.y):
+            div_box.pose.position.y = msg.pose.position.y + msg.dimensions.y / 8 * 7
+            div_box.dimensions.x = msg.dimensions.x / 6
+        else:
+            div_box.dimensions.y = msg.dimensions.y / 6
+            div_box.pose.position.x = msg.pose.position.x + msg.dimensions.x / 8 * 7
+     
     bbox_pub.publish(div_box)
 
 def main(argv):
