@@ -47,6 +47,7 @@
       </include>
   </group>
 
+  <!--
   <node name="depth_image_creator"
         pkg="nodelet" type="nodelet"
         args="standalone jsk_pcl/DepthImageCreator">
@@ -81,6 +82,7 @@
       </rosparam>
     </node>
   </group>
+  -->
  
   <!-- extract right side point cloud -->
   <group if="$(arg dish_mode)">
@@ -127,14 +129,6 @@
     </rosparam>
   </node>
 
-  <node name="supervoxel_segmentation"
-        pkg="nodelet" type="nodelet"
-        args="load jsk_pcl/SupervoxelSegmentation sample_manager">
-        <remap from="~input" to="/organized_edge_detector/output"/>
-    <rosparam>
-      seed_resolution: 0.5
-    </rosparam>
-  </node>
   <group unless="$(arg test_flag)">
       <node name="publish_grasp_point"
           pkg="jsk_2020_4_carry_dish" type="gazebo_pub_grasp_point.py" args="$(arg use_sim)">

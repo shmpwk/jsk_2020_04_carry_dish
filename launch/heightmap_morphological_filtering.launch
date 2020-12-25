@@ -36,8 +36,8 @@
       </rosparam>
     </node>
 
-    <node name="rviz"
+    <!--node name="rviz"
           pkg="rviz" type="rviz"
-          args="-d $(find jsk_pcl_ros)/sample/rviz/heightmap_morphological_filtering.rviz"/>
+          args="-d $(find jsk_pcl_ros)/sample/rviz/heightmap_morphological_filtering.rviz"/-->
   </group>
 </launch>
