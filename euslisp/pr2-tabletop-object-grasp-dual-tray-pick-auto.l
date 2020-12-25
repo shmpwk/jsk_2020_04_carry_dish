@@ -226,7 +226,7 @@
         (progn                                          
           (setq *grasp-state* "out of reach")      
           (publish-grasp-state)
-          (publish-info "grasp failed!")          
+          (publish-info "out of reach")          
           (ros::set-param (format nil "~/judge_grasp_success") 0)) 
       (get-judge)
       (return-from grasp-target-callback nil))
