@@ -32,6 +32,35 @@ def transform_world2local(source):
     target = listener.transformPose(target_frame, source)
     return target
 
+def save_all_edge_point(A, length, walltime):
+    B = np.arange(3, dtype=float).reshape(1,3)
+    print("length", length)
+    posestamped = PoseStamped()
+    pose = posestamped.pose
+    header = posestamped.header
+    header.stamp = rospy.Time(0)
+    header.frame_id = "head_mount_kinect_rgb_optical_frame"
+    for i in range(length): #It takes too much time when collecting all the edge points.
+    #for i in range(100): 
+        pose.position.x = A[i,0]
+        pose.position.y = A[i,1]
+        pose.position.z = A[i,2]
+        #pose.orientation.x = q[0]
+        #pose.orientation.y = q[1]
+        #pose.orientation.z = q[2]
+        #pose.orientation.w = q[3]
+        box_posestamped = transform_world2local(posestamped)
+        Bx = box_posestamped.pose.position.x
+        By = box_posestamped.pose.position.y
+        Bz = box_posestamped.pose.position.z
+        newB = np.array((Bx, By, Bz)).reshape(1,3)
+        B = np.append(B, newB, axis=0)
+        print("i", i)
+    filename = 'Data/all_edge_point/' + walltime + '.pkl'
+    with open(filename, "wb") as f:
+        pickle.dump(B, f)
+    print("save all edge point")
+     
 def choose_point_callback(data):
     assert isinstance(data, PointCloud2)
     """
@@ -47,7 +76,6 @@ def choose_point_callback(data):
         l = np.array(l, dtype='float')
         l = l.reshape(1,3)
         A = np.append(A, l, axis=0)
-        print("A", A)
         length += 1
             
     # Randomly choose one grasp point
@@ -89,7 +117,6 @@ def choose_point_callback(data):
     header = posestamped.header
     header.stamp = rospy.Time(0)
     header.frame_id = "head_mount_kinect_rgb_optical_frame"
-    print("data.header.frame_id", data.header.frame_id)
     print("publish grasp point")
     """
     Save 
@@ -119,6 +146,9 @@ def choose_point_callback(data):
     walltime = str(int(time.time()*1000000000))
     #filename = 'Data/grasp_point/grasp_point_' + now.strftime('%Y%m%d_%H%M%S') + '.pkl'
     filename = 'Data/grasp_point/' + walltime + '.pkl'
+
+    #save_all_edge_point(A, length, walltime)
+
     with open(filename, "wb") as f:
         pickle.dump(grasp_posrot, f)
         print("saved grasp point")
