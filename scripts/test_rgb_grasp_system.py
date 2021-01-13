@@ -170,7 +170,7 @@ class TestSystem():
         loss.backward()
         self.test_optimizer.step()
         #_, inferred_grasp_point = torch.max(outputs.grasp_point, 1)
-        gamma = 1
+        gamma = 0.1
         print("grad", grasp_point.grad)
         inferred_grasp_point = grasp_point - gamma * grasp_point.grad
         inferred_grasp_point = inferred_grasp_point.to('cpu').detach().numpy().copy()
@@ -275,9 +275,13 @@ def inferred_point_callback(data):
     # Save grasp_posrot and inferred_posrot
     now = datetime.datetime.now()
     walltime = str(int(time.time()*1000000000))
+    
+    filename = 'Data/all_edge_point/' + walltime + '.pkl'
+    with open(filename, "wb") as f:
+        pickle.dump(A, f)
+        print("saved all edge point")   
     filename = 'Data/inferred_grasp_point/' + walltime + '.pkl'
     with open(filename, "wb") as f:
-        
         pickle.dump(grasp_posrot, f)
         print("saved inferred grasp point")
     filename = 'Data/inferred_point/' + walltime + '.pkl'
