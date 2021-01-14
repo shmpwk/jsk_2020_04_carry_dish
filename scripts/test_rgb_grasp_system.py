@@ -16,6 +16,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torchsummary import summary
 import os
 import rospy
+import message_filters
 from sensor_msgs.msg import PointCloud2
 from geometry_msgs.msg import PoseStamped
 import tf
@@ -216,19 +217,28 @@ def transform_world2local(source):
     target = listener.transformPose(target_frame, source)
     return target
 
-def inferred_point_callback(data):
-    gen = point_cloud2.read_points(data, field_names = ("x", "y", "z"), skip_nans=True)
-    length = 1 
+def inferred_point_callback(edge, obj_pcl):
+    gen_edge = point_cloud2.read_points(edge, field_names = ("x", "y", "z"), skip_nans=True)
+    edge_length = 1 
     A = np.empty(3, dtype=float).reshape(1,3)
     # Whole edge (x,y,z) points
-    for l in gen:
+    for l in gen_edge:
         l = np.array(l, dtype='float')
         l = l.reshape(1,3)
         A = np.append(A, l, axis=0)
-        length += 1
+        edge_length += 1
+    gen_all = point_cloud2.read_points(obj_pcl, field_names = ("x", "y", "z"), skip_nans=True)
+    all_length = 1 
+    B = np.empty(3, dtype=float).reshape(1,3)
+    # Whole edge (x,y,z) points
+    for l in gen_all:
+        l = np.array(l, dtype='float')
+        l = l.reshape(1,3)
+        B = np.append(B, l, axis=0)
+        all_length += 1
     
     # Randomly choose one grasp point
-    idx = np.random.randint(length, size=1) #To do : change 10 to data length
+    idx = np.random.randint(edge_length, size=1) #To do : change 10 to data length
     Ax = A[idx, 0]
     Ay = A[idx, 1]
     Az = A[idx, 2]
@@ -305,6 +315,10 @@ def inferred_point_callback(data):
     with open(filename, "wb") as f:
         pickle.dump(A, f)
         print("saved all edge point")
+    filename = 'Data/obj_pcl/' + walltime + '.pkl'
+    with open(filename, "wb") as f:
+        pickle.dump(B, f)
+        print("saved object pcl")
     posestamped = PoseStamped()
     pose = posestamped.pose
     header = posestamped.header
@@ -340,7 +354,11 @@ if __name__ == '__main__':
     #subscribe edge pointcloud data
     try:
         rospy.init_node('grasp_point_server')
-        rospy.Subscriber('/organized_edge_detector/output', PointCloud2, inferred_point_callback, queue_size=1000)
+        sub_edge = message_filters.Subscriber('/organized_edge_detector/output', PointCloud2)
+        sub_obj = message_filters.Subscriber('/right_box_extract_indices/output', PointCloud2)
+        mf = message_filters.ApproximateTimeSynchronizer([sub_edge, sub_obj], 100, 10.0)
+        mf.registerCallback(inferred_point_callback)
+        #rospy.Subscriber('/organized_edge_detector/output', PointCloud2, inferred_point_callback, queue_size=1000)
         pub = rospy.Publisher('/grasp_point', PoseStamped, queue_size=100)
         """
         while not rospy.is_shutdown():
