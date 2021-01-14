@@ -19,6 +19,7 @@ import rospy
 import message_filters
 from sensor_msgs.msg import PointCloud2
 from geometry_msgs.msg import PoseStamped
+from jsk_recognition_msgs.msg import BoundingBox
 import tf
 import random
 import time
@@ -204,6 +205,17 @@ def nearest_point(points, inferred_point):
     """
     return points[index] 
 
+def tf_base2camera(source):
+    #target_pose = TransformStamped()
+    listener = tf.TransformListener()
+    target_frame = "head_mount_kinect_rgb_optical_frame"
+    source_frame = "base_footprint"
+    listener.waitForTransform(target_frame, source_frame, rospy.Time(0), rospy.Duration(10.0))
+    source.header.stamp = rospy.Time(0)
+    target = listener.lookupTransform(target_frame, source_frame, rospy.Time(0))
+    #target = listener.transformPose(target_frame, source)
+    return target
+
 def transform_world2local(source):
     """
     Transform from world (or camera frame?) to local (segmentation_decomposeroutput00 or projected point?)/
@@ -213,11 +225,12 @@ def transform_world2local(source):
     target_frame = "segmentation_decomposeroutput00"
     source_frame = "head_mount_kinect_rgb_optical_frame"
     listener.waitForTransform(target_frame, source_frame, rospy.Time(0), rospy.Duration(10.0))
-    #listener.lookupTransform(target_frame, source_frame, rospy.Time(0))
-    target = listener.transformPose(target_frame, source)
+    target = listener.lookupTransform(target_frame, source_frame, rospy.Time(0))
+    #target = listener.transformPose(target_frame, source)
     return target
 
-def inferred_point_callback(edge, obj_pcl):
+def inferred_point_callback(edge, obj_pcl, box):
+   
     gen_edge = point_cloud2.read_points(edge, field_names = ("x", "y", "z"), skip_nans=True)
     edge_length = 1 
     A = np.empty(3, dtype=float).reshape(1,3)
@@ -236,6 +249,15 @@ def inferred_point_callback(edge, obj_pcl):
         l = l.reshape(1,3)
         B = np.append(B, l, axis=0)
         all_length += 1
+ 
+    #box = tf_base2camera(box)
+    print("box", box)
+    box_x = box.pose.position.x
+    box_y = box.pose.position.y
+    box_z = box.pose.position.z
+    box_header = box.header.frame_id
+    box_pos = np.array((box_x, box_y, box_z))
+    print("box_header", box_header)
     
     # Randomly choose one grasp point
     idx = np.random.randint(edge_length, size=1) #To do : change 10 to data length
@@ -303,25 +325,29 @@ def inferred_point_callback(edge, obj_pcl):
         now = datetime.datetime.now()
         walltime = str(int(time.time()*1000000000))
         
-        filename = 'Data/inferred_grasp_point/' + walltime + '.pkl'
+        filename = 'Data/plt/inferred_grasp_point/' + walltime + '.pkl'
         with open(filename, "wb") as f:
             pickle.dump(grasp_posrot, f)
             print("saved inferred grasp point")
-        filename = 'Data/inferred_point/' + walltime + '.pkl'
+        filename = 'Data/plt/inferred_point/' + walltime + '.pkl'
         with open(filename, "wb") as ff:
             pickle.dump(inferred_posrot, ff)
             print("saved inferred point")
-    filename = 'Data/all_edge_point/' + walltime + '.pkl'
+    filename = 'Data/plt/all_edge_point/' + walltime + '.pkl'
     with open(filename, "wb") as f:
         pickle.dump(A, f)
         print("saved all edge point")
-    filename = 'Data/obj_pcl/' + walltime + '.pkl'
+    filename = 'Data/plt/obj_pcl/' + walltime + '.pkl'
     with open(filename, "wb") as f:
         pickle.dump(B, f)
         print("saved object pcl")
-    posestamped = PoseStamped()
-    pose = posestamped.pose
-    header = posestamped.header
+    filename = 'Data/plt/box_pos/' + walltime + '.pkl'
+    with open(filename, "wb") as f:
+        pickle.dump(box_pos, f)
+        print("saved box pos")
+    tf_posestamped = PoseStamped()
+    pose = tf_posestamped.pose
+    header = tf_posestamped.header
     header.stamp = rospy.Time(0)
     header.frame_id = "head_mount_kinect_rgb_optical_frame"
     pose.position.x = 0
@@ -331,7 +357,19 @@ def inferred_point_callback(edge, obj_pcl):
     pose.orientation.y = 0 
     pose.orientation.z = 0 
     pose.orientation.w = 0 
-    trans = transform_world2local(posestamped)
+    #trans = tf_base2camera(tf_posestamped)
+    (pos, ori) = tf_base2camera(tf_posestamped)
+    #(pos, ori) = transform_world2local(tf_posestamped)
+    x = pos[0]
+    y = pos[1]
+    z = pos[2]
+    s = ori[0]
+    t = ori[1]
+    u = ori[2]
+    v = ori[3]
+
+    """
+    trans = transform_world2local(tf_posestamped)
     x = trans.pose.position.x 
     y = trans.pose.position.y 
     z = trans.pose.position.z
@@ -339,8 +377,10 @@ def inferred_point_callback(edge, obj_pcl):
     t = pose.orientation.y  
     u = pose.orientation.z  
     v = pose.orientation.w  
+    """
     tfc = np.array((x, y, z, s, t, u, v), dtype='float').reshape(1,7)
-    filename = 'Data/trans/' + walltime + '.pkl'
+    print("tfc",tfc)
+    filename = 'Data/plt/trans/' + walltime + '.pkl'
     with open(filename, "wb") as f:
         pickle.dump(tfc, f)
         print("saved transform")
@@ -356,7 +396,8 @@ if __name__ == '__main__':
         rospy.init_node('grasp_point_server')
         sub_edge = message_filters.Subscriber('/organized_edge_detector/output', PointCloud2)
         sub_obj = message_filters.Subscriber('/right_box_extract_indices/output', PointCloud2)
-        mf = message_filters.ApproximateTimeSynchronizer([sub_edge, sub_obj], 100, 10.0)
+        sub_box = message_filters.Subscriber('/bounding_box_marker/selected_box', BoundingBox)
+        mf = message_filters.ApproximateTimeSynchronizer([sub_edge, sub_obj, sub_box], 100, 10.0)
         mf.registerCallback(inferred_point_callback)
         #rospy.Subscriber('/organized_edge_detector/output', PointCloud2, inferred_point_callback, queue_size=1000)
         pub = rospy.Publisher('/grasp_point', PoseStamped, queue_size=100)
