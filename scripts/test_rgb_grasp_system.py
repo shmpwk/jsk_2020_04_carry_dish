@@ -203,6 +203,19 @@ def nearest_point(points, inferred_point):
     """
     return points[index] 
 
+def transform_world2local(source):
+    """
+    Transform from world (or camera frame?) to local (segmentation_decomposeroutput00 or projected point?)/
+    """
+    #target_pose = TransformStamped()
+    listener = tf.TransformListener()
+    target_frame = "segmentation_decomposeroutput00"
+    source_frame = "head_mount_kinect_rgb_optical_frame"
+    listener.waitForTransform(target_frame, source_frame, rospy.Time(0), rospy.Duration(10.0))
+    #listener.lookupTransform(target_frame, source_frame, rospy.Time(0))
+    target = listener.transformPose(target_frame, source)
+    return target
+
 def inferred_point_callback(data):
     gen = point_cloud2.read_points(data, field_names = ("x", "y", "z"), skip_nans=True)
     length = 1 
@@ -234,60 +247,90 @@ def inferred_point_callback(data):
     print("random grasp posrost", random_grasp_posrot) 
     # Inference!
     ts = TestSystem()
-    inferred_grasp_point = ts.test(random_grasp_posrot)
-    inferred_grasp_point = inferred_grasp_point.reshape(4)
-    # Find nearest edge point based on inferred point
-    nearest = nearest_point(A, inferred_grasp_point[:3:])
-    Ax = nearest[0]
-    Ay = nearest[1]
-    Az = nearest[2]
-    phi = inferred_grasp_point[3] - 0.5
-    # When converting from here to eus, 
-    """
-    if phi < 1.6:
-        q_phi = 0
-    else:
-        q_phi = phi
-    """
-    if (phi < 1.6):
-        phi = 1.6
-    elif (phi > 2.6):
-        phi = 2.6
-    q = tf.transformations.quaternion_from_euler(theta, phi, psi)
-    posestamped = PoseStamped()
-    pose = posestamped.pose
-    pose.position.x = Ax
-    pose.position.y = Ay
-    pose.position.z = Az 
-    pose.orientation.x = q[0]
-    pose.orientation.y = q[1]
-    pose.orientation.z = q[2]
-    pose.orientation.w = q[3]
-    header = posestamped.header
-    header.stamp = rospy.Time(0)
-    header.frame_id = "head_mount_kinect_rgb_optical_frame"
-    # grasp_posrot is actual grasp point
-    grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,4) 
-    print("nearest_inferred_grasp_point", grasp_posrot)
-    # inferred_posrot is a inferred point but not for grasping
-    inferred_posrot = np.array((inferred_grasp_point[0], inferred_grasp_point[1], inferred_grasp_point[2], inferred_grasp_point[3])) 
-    
-    # Save grasp_posrot and inferred_posrot
-    now = datetime.datetime.now()
-    walltime = str(int(time.time()*1000000000))
-    
+    for iter in range(10):
+        inferred_grasp_point = ts.test(random_grasp_posrot)
+        inferred_grasp_point = inferred_grasp_point.reshape(4)
+        # Find nearest edge point based on inferred point
+        nearest = nearest_point(A, inferred_grasp_point[:3:])
+        Ax = nearest[0]
+        Ay = nearest[1]
+        Az = nearest[2]
+        phi = inferred_grasp_point[3] #- 0.5
+        # When converting from here to eus, 
+        """
+        if phi < 1.6:
+            q_phi = 0
+        else:
+            q_phi = phi
+        """
+        if (phi < 1.6):
+            phi = 1.6
+        elif (phi > 2.6):
+            phi = 2.6
+        q = tf.transformations.quaternion_from_euler(theta, phi, psi)
+        posestamped = PoseStamped()
+        pose = posestamped.pose
+        pose.position.x = Ax
+        pose.position.y = Ay
+        pose.position.z = Az 
+        pose.orientation.x = q[0]
+        pose.orientation.y = q[1]
+        pose.orientation.z = q[2]
+        pose.orientation.w = q[3]
+        header = posestamped.header
+        header.stamp = rospy.Time(0)
+        header.frame_id = "head_mount_kinect_rgb_optical_frame"
+        # grasp_posrot is actual grasp point
+        grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,4) 
+        print("nearest_inferred_grasp_point", grasp_posrot)
+        # inferred_posrot is a inferred point but not for grasping
+        inferred_posrot = np.array((inferred_grasp_point[0], inferred_grasp_point[1], inferred_grasp_point[2], inferred_grasp_point[3])) 
+        
+        # for next iter
+        random_grasp_posrot = grasp_posrot
+
+        # Save grasp_posrot and inferred_posrot
+        now = datetime.datetime.now()
+        walltime = str(int(time.time()*1000000000))
+        
+        filename = 'Data/inferred_grasp_point/' + walltime + '.pkl'
+        with open(filename, "wb") as f:
+            pickle.dump(grasp_posrot, f)
+            print("saved inferred grasp point")
+        filename = 'Data/inferred_point/' + walltime + '.pkl'
+        with open(filename, "wb") as ff:
+            pickle.dump(inferred_posrot, ff)
+            print("saved inferred point")
     filename = 'Data/all_edge_point/' + walltime + '.pkl'
     with open(filename, "wb") as f:
         pickle.dump(A, f)
-        print("saved all edge point")   
-    filename = 'Data/inferred_grasp_point/' + walltime + '.pkl'
+        print("saved all edge point")
+    posestamped = PoseStamped()
+    pose = posestamped.pose
+    header = posestamped.header
+    header.stamp = rospy.Time(0)
+    header.frame_id = "head_mount_kinect_rgb_optical_frame"
+    pose.position.x = 0
+    pose.position.y = 0
+    pose.position.z = 0
+    pose.orientation.x = 0 
+    pose.orientation.y = 0 
+    pose.orientation.z = 0 
+    pose.orientation.w = 0 
+    trans = transform_world2local(posestamped)
+    x = trans.pose.position.x 
+    y = trans.pose.position.y 
+    z = trans.pose.position.z
+    s = pose.orientation.x 
+    t = pose.orientation.y  
+    u = pose.orientation.z  
+    v = pose.orientation.w  
+    tfc = np.array((x, y, z, s, t, u, v), dtype='float').reshape(1,7)
+    filename = 'Data/trans/' + walltime + '.pkl'
     with open(filename, "wb") as f:
-        pickle.dump(grasp_posrot, f)
-        print("saved inferred grasp point")
-    filename = 'Data/inferred_point/' + walltime + '.pkl'
-    with open(filename, "wb") as ff:
-        pickle.dump(inferred_posrot, ff)
-        print("saved inferred point")
+        pickle.dump(tfc, f)
+        print("saved transform")
+      
     pub.publish(posestamped)
 
 if __name__ == '__main__':
