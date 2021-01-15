@@ -212,8 +212,8 @@ def tf_base2camera(source):
     source_frame = "base_footprint"
     listener.waitForTransform(target_frame, source_frame, rospy.Time(0), rospy.Duration(10.0))
     source.header.stamp = rospy.Time(0)
-    target = listener.lookupTransform(target_frame, source_frame, rospy.Time(0))
-    #target = listener.transformPose(target_frame, source)
+    #target = listener.lookupTransform(target_frame, source_frame, rospy.Time(0))
+    target = listener.transformPose(target_frame, source)
     return target
 
 def transform_world2local(source):
@@ -225,8 +225,8 @@ def transform_world2local(source):
     target_frame = "segmentation_decomposeroutput00"
     source_frame = "head_mount_kinect_rgb_optical_frame"
     listener.waitForTransform(target_frame, source_frame, rospy.Time(0), rospy.Duration(10.0))
-    target = listener.lookupTransform(target_frame, source_frame, rospy.Time(0))
-    #target = listener.transformPose(target_frame, source)
+    #target = listener.lookupTransform(target_frame, source_frame, rospy.Time(0))
+    target = listener.transformPose(target_frame, source)
     return target
 
 def inferred_point_callback(edge, obj_pcl, box):
@@ -250,7 +250,7 @@ def inferred_point_callback(edge, obj_pcl, box):
         B = np.append(B, l, axis=0)
         all_length += 1
  
-    #box = tf_base2camera(box)
+    box = tf_base2camera(box)
     print("box", box)
     box_x = box.pose.position.x
     box_y = box.pose.position.y
@@ -357,6 +357,7 @@ def inferred_point_callback(edge, obj_pcl, box):
     pose.orientation.y = 0 
     pose.orientation.z = 0 
     pose.orientation.w = 0 
+    """
     #trans = tf_base2camera(tf_posestamped)
     (pos, ori) = tf_base2camera(tf_posestamped)
     #(pos, ori) = transform_world2local(tf_posestamped)
@@ -377,7 +378,7 @@ def inferred_point_callback(edge, obj_pcl, box):
     t = pose.orientation.y  
     u = pose.orientation.z  
     v = pose.orientation.w  
-    """
+    
     tfc = np.array((x, y, z, s, t, u, v), dtype='float').reshape(1,7)
     print("tfc",tfc)
     filename = 'Data/plt/trans/' + walltime + '.pkl'
