@@ -79,7 +79,7 @@ px = ff[1:,0]
 py = ff[1:,1]
 pz = ff[1:,2]
 
-grasp_dataset = np.empty((0,3))
+grasp_dataset = np.empty((0,7))
 
 grasp_path = "Data/plt/trans"
 g_key = '.pkl'
@@ -92,6 +92,11 @@ for g_dir_name, g_sub_dirs, g_files in sorted(os.walk(grasp_path)):
 cx = ff[:,0]
 cy = ff[:,1]
 cz = ff[:,2]
+cs = ff[:,3]
+ct = ff[:,4]
+cu = ff[:,5]
+cv = ff[:,6]
+print(cx,cy,cz,cs,ct,cu,cv)
 
 grasp_dataset = np.empty((0,3))
 
@@ -110,10 +115,6 @@ dgx = ((gx-cy)-(bx-cy))
 dgy = ((gy+cx)-(by+cx))
 dgz = np.sqrt(dgx**2 + dgy**2) * np.tan(math.pi-gt)
 n = np.sqrt(dgx**2 + dgy**2 + dgz**2) 
-print(dgx)
-print(dgy)
-print(dgz)
-print(np.sqrt(dgx**2 + dgy**2))
 #dgz = math.sqrt((gx-cy)**2+(gy+cx)**2) * tan(math.pi-gt)
 #soa = np.array([[0, 0, 0.02, 0.05, 0.03, 0],
 #                [0, 0, 0.3, 0.01, 0.03, 0]])
@@ -135,6 +136,25 @@ ax.scatter(px-cy, py+cx, cz-pz, s=1, c="black")
 ax.scatter(ix-cy, iy+cx, cz-iz, s=40, c="blue")
 ax.scatter(gx-cy, gy+cx, cz-gz, s=70, c="red")
 ax.scatter(bx-cy, by+cx, cz-bz, s=100, c="orange")
+"""
+ax.set_xticks([])
+ax.set_yticks([])
+ax.set_zticks([])
+# make the panes transparent
+ax.xaxis.set_pane_color((0, 0, 0, 0.0))
+ax.yaxis.set_pane_color((0, 0, 0, 0.0))
+ax.zaxis.set_pane_color((0, 0, 0, 0.0))
+# make the grid lines transparent
+ax.xaxis._axinfo["grid"]['color'] =  (0,0,0,0)
+ax.yaxis._axinfo["grid"]['color'] =  (0,0,0,0)
+ax.zaxis._axinfo["grid"]['color'] =  (0,0,0,0)
+"""
+# transparent backgroud. see https://stackoverrun.com/ja/q/10585327
+ax.axis("off")
+fig.patch.set_visible(False)
+ax.patch.set_visible(False)
+ax.set_axis_off()
+ax._axis3don = False
 #最後に.show()を書いてグラフ表示
 plt.show()
 
