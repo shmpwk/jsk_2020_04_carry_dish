@@ -31,6 +31,14 @@ gx = grasp_dataset[:,0]
 gy = grasp_dataset[:,1]
 gz = grasp_dataset[:,2]
 gt = grasp_dataset[:,3]
+gxp = grasp_dataset[:9,0]
+gyp = grasp_dataset[:9,1]
+gzp = grasp_dataset[:9,2]
+gtp = grasp_dataset[:9,3]
+gxl = grasp_dataset[9,0]
+gyl = grasp_dataset[9,1]
+gzl = grasp_dataset[9,2]
+gtl = grasp_dataset[9,3]
 grasp_dataset = np.empty((0,4))
 
 grasp_path = "Data/plt/inferred_point"
@@ -42,10 +50,14 @@ for g_dir_name, g_sub_dirs, g_files in sorted(os.walk(grasp_path)):
                 ff = pickle.load(f)
                 ff = np.array(ff).reshape((1, 4))
                 grasp_dataset = np.append(grasp_dataset, ff, axis=0)
-ix = grasp_dataset[:,0]
-iy = grasp_dataset[:,1]
-iz = grasp_dataset[:,2]
-it = grasp_dataset[:,3]
+ix = grasp_dataset[:9,0]
+iy = grasp_dataset[:9,1]
+iz = grasp_dataset[:9,2]
+it = grasp_dataset[:9,3]
+ixl = grasp_dataset[9,0]
+iyl = grasp_dataset[9,1]
+izl = grasp_dataset[9,2]
+itl = grasp_dataset[9,3]
 #ims = grasp_dataset.reshape((10, 200, 200))
 #plt.imshow(np.transpose(ims[0, :, :]))
 #plt.show()
@@ -119,23 +131,31 @@ n = np.sqrt(dgx**2 + dgy**2 + dgz**2)
 #soa = np.array([[0, 0, 0.02, 0.05, 0.03, 0],
 #                [0, 0, 0.3, 0.01, 0.03, 0]])
 soa = np.array([[gx-cy, gy+cx, cz-gz, -dgx/n/50, -dgy/n/50, -dgz/n/50]])
-X, Y, Z, U, V, W = zip(*soa)
+soal = np.array([[(gx-cy)[9], (gy+cx)[9], (cz-gz)[9], -(dgx/n/50)[9], -(dgy/n/50)[9], -(dgz/n/50)[9]]])
+#soal = soa
+X, Y, Z, U, V, W = zip(*soa)[:][:][:]
+Xl, Yl, Zl, Ul, Vl, Wl = zip(*soal)[:][:][:]
+
 print(np.array((X, Y, Z, U, V, W)).shape)
+print(np.array((Xl, Yl, Zl, Ul, Vl, Wl)).shape)
 
 #グラフの枠を作っていく
 fig = plt.figure()
 ax = Axes3D(fig)
-ax.quiver(X, Y, Z, U, V, W)
+ax.quiver(X, Y, Z, U, V, W, color="orange")
+ax.quiver(Xl, Yl, Zl, Ul, Vl, Wl, color="red", linewidth=5)
 
 #.plotで描画
 #linestyle='None'にしないと初期値では線が引かれるが、3次元の散布図だと大抵ジャマになる
 #markerは無難に丸
 #ax.plot(x, y, z, marker="o", s=20,  linestyle='None')
-ax.scatter(x-cy, y+cx, cz-z, s=5, c="green")
-ax.scatter(px-cy, py+cx, cz-pz, s=1, c="black")
-ax.scatter(ix-cy, iy+cx, cz-iz, s=40, c="blue")
-ax.scatter(gx-cy, gy+cx, cz-gz, s=70, c="red")
-ax.scatter(bx-cy, by+cx, cz-bz, s=100, c="orange")
+ax.scatter(x-cy, y+cx, cz-z, s=0.8, c="green")
+ax.scatter(px-cy, py+cx, cz-pz, s=0.05, c="black")
+ax.scatter(ix-cy, iy+cx, cz-iz, s=40, c="cyan")
+ax.scatter(ixl-cy, iyl+cx, cz-izl, s=40, c="blue")
+ax.scatter(gxp-cy, gyp+cx, cz-gzp, s=50, c="orange")
+ax.scatter(gxl-cy, gyl+cx, cz-gzl, s=70, c="red")
+ax.scatter(bx-cy, by+cx, cz-bz, s=100, c="olive")
 """
 ax.set_xticks([])
 ax.set_yticks([])
