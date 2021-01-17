@@ -8,6 +8,7 @@ from PIL import Image
 from sklearn import preprocessing
 import matplotlib.pyplot as plt
 import math
+import matplotlib.animation as animation
 from scipy.spatial import distance
 #seabornでグラフをきれいにしたいだけのコード
 import seaborn as sns
@@ -139,42 +140,65 @@ Xl, Yl, Zl, Ul, Vl, Wl = zip(*soal)[:][:][:]
 print(np.array((X, Y, Z, U, V, W)).shape)
 print(np.array((Xl, Yl, Zl, Ul, Vl, Wl)).shape)
 
+s = 0
 #グラフの枠を作っていく
 fig = plt.figure()
 ax = Axes3D(fig)
-ax.quiver(X, Y, Z, U, V, W, color="orange")
-ax.quiver(Xl, Yl, Zl, Ul, Vl, Wl, color="red", linewidth=5)
 
-#.plotで描画
-#linestyle='None'にしないと初期値では線が引かれるが、3次元の散布図だと大抵ジャマになる
-#markerは無難に丸
-#ax.plot(x, y, z, marker="o", s=20,  linestyle='None')
-ax.scatter(x-cy, y+cx, cz-z, s=0.8, c="green")
-ax.scatter(px-cy, py+cx, cz-pz, s=0.05, c="black")
-ax.scatter(ix-cy, iy+cx, cz-iz, s=40, c="cyan")
-ax.scatter(ixl-cy, iyl+cx, cz-izl, s=40, c="blue")
-ax.scatter(gxp-cy, gyp+cx, cz-gzp, s=50, c="orange")
-ax.scatter(gxl-cy, gyl+cx, cz-gzl, s=70, c="red")
-ax.scatter(bx-cy, by+cx, cz-bz, s=100, c="olive")
-"""
-ax.set_xticks([])
-ax.set_yticks([])
-ax.set_zticks([])
-# make the panes transparent
-ax.xaxis.set_pane_color((0, 0, 0, 0.0))
-ax.yaxis.set_pane_color((0, 0, 0, 0.0))
-ax.zaxis.set_pane_color((0, 0, 0, 0.0))
-# make the grid lines transparent
-ax.xaxis._axinfo["grid"]['color'] =  (0,0,0,0)
-ax.yaxis._axinfo["grid"]['color'] =  (0,0,0,0)
-ax.zaxis._axinfo["grid"]['color'] =  (0,0,0,0)
-"""
-# transparent backgroud. see https://stackoverrun.com/ja/q/10585327
-ax.axis("off")
-fig.patch.set_visible(False)
-ax.patch.set_visible(False)
-ax.set_axis_off()
-ax._axis3don = False
+while True:
+    ax.quiver(X, Y, Z, U, V, W, color="orange")
+    ax.quiver(Xl, Yl, Zl, Ul, Vl, Wl, color="red", linewidth=5)
+
+    #.plotで描画
+    #linestyle='None'にしないと初期値では線が引かれるが、3次元の散布図だと大抵ジャマになる
+    #markerは無難に丸
+    #ax.plot(x, y, z, marker="o", s=20,  linestyle='None')
+    ax.scatter(x-cy, y+cx, cz-z, s=0.8, c="green")
+    ax.scatter(px-cy, py+cx, cz-pz, s=0.05, c="black")
+    #ax.scatter(ix-cy, iy+cx, cz-iz, s=40, c="cyan")
+    ax.scatter(ixl-cy, iyl+cx, cz-izl, s=40, c="blue")
+    #ax.scatter(gxp-cy, gyp+cx, cz-gzp, s=50, c="orange")
+    ax.scatter(gxl-cy, gyl+cx, cz-gzl, s=70, c="red")
+    ax.scatter(bx-cy, by+cx, cz-bz, s=100, c="olive")
+    """
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_zticks([])
+    # make the panes transparent
+    ax.xaxis.set_pane_color((0, 0, 0, 0.0))
+    ax.yaxis.set_pane_color((0, 0, 0, 0.0))
+    ax.zaxis.set_pane_color((0, 0, 0, 0.0))
+    # make the grid lines transparent
+    ax.xaxis._axinfo["grid"]['color'] =  (0,0,0,0)
+    ax.yaxis._axinfo["grid"]['color'] =  (0,0,0,0)
+    ax.zaxis._axinfo["grid"]['color'] =  (0,0,0,0)
+    """
+    # transparent backgroud. see https://stackoverrun.com/ja/q/10585327
+    ax.axis("off")
+    fig.patch.set_visible(False)
+    ax.patch.set_visible(False)
+    ax.set_axis_off()
+    ax._axis3don = False
+    
+    ims = list(np.array((gxp-cy, gyp+cx, cz-gzp))[:,s])
+    cyan = list(np.array((ix-cy, iy+cx, cz-iz))[:,s])
+    print(ims)
+    print("-----")
+    print(cyan)
+    print("=======")
+    ax.scatter(*ims, s=50, c="orange")
+    ax.scatter(*cyan, s=40, c="cyan")
+    s += 1
+    if s == 9:
+        s = 0
+        print("init")
+        ax.set_axis_off()
+    plt.pause(0.1)
+
+#ax.scatter(gxp-cy, gyp+cx, cz-gzp, s=50, c="orange")
 #最後に.show()を書いてグラフ表示
-plt.show()
-
+#ims = []
+#ims = list([gxp-cy, gyp+cx, cz-gzp])
+#ani = animation.artistAnimation(fig, ims, inteval=100)
+#ani.save('anim.gif', writer="imagemagick")
+#plt.show()
