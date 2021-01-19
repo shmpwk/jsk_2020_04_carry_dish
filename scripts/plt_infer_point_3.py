@@ -56,9 +56,9 @@ def update(frame, xx, yy, zz):
         XX = np.array(X)[:,frame]
         YY = np.array(Y)[:,frame]
         ZZ = np.array(Z)[:,frame]
-        UU = np.array(U)[:,frame]+0.01-0.0017*frame*random.uniform(0.5, 1.0)
-        VV = np.array(V)[:,frame]+0.01-0.0017*frame*random.uniform(0.5, 1.0)
-        WW = np.array(W)[:,frame]+0.02-0.002*frame
+        UU = np.array(U)[:,frame]-0.01+0.001*frame*random.uniform(0.5, 1.0)
+        VV = np.array(V)[:,frame]-0.01+0.001*frame*random.uniform(0.5, 1.0)
+        WW = np.array(W)[:,frame]+0.005-0.001*frame
         ax.quiver(XX, YY, ZZ, UU, VV, WW, color="orange")
 
     #.plotで描画
