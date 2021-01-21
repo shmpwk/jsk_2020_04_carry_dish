@@ -3,7 +3,7 @@
   <arg name="gui" default="false"/>
   <arg name="RGB_IMAGE" default="/kinect_head/rgb/image_raw"/>
   <arg name="RGB_CAMERA_INFO" default="/kinect_head/rgb/camera_info"/>
-  <arg name="CLOUD" default="/kinect_head/depth_registered/points" />
+  <arg name="CLOUD" default="/kinect_head_remote/depth_registered/points" />
   
   <!--node name="static_tf_publisher"
         pkg="tf" type="static_transform_publisher"
