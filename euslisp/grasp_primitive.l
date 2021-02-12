@@ -1,7 +1,7 @@
 #!/usr/bin/env roseus
 ;; Author: Shumpei Wakabayashi <wakabayashi@jsk.imi.i.u-tokyo.ac.jp>
 ;; for all learning grasp system
-
+(defvar *grasp-bbox* "/segmentation_decomposer/boxes")
 (defvar *grasp-target-bounding-box-topic* "/bounding_box_marker/selected_box")
 (defvar *grasp-status-topic* "/tabletop_object_grasp_status")
 (defvar *base-frame-id* "/base_footprint")
@@ -99,9 +99,20 @@
     )
   )
 
-(defun grasp-target-callback (msg)
+;;(defun grasp-target-callback (msg)
+(defun grasp-target-callback (&rest args)
+  (setq msg (one-shot-subscribe *grasp-bbox*
+                  jsk_recognition_msgs::BoundingBoxArray
+                  :timeout 10000))
   (print "clicked")
-  (let ((target-obj (bounding-box->cube msg)))
+  (print msg)
+  (print (elt (send msg :boxes) 0))
+  (print "==============================")
+
+  (let ((target-obj (bounding-box->cube (elt (send msg :boxes) 0))))
+    (unless target-obj
+      (ros::ros-logerr "target point is nil !!")
+      (return-from grasp-target-callback nil))
     (if *grasping-object-p*
         (progn
           (publish-warn "cancel grasping...")
@@ -191,16 +202,16 @@
     (publish-info "click tabletop object!")
   )
 
-(defun wait-for-grasp-target ()
-  (ros::subscribe *grasp-target-bounding-box-topic*
-                  jsk_recognition_msgs::BoundingBox #'grasp-target-callback)
-  (publish-info "click tabletop object!")
-  )
+;;(defun wait-for-grasp-target ()
+;;  (ros::subscribe *grasp-target-bounding-box-topic*
+;;                  jsk_recognition_msgs::BoundingBox #'grasp-target-callback)
+;;  (publish-info "click tabletop object!")
+;;  )
 
 (defun publish-grasp-state ()
   (ros::publish "grasp_state" (instance std_msgs::String :init :data *grasp-state*))) ;change from "/grasp_state" to "grasp_state"
 
-(wait-for-grasp-target)
+;;(wait-for-grasp-target)
 ;;(defun demo ()
 ;;  (pr2-pregrasp-pose)
 ;;  ;;(wait-for-grasp-target)

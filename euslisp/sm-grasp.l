@@ -11,7 +11,8 @@
   (let ((sm (instance state-machine :init)))
     (send sm :add-node (instance state :init :initial 'pr2-pregrasp-pose))
     ;;(send sm :add-node (instance state :init :grasp-dish 'wait-for-grasp-target))
-    (send sm :add-node (instance state :init :grasp-dish 'popopo))
+    ;;(send&rest args sm :add-node (instance state :init :grasp-dish 'popopo))
+    (send sm :add-node (instance state :init :grasp-dish 'grasp-target-callback))
     ;; goal-states are generated in this method
     (send sm :goal-state (list :success :fail))
 
