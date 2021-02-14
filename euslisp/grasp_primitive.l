@@ -18,6 +18,8 @@
 
 (defun pr2-pregrasp-pose (&rest args)
   (setq *grasping-object-p* nil)
+  (print args)
+  (publish-info "=======================")
   (setq *rarm* :rarm)
   (setq *tfl* (instance ros::transform-listener :init))
   (setq *tfb* (instance ros::transform-broadcaster :init))
@@ -105,10 +107,6 @@
                   jsk_recognition_msgs::BoundingBoxArray
                   :timeout 10000))
   (print "clicked")
-  (print msg)
-  (print (elt (send msg :boxes) 0))
-  (print "==============================")
-
   (let ((target-obj (bounding-box->cube (elt (send msg :boxes) 0))))
     (unless target-obj
       (ros::ros-logerr "target point is nil !!")
@@ -173,14 +171,16 @@
           (setq *grasp-state* "grasp succeeded!")               
           (publish-grasp-state)
           (publish-info "grasp succeeded!")                   
-          (ros::set-param (format nil "~/judge_grasp_success") 1))
+          (ros::set-param (format nil "~/judge_grasp_success") 1)
+          (return-from grasp-target-callback t))
         (progn                                          
           (setq *grasp-state* "grasp failed!")      
           (publish-grasp-state)
           (publish-info "grasp failed!")          
-          (ros::set-param (format nil "~/judge_grasp_success") 0)))) 
+          (ros::set-param (format nil "~/judge_grasp_success") 0)
+          (return-from grasp-target-callback nil)))) 
     ))
-(defun popopo (&rest args)    
+(defun postgrasp (&rest args)    
     (setq *grasp-state* "placing")
     (publish-grasp-state)
     (publish-info "placing ...")
@@ -200,6 +200,7 @@
     (publish-grasp-state)
     (pr2-pregrasp-pose)
     (publish-info "click tabletop object!")
+    t
   )
 
 ;;(defun wait-for-grasp-target ()
