@@ -95,11 +95,11 @@
           pkg="jsk_2020_4_carry_dish" type="bbox_center.py">
       </node> 
   </group>
-  <group if="$(arg dual_mode)">
+  <!--group if="$(arg dual_mode)">
       <node name="extract_right_pcl"
           pkg="jsk_2020_4_carry_dish" type="bbox_edge.py">
       </node> 
-  </group>
+  </group-->
 
   <node name="right_box_attention_clipper"
         pkg="nodelet" type="nodelet"

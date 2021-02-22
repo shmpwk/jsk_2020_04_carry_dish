@@ -85,8 +85,8 @@
     (publish-info "moveing...")
     (unless
       (progn
-        (send *pr2* *rarm* :move-end-pos #f(-100 250 5) :world :rotation-axis nil)
-        (send *pr2* *larm* :move-end-pos #f(-100 270 0) :world :rotation-axis nil))
+        (send *pr2* *rarm* :move-end-pos #f(-10 250 5) :world :rotation-axis nil)
+        (send *pr2* *larm* :move-end-pos #f(-10 270 0) :world :rotation-axis nil))
       (publish-error "out of reach...")
       (return-from grasp-target-callback nil))
     ;;(send *pr2* :head :look-at-hand *rarm*)
