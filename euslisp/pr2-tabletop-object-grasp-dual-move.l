@@ -59,6 +59,18 @@
          (* (send v :y) 1000.0)
          (* (send v :z) 1000.0)))
 
+(defun start-collect ()
+  (ros::wait-for-service "/seq_data_collection/start_request")
+  (setq req (instance std_srvs::TriggerRequest :init))
+  (setq res (ros::service-call "/seq_data_collection/start_request" req))
+  )
+
+(defun end-collect ()
+  (ros::wait-for-service "/seq_data_collection/end_request")
+  (setq req (instance std_srvs::TriggerRequest :init))
+  (setq res (ros::service-call "/seq_data_collection/end_request" req))
+  )
+
 ;;バウンディングボックスの端を掴む
 (defun bounding-box->cube (msg)
   (progn
@@ -79,6 +91,35 @@
                   :transform cds)))
     )
   )
+
+(defun scoop-arm ()
+    (setq *grasp-state* "scoop-arm")
+    (publish-grasp-state)
+    (publish-info "scooping...")
+    (unless
+      (progn
+        (send *pr2* *rarm* :move-end-pos #f(0 80 -5) :world :rotation-axis nil)
+        (send *pr2* *larm* :move-end-pos #f(0 0 0) :world :rotation-axis nil))
+      (publish-error "out of reach...")
+      (return-from grasp-target-callback nil))
+    ;;(send *pr2* :head :look-at-hand *rarm*)
+    ;;(send *pr2* :head :look-at-hand *larm*)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+)
+
+(defun rotate-rgripper ()
+    (setq *grasp-state* "rotate-lgripper")
+    (publish-grasp-state)
+    (publish-info "rotating...")
+    (unless
+      (send *pr2* *rarm* :move-end-rot -50 :z)
+      (publish-error "out of reach...")
+      (return-from grasp-target-callback nil))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+)
+
 (defun move-arm ()
     (setq *grasp-state* "move-arm")
     (publish-grasp-state)
@@ -181,11 +222,14 @@
     ;;(send *pr2* :head :look-at-hand *larm*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
-    
-    (move-arm) 
-    (move-rgripper)
-    (rotate-lgripper)
-    (move-lgripper)
+
+    (start-collect)
+    ;;(move-arm) 
+    ;;(move-rgripper)
+    ;;(rotate-lgripper)
+    (rotate-rgripper)
+    (scoop-arm)
+    ;;(move-lgripper)
 
  
     (setq *grasp-state* "grasp-closing")
@@ -204,6 +248,7 @@
         (return-from grasp-target-callback nil)))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
+    (end-collect)
     (setq *grasp-state* "picking")
     (publish-grasp-state)
     (publish-info "picking up...")

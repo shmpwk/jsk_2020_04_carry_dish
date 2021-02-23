@@ -1,0 +1,119 @@
+<launch>
+  <arg name="gui" default="true"/>
+  <arg name="use_sim" default="true"/>
+  <arg name="test_flag" default="false"/> 
+  <arg name="dish_mode" default="true"/> 
+  <arg name="dual_mode" default="false"/> 
+  <arg unless="$(arg use_sim)" name="RGB_CAMERA_INFO" value="/kinect_head/rgb/camera_info"/>
+  <arg if="$(arg use_sim)" name="RGB_CAMERA_INFO" value="/head_mount_kinect/rgb/camera_info"/>
+  <!--arg name="RGB_CAMERA_INFO" value="/head_mount_kinect/rgb/camera_info"/-->
+  
+  <arg unless="$(arg use_sim)" name="DEPTH_CAMERA_INFO" value="/kinect_head/depth/camera_info"/>
+  <arg if="$(arg use_sim)" name="DEPTH_CAMERA_INFO" value="/head_mount_kinect/depth/camera_info"/>
+  
+  <arg unless="$(arg use_sim)" name="DEPTH_TOPIC" value="/kinect_head/depth_registered/image_rect"/>
+  <arg if="$(arg use_sim)" name="DEPTH_TOPIC" value="/head_mount_kinect/depth/image_raw"/>
+
+  <arg unless="$(arg use_sim)" name="RGB_IMAGE" value="/kinect_head_remote/rgb/image_rect_color"/>
+  <arg if="$(arg use_sim)" name="RGB_IMAGE" value="/head_mount_kinect/rgb/image_raw"/>
+
+  <node name="sample_manager"
+        pkg="nodelet" type="nodelet"
+        args="manager"/>
+  
+  <group if="$(arg use_sim)">
+      <node name="depth_save"
+          pkg="jsk_2020_4_carry_dish" type="gazebo_depth_save.py">
+      </node> 
+      <include file="$(find jsk_2020_4_carry_dish)/launch/gazebo/gazebo_virtual_camera_mono.launch" />
+      <include file="$(find jsk_2020_4_carry_dish)/launch/heightmap_morphological_filtering.launch"/>
+  </group>
+  <group unless="$(arg use_sim)">
+      <node name="depth_save"
+          pkg="jsk_2020_4_carry_dish" type="depth_save.py" args="$(arg DEPTH_TOPIC)">
+      </node> 
+
+      <include file="$(find jsk_2020_4_carry_dish)/launch/virtual_camera_mono.launch" />
+      <include file="$(find jsk_2020_4_carry_dish)/launch/heightmap_morphological_filtering.launch">
+          <arg name="gui" value="true"/>
+          <arg name="use_sim" default="$(arg use_sim)"/>
+      </include>
+  </group>
+
+  <!-- extract right side point cloud -->
+  <group if="$(arg dish_mode)">
+      <node name="extract_dish__pcl"
+          pkg="jsk_2020_4_carry_dish" type="bbox_divider.py">
+      </node> 
+  </group>
+  <group unless="$(arg dish_mode)">
+      <node name="extract_cutlery_pcl"
+          pkg="jsk_2020_4_carry_dish" type="bbox_center.py">
+      </node> 
+  </group>
+  <!--group if="$(arg dual_mode)">
+      <node name="extract_right_pcl"
+          pkg="jsk_2020_4_carry_dish" type="bbox_edge.py">
+      </node> 
+  </group-->
+
+  <node name="right_box_attention_clipper"
+        pkg="nodelet" type="nodelet"
+        args="standalone jsk_pcl/AttentionClipper">
+        <remap from="~input/points" to="/selected_pointcloud" />
+        <remap from="~input/box" to="/divided_bbox" />
+  </node>
+
+  <node name="right_box_extract_indices"
+        pkg="jsk_pcl_ros" type="extract_indices">
+    <remap from="~input" to="/selected_pointcloud" />
+    <remap from="~indices" to="right_box_attention_clipper/output/point_indices" />
+    <rosparam>
+      keep_organized: true
+    </rosparam>
+  </node>
+
+  <node name="organized_edge_detector"
+         pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/OrganizedEdgeDetector sample_manager">
+        <remap from="~input" to="/right_box_extract_indices/output"/>
+        <!--remap from="~input" to="/selected_pointcloud"/-->
+    <rosparam>
+      publish_normal: true
+      use_nan_boundary: true
+      use_rgb: true
+    </rosparam>
+  </node>
+
+  <group unless="$(arg test_flag)">
+      <node name="publish_grasp_point"
+          pkg="jsk_2020_4_carry_dish" type="gazebo_pub_grasp_point.py" args="$(arg use_sim)">
+      </node>   
+  </group>
+  <!--
+  <group if="$(arg test_flag)">
+      <node name="publish_inferred_grasp_point"
+          pkg="jsk_2020_4_carry_dish" type="test_rgb_grasp_system.py">
+      </node>   
+  </group>
+  -->
+  
+  <include file="$(find jsk_2020_4_carry_dish)/launch/seq_data_collection.launch" >
+  </include>
+  <include file="$(find jsk_2020_4_carry_dish)/launch/gazebo/gazebo_grasp_data_collection.launch" >
+      <arg name="use_sim" value="$(arg use_sim)"/>
+  </include>
+  
+  <group if="$(arg gui)">
+    <node name="normal_concatenater"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_pcl_utils/NormalConcatenater sample_manager">
+          <remap from="~input" to="/depth_image_creator/output_cloud"/>
+      <remap from="~normal" to="organized_edge_detector/output_normal"/>
+    </node>
+
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find jsk_2020_4_carry_dish)/config/organized_edge_detector.rviz"/>
+  </group>
+</launch>
