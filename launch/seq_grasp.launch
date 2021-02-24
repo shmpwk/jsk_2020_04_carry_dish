@@ -89,6 +89,12 @@
       <node name="publish_grasp_point"
           pkg="jsk_2020_4_carry_dish" type="gazebo_pub_grasp_point.py" args="$(arg use_sim)">
       </node>   
+      <node name="publish_r_contact"
+          pkg="jsk_2020_4_carry_dish" type="sub_r_force.py">
+      </node>   
+      <node name="pr2_pose"
+          pkg="jsk_2020_4_carry_dish" type="pub_pose.py">
+      </node>   
   </group>
   <!--
   <group if="$(arg test_flag)">

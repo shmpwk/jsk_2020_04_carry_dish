@@ -19,16 +19,16 @@ def wrench_cb(msg):
     #print("zx", zx)
     print (y_force)
     if y_force > 3:
-        pub.publish("True")
+        pub.publish(1)
         print("touch")
     else :
-        pub.publish(!"False")
+        pub.publish(0)
         print("nothing")
     print("==========")
 
 rospy.init_node('touch_detect')
 position_sub = rospy.Subscriber('/right_endeffector/wrench', WrenchStamped, wrench_cb)
 pub = rospy.Publisher(
-    'judge_contact', Bool, queue_size=1)
+    'r_contact', Bool, queue_size=1)
 rospy.spin()
     

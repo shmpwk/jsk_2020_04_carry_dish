@@ -230,7 +230,6 @@
     (rotate-rgripper)
     (scoop-arm)
     ;;(move-lgripper)
-
  
     (setq *grasp-state* "grasp-closing")
     (publish-grasp-state)
