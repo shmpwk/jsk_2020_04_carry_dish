@@ -24,9 +24,13 @@
           msg_class: geometry_msgs/PoseStamped
           fname: grasp_point.yaml
           savetype: YAML
-        - name: /r_contact
-          msg_class: std_msgs/Bool
-          fname: r_contact.yaml
+        - name: /right_endeffector/wrench
+          msg_class: geometry_msgs/WrenchStamped
+          fname: r_force.yaml
+          savetype: YAML
+        - name: /left_endeffector/wrench
+          msg_class: geometry_msgs/WrenchStamped
+          fname: l_force.yaml
           savetype: YAML
         - name: /segmentation_decomposer_ssd/boxes
           msg_class: jsk_recognition_msgs/BoundingBoxArray
@@ -43,6 +47,10 @@
        <!--  
         - name: /grasp_state
         - name: /target_state
+        - name: /r_contact
+          msg_class: std_msgs/Bool
+          fname: r_contact.yaml
+          savetype: YAML
         -->
     </rosparam>
    </node>
