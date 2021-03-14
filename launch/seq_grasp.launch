@@ -21,13 +21,6 @@
         pkg="nodelet" type="nodelet"
         args="manager"/>
   
-  <!--group if="$(arg use_sim)"-->
-  <!--include file="$(find jsk_2020_4_carry_dish)/launch/gazebo/gazebo_virtual_camera_mono.launch"-->
-      <!--arg name="RGB_IMAGE" value="$(arg RGB_IMAGE)"/-->
-      <!--arg name="RGB_CAMERA_INFO" value="$(arg RGB_CAMERA_INFO)"/-->
-  <!--/include-->
-  <!--/group-->
-
   <group if="$(arg use_sim)">
       <node name="depth_save"
           pkg="jsk_2020_4_carry_dish" type="gazebo_depth_save.py">
@@ -47,43 +40,6 @@
       </include>
   </group>
 
-  <!--
-  <node name="depth_image_creator"
-        pkg="nodelet" type="nodelet"
-        args="standalone jsk_pcl/DepthImageCreator">
-    <remap from="~input" to="/segmentation_decomposer/debug_output"/>
-    <remap from="~info" to="$(arg RGB_CAMERA_INFO)" />
-    <rosparam>
-      use_approximate: true
-      max_queue_size: 100
-      max_pub_queue_size: 1
-      max_sub_queue_size: 1
-      organize_cloud: True
-    </rosparam>
-  </node>
-
-  <group ns="/segmentation_decomposer">
-    <node name="pointcloud_xyzrgb_to_xyz"
-          pkg="nodelet" type="nodelet"
-          args="standalone jsk_pcl_utils/PointCloudXYZRGBToXYZ">
-      <remap from="~input" to="debug_output" />
-    </node>
-    <node name="depth_image_creator"
-          pkg="nodelet" type="nodelet"
-          args="standalone jsk_pcl/DepthImageCreator">
-      <remap from="~input" to="pointcloud_xyzrgb_to_xyz/output" />
-      <remap from="~info" to="$(arg RGB_CAMERA_INFO)" />
-      <rosparam>
-        use_approximate: true
-        max_queue_size: 100 
-        max_pub_queue_size: 1
-        max_sub_queue_size: 1
-        organize_cloud: True
-      </rosparam>
-    </node>
-  </group>
-  -->
- 
   <!-- extract right side point cloud -->
   <group if="$(arg dish_mode)">
       <node name="extract_dish__pcl"
@@ -133,6 +89,12 @@
       <node name="publish_grasp_point"
           pkg="jsk_2020_4_carry_dish" type="gazebo_pub_grasp_point.py" args="$(arg use_sim)">
       </node>   
+      <node name="publish_r_contact"
+          pkg="jsk_2020_4_carry_dish" type="sub_r_force.py">
+      </node>   
+      <node name="pr2_pose"
+          pkg="jsk_2020_4_carry_dish" type="pub_pose.py">
+      </node>   
   </group>
   <!--
   <group if="$(arg test_flag)">
@@ -142,8 +104,7 @@
   </group>
   -->
   
-  <include file="$(find jsk_2020_4_carry_dish)/launch/depth_data_collection.launch" >
-      <arg name="use_sim" value="$(arg use_sim)"/>
+  <include file="$(find jsk_2020_4_carry_dish)/launch/seq_data_collection.launch" >
   </include>
   <include file="$(find jsk_2020_4_carry_dish)/launch/gazebo/gazebo_grasp_data_collection.launch" >
       <arg name="use_sim" value="$(arg use_sim)"/>

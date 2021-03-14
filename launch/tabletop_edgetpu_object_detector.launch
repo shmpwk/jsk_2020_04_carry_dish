@@ -65,86 +65,93 @@
       keep_organized: true
     </rosparam>
   </node>
-  <node name="multi_plane_estimate" pkg="nodelet" type="nodelet"
+
+  <node name="multi_plane_estimate_ssd" pkg="nodelet" type="nodelet"
         args="load jsk_pcl/OrganizedMultiPlaneSegmentation $(arg manager)"
-        output="screen"
+        output="screen" respawn="true"
         if="$(arg launch_manager)"
         machine="$(arg machine)">
-    <remap from="~input" to="/extract_indices/output" />
+        <remap from="~input" to="/extract_indices/output" />
     <rosparam>
       max_curvature: 0.01
       estimate_normal: true
-      ransac_refine_outlier_distance_threshold: 0.01 
+      ransac_refine_outlier_distance_threshold: 0.01
     </rosparam>
   </node>
-  <node name="polygon_magnifier" pkg="nodelet" type="nodelet"
+  
+  <node name="polygon_magnifier_ssd" pkg="nodelet" type="nodelet"
         args="load jsk_pcl_utils/PolygonMagnifier $(arg manager)"
         output="screen"
         machine="$(arg machine)">
-    <remap from="~input" to="multi_plane_estimate/output_refined_polygon" />
+    <remap from="~input" to="multi_plane_estimate_ssd/output_refined_polygon" />
   </node>
-  <node name="plane_extraction" pkg="nodelet" type="nodelet"
+  <node name="plane_extraction_ssd" pkg="nodelet" type="nodelet"
         args="load jsk_pcl/MultiPlaneExtraction $(arg manager)"
-        output="screen"
+        output="screen" 
         machine="$(arg machine)">
-    <remap from="~input" to="/extract_indices/output" />
-    <remap from="~indices" to="/multi_plane_estimate/output_refined" />
-    <remap from="~input_polygons" to="/multi_plane_estimate/output_refined_polygon" />
-    <remap from="~input_coefficients" to="/multi_plane_estimate/output_refined_coefficients" />
+        <remap from="~input" to="/extract_indices/output" />
+        <remap from="~indices" to="/multi_plane_estimate_ssd/output_refined" />
+        <remap from="~input_polygons" to="/multi_plane_estimate_ssd/output_refined_polygon" />
+        <remap from="~input_coefficients" to="/multi_plane_estimate_ssd/output_refined_coefficients" />
     <rosparam subst_value="true">
+      max_queue_size: 1000
       use_sensor_frame: true
+      keep_organized: true
       sensor_frame: $(arg sensor_frame)
       min_height: 0
     </rosparam>
   </node>
-  <node name="euclidean_clustering" pkg="nodelet" type="nodelet"
-        args="load jsk_pcl/EuclideanClustering $(arg manager)"
-        output="screen"
-        machine="$(arg machine)">
-    <remap from="~input" to="/plane_extraction/output" />
+  <node name="rects_to_cpi_ssd"
+        pkg="jsk_recognition_utils" type="rect_array_to_cluster_point_indices.py"
+        output="screen" >
+    <remap from="~input" to="/edgetpu_object_detector/output/rects"/>
+    <remap from="~input/info" to="$(arg RGB_CAMERA_INFO)"/>
     <rosparam>
-      tolerance: 0.02
-      min_size: 100
+      approximate_sync: true
+      use_info: true
     </rosparam>
   </node>
   <node name="throttle_segmentation" pkg="nodelet" type="nodelet"
         args="load jsk_topic_tools/LightweightThrottle $(arg manager)"
         output="screen"
         machine="$(arg machine)">
-    <remap from="~input" to="euclidean_clustering/output" />
-    <remap from="~output" to="euclidean_clustering/output_throttle" />
+    <remap from="~input" to="rects_to_cpi_ssd/output" />
+    <remap from="~output" to="rects_to_cpi_ssd/output_throttle" />
   </node>
-  <node name="segmentation_decomposer" pkg="nodelet" type="nodelet"
+ <node name="segmentation_decomposer_ssd" pkg="nodelet" type="nodelet"
         args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg manager)"
-        output="screen"
+        output="screen" 
         machine="$(arg machine)">
-    <remap from="~input" to="/plane_extraction/output" />
-    <remap from="~target" to="/euclidean_clustering/output_throttle" />
-    <remap from="~align_planes" to="/multi_plane_estimate/output_refined_polygon" />
-    <remap from="~align_planes_coefficients"
-           to="/multi_plane_estimate/output_refined_coefficients" />
+        <remap from="~input" to="/plane_extraction_ssd/output" />
+        <remap from="~target" to="/rects_to_cpi_ssd/output" />
+        <remap from="~align_planes" to="/multi_plane_estimate_ssd/output_refined_polygon" />
+        <remap from="~align_planes_coefficients"
+           to="/multi_plane_estimate_ssd/output_refined_coefficients" />
     <rosparam subst_value="true">
+      approximate_sync: true  
       align_boxes: true
       align_boxes_with_plane: false
       target_frame_id: base_footprint
-      use_pca: true
+      queue_size: 100000
       publish_clouds: false
       publish_tf: $(arg publish_tf)
-      sort_by: -cloud_size
+      sort_by: -cloud_size 
+      use_pca: true
     </rosparam>
   </node>
+
   <!-- interactive -->
   <node name="bounding_box_marker" pkg="jsk_interactive_marker" type="bounding_box_marker"
         output="screen"
         machine="$(arg machine)">
-    <remap from="~bounding_box_array" to="segmentation_decomposer/boxes" />
+    <remap from="~bounding_box_array" to="segmentation_decomposer_ssd/boxes" />
   </node>
   <node name="selected_cloud" pkg="nodelet" type="nodelet"
         args="load jsk_pcl/SelectedClusterPublisher $(arg manager)"
         output="screen"
         machine="$(arg machine)">
-    <remap from="~input" to="/plane_extraction/output" />
-    <remap from="~indices" to="/euclidean_clustering/output" />
+    <remap from="~input" to="/plane_extraction_ssd/output" />
+    <remap from="~indices" to="/rects_to_cpi_ssd/output" />
     <remap from="~selected_index" to="/bounding_box_marker/selected_index" />
     <remap from="~output" to="/selected_pointcloud" />
     <rosparam>
@@ -223,7 +230,7 @@
           args="load jsk_pcl_utils/CloudOnPlane $(arg manager)"
           output="screen" machine="$(arg machine)">
       <remap from="~input" to="particle_filter_tracker/track_result" />
-      <remap from="~input/polygon" to="polygon_magnifier/output" />
+      <remap from="~input/polygon" to="polygon_magnifier_ssd/output" />
     </node>
     <node name="cloud_on_plane_info" pkg="jsk_pcl_ros_utils" type="cloud_on_plane_info.py"
           output="screen">

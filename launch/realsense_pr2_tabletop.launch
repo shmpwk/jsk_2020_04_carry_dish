@@ -12,14 +12,18 @@
   <arg name="DEPTH_CAMERA_INFO" value="/kinect_head/depth_registered/camera_info" />
   <arg name="DEPTH_IMAGE" value="/kinect_head/depth_registered/image_rect" />
   <arg name="DEPTH_IMAGE_REMOTE" value="/kinect_head_remote/depth_registered/image_rect" />
-  <arg name="PROSILICA_CAMERA_INFO" value="/prosilica/camera_info" />
-  <arg name="PROSILICA_IMAGE" value="/prosilica/image_raw" /> <arg name="POINT_CLOUD_REMOTE" value="/kinect_head_remote/depth_registered/points" />
-
+  <arg name="POINT_CLOUD_REMOTE" value="/kinect_head_remote/depth_registered/points" />
+  <arg name="RGB_REALSENSE_INFO" value="/camera/color/camera_info" />
+  <arg name="RGB_REALSENSE_IMAGE" value="/camera/color/image_raw" />
+  <arg name="DEPTH_REALSENSE_INFO" value="/camera/depth/camera_info" />
+  <arg name="DEPTH_REALSENSE_IMAGE" value="/camera/depth/image_rect_raw" />
+  <arg name="POINT_CLOUD_REALSENSE" value="/camera/depth/color/points" />
+ 
   <!--include file="$(find pr2_machine)/pr2.machine" unless="$(arg load_machine)" /-->
 
-  <include file="$(find jsk_2020_4_carry_dish)/launch/tabletop_edgetpu_object_detector.launch">
-    <arg name="input" value="$(arg POINT_CLOUD_REMOTE)" />
-    <arg name="sensor_frame" value="/head_mount_kinect_rgb_optical_frame" />
+  <include file="$(find jsk_2020_4_carry_dish)/launch/tabletop_thin_object_detector.launch">
+    <arg name="input" value="$(arg POINT_CLOUD_REALSENSE)" />
+    <arg name="sensor_frame" value="/camera_depth_optical_frame" />
     <arg name="manager" value="$(arg manager)" />
     <arg name="machine" value="$(arg machine)" />
     <arg name="launch_openni" value="false" />
@@ -28,8 +32,6 @@
     <arg name="publish_tf" value="$(arg publish_objects_tf)" />
   </include>
 
-  <node name="prosilica_decompress" pkg="image_transport" type="republish"
-        args="compressed in:=$(arg PROSILICA_IMAGE) out:=$(arg PROSILICA_IMAGE)" />
   <node name="rgb_decompress" pkg="image_transport" type="republish"
         args="compressed in:=$(arg RGB_IMAGE) out:=$(arg RGB_IMAGE_REMOTE)" />
   <node name="depth_decompress" pkg="image_transport" type="republish"
