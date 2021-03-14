@@ -128,6 +128,7 @@
         <remap from="~align_planes_coefficients"
            to="/multi_plane_estimate_ssd/output_refined_coefficients" />
     <rosparam subst_value="true">
+      approximate_sync: true  
       align_boxes: true
       align_boxes_with_plane: false
       target_frame_id: base_footprint
