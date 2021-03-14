@@ -107,11 +107,18 @@
     <remap from="~input" to="/edgetpu_object_detector/output/rects"/>
     <remap from="~input/info" to="$(arg RGB_CAMERA_INFO)"/>
     <rosparam>
-      approximate_sync: false
+      approximate_sync: true
       use_info: true
     </rosparam>
   </node>
-  <node name="segmentation_decomposer_ssd" pkg="nodelet" type="nodelet"
+  <node name="throttle_segmentation" pkg="nodelet" type="nodelet"
+        args="load jsk_topic_tools/LightweightThrottle $(arg manager)"
+        output="screen"
+        machine="$(arg machine)">
+    <remap from="~input" to="rects_to_cpi_ssd/output" />
+    <remap from="~output" to="rects_to_cpi_ssd/output_throttle" />
+  </node>
+ <node name="segmentation_decomposer_ssd" pkg="nodelet" type="nodelet"
         args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg manager)"
         output="screen" 
         machine="$(arg machine)">
@@ -124,7 +131,7 @@
       align_boxes: true
       align_boxes_with_plane: false
       target_frame_id: base_footprint
-      queue_size: 1000
+      queue_size: 100000
       publish_clouds: false
       publish_tf: $(arg publish_tf)
       sort_by: -cloud_size 
@@ -222,7 +229,7 @@
           args="load jsk_pcl_utils/CloudOnPlane $(arg manager)"
           output="screen" machine="$(arg machine)">
       <remap from="~input" to="particle_filter_tracker/track_result" />
-      <remap from="~input/polygon" to="polygon_magnifier/output" />
+      <remap from="~input/polygon" to="polygon_magnifier_ssd/output" />
     </node>
     <node name="cloud_on_plane_info" pkg="jsk_pcl_ros_utils" type="cloud_on_plane_info.py"
           output="screen">
