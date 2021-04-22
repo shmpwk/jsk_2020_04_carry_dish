@@ -1,0 +1,25 @@
+<launch>
+  <arg name="gui" default="true" />
+  <arg name="physics" default="ode" />
+  <arg name="paused" default="true"/>
+
+  <!-- load scene in gazebo -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="world_name" value="$(find jsk_2020_4_carry_dish)/worlds/tabletop_mlt.world" />
+    <arg name="physics" value="$(arg physics)" />
+    <arg name="paused" value="$(arg paused)"/>
+  </include>
+  <include file="$(find pr2_gazebo)/launch/pr2.launch">
+    <arg name="KINECT1" value="true" />
+    <arg name="KINECT2" value="false" />
+  </include>
+
+  <node name="kinect_throttled_points" pkg="topic_tools" type="throttle"
+        args="messages /head_mount_kinect/depth_registered/points 5.0 /kinect_head/depth_registered/throttled/points">
+    <rosparam>
+      lazy: true
+    </rosparam>
+  </node>
+
+</launch>

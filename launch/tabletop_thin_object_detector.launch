@@ -3,6 +3,7 @@
   <arg name="sensor_frame" default="head_mount_kinect_rgb_optical_frame" />
   <arg name="manager" default="tabletop_object_detector_nodelet_manager" />
   <arg name="machine" default="localhost" />
+  <arg name="RGB_CAMERA_INFO" value="/kinect_head/rgb/camera_info" />
 
   <arg name="launch_manager" default="true" />
   <arg name="launch_tracking" default="true" />
@@ -38,11 +39,11 @@
         args="standalone jsk_pcl/AttentionClipper">
     <remap from="~input/points" to="input_relay/output" />
     <rosparam>
-      initial_pos: [0, 0.3, 1.2]
+      initial_pos: [0, 0.2, 1.0]
       initial_rot: [-0.65, 0, 0]
       dimension_x: 0.7
       dimension_y: 0.5
-      dimension_z: 0.6
+      dimension_z: 0.3
       frame_id: head_mount_kinect_rgb_optical_frame
     </rosparam>
     <!--
@@ -132,7 +133,6 @@
       sort_by: -cloud_size
     </rosparam>
   </node>
-
   <!-- interactive -->
   <node name="bounding_box_marker" pkg="jsk_interactive_marker" type="bounding_box_marker"
         output="screen"

@@ -14,7 +14,7 @@
     <rosparam>
       use_projected_center: true
       fixed_frame_id: base_footprint
-      center_frame_id: segmentation_decomposeroutput00
+      center_frame_id: segmentation_decomposer_ssdoutput00
       projected_center_frame_id: heightmap_center
       resolution_x: 128
       resolution_y: 128

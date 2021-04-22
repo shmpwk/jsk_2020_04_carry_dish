@@ -34,7 +34,7 @@
         machine="$(arg machine)">
     <remap from="~input" to="$(arg input)" />
   </node>
- 
+
   <node name="self_filter"
         pkg="robot_self_filter" type="self_filter"
         clear_params="true" respawn="true">
@@ -54,6 +54,7 @@
         pkg="nodelet" type="nodelet"
         args="standalone jsk_pcl/AttentionClipper">
         <remap from="~input/points" to="/robot_self_filtered_points" />
+
     <rosparam>
       initial_pos: [0, 0.2, 1.0]
       initial_rot: [-0.65, 0, 0]
@@ -75,7 +76,9 @@
   </node>
   <node name="extract_indices"
         pkg="jsk_pcl_ros" type="extract_indices">
+
     <remap from="~input" to="/robot_self_filtered_points" />
+
     <remap from="~indices" to="attention_clipper/output/point_indices" />
     <rosparam>
       keep_organized: true
