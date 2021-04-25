@@ -60,7 +60,7 @@
       initial_rot: [-0.65, 0, 0]
       dimension_x: 0.7
       dimension_y: 0.5
-      dimension_z: 0.3
+      dimension_z: 0.5
       frame_id: head_mount_kinect_rgb_optical_frame
     </rosparam>
     <!--
@@ -156,6 +156,7 @@
       publish_tf: $(arg publish_tf)
       sort_by: -cloud_size 
       use_pca: true
+      min_size: 1000000000
     </rosparam>
   </node>
 
