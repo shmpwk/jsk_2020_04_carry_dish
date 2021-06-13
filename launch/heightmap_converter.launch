@@ -3,6 +3,7 @@
   <arg name="use_sim" default="true"/> 
   <arg unless="$(arg use_sim)" name="DEPTH_POINTS" value="/kinect_head/depth_registered/points"/>
   <arg if="$(arg use_sim)" name="DEPTH_POINTS" value="/head_mount_kinect/depth_registered/points"/>
+  
   <node name="heightmap_manager"
         pkg="nodelet" type="nodelet"
         args="manager"/>

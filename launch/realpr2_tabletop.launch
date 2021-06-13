@@ -13,7 +13,8 @@
   <arg name="DEPTH_IMAGE" value="/kinect_head/depth_registered/image_rect" />
   <arg name="DEPTH_IMAGE_REMOTE" value="/kinect_head_remote/depth_registered/image_rect" />
   <arg name="PROSILICA_CAMERA_INFO" value="/prosilica/camera_info" />
-  <arg name="PROSILICA_IMAGE" value="/prosilica/image_raw" /> <arg name="POINT_CLOUD_REMOTE" value="/kinect_head_remote/depth_registered/points" />
+  <arg name="PROSILICA_IMAGE" value="/prosilica/image_rect" /> 
+  <arg name="POINT_CLOUD_REMOTE" value="/kinect_head_remote/depth_registered/points" />
 
   <!--include file="$(find pr2_machine)/pr2.machine" unless="$(arg load_machine)" /-->
 
