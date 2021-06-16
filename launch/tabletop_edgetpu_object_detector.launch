@@ -53,6 +53,7 @@
   <node name="attention_clipper"
         pkg="nodelet" type="nodelet"
         args="standalone jsk_pcl/AttentionClipper">
+        <remap from="~input" to="/kinect_head/depth_registered/camera_info" />
         <remap from="~input/points" to="/robot_self_filtered_points" />
 
     <rosparam>
@@ -142,7 +143,7 @@
         output="screen" 
         machine="$(arg machine)">
         <remap from="~input" to="/plane_extraction_ssd/output" />
-        <remap from="~target" to="/rects_to_cpi_ssd/output_throttle" />
+        <remap from="~target" to="/rects_to_cpi_ssd/output" />
         <remap from="~align_planes" to="/multi_plane_estimate_ssd/output_refined_polygon" />
         <remap from="~align_planes_coefficients"
            to="/multi_plane_estimate_ssd/output_refined_coefficients" />
