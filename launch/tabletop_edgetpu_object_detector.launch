@@ -157,7 +157,8 @@
       publish_tf: $(arg publish_tf)
       sort_by: -cloud_size 
       use_pca: true
-      min_size: 1000000000
+      min_size: 100000000
+      max_size: 1000000000
     </rosparam>
   </node>
 
