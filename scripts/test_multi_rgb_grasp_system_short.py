@@ -17,7 +17,7 @@ from torchsummary import summary
 import os
 import rospy
 from sensor_msgs.msg import PointCloud2
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseArray
 import tf
 import random
 import time
@@ -253,46 +253,53 @@ def inferred_point_callback(data):
     psi = 0
     random_grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,1,4) #reshape(1,4) 
     print("random grasp posrost", random_grasp_posrot) 
+    random_grasp_posrot_arr = InflateGraspPoint(random_grasp_posrot.reshape(1,4))
     # Inference!
-    ts = TestSystem()
-    inferred_grasp_point = ts.test(random_grasp_posrot)
-    inferred_grasp_point = inferred_grasp_point.reshape(4)
-    # Find nearest edge point based on inferred point
-    nearest = nearest_point(A, inferred_grasp_point[:3:])
-    Ax = nearest[0]
-    Ay = nearest[1]
-    Az = nearest[2]
-    phi = inferred_grasp_point[3] - 0.5
-    # When converting from here to eus, 
-    """
-    if phi < 1.6:
-        q_phi = 0
-    else:
-        q_phi = phi
-    """
-    if (phi < 1.6):
-        phi = 1.6
-    elif (phi > 2.6):
-        phi = 2.6
-    q = tf.transformations.quaternion_from_euler(theta, phi, psi)
-    posestamped = PoseStamped()
-    pose = posestamped.pose
-    pose.position.x = Ax
-    pose.position.y = Ay
-    pose.position.z = Az 
-    pose.orientation.x = q[0]
-    pose.orientation.y = q[1]
-    pose.orientation.z = q[2]
-    pose.orientation.w = q[3]
-    header = posestamped.header
+    inferred_posrot_list = []
+    grasp_posrot_list = []
+    posearray = PoseArray()
+    header = posearray.header
     header.stamp = rospy.Time(0)
     header.frame_id = "head_mount_kinect_rgb_optical_frame"
-    # grasp_posrot is actual grasp point
-    grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,4) 
-    print("nearest_inferred_grasp_point", grasp_posrot)
-    # inferred_posrot is a inferred point but not for grasping
-    inferred_posrot = np.array((inferred_grasp_point[0], inferred_grasp_point[1], inferred_grasp_point[2], inferred_grasp_point[3])) 
-    
+    for i in range(8):
+        ts = TestSystem()
+        inferred_grasp_point = ts.test(random_grasp_posrot_arr[i])
+        inferred_grasp_point = inferred_grasp_point.reshape(4)
+        # Find nearest edge point based on inferred point
+        nearest = nearest_point(A, inferred_grasp_point[:3:])
+        Ax = nearest[0]
+        Ay = nearest[1]
+        Az = nearest[2]
+        phi = inferred_grasp_point[3] - 0.5
+        # When converting from here to eus, 
+        """
+        if phi < 1.6:
+            q_phi = 0
+        else:
+            q_phi = phi
+        """
+        if (phi < 1.6):
+            phi = 1.6
+        elif (phi > 2.6):
+            phi = 2.6
+        q = tf.transformations.quaternion_from_euler(theta, phi, psi)
+        pose = Pose()
+        pose.position.x = Ax
+        pose.position.y = Ay
+        pose.position.z = Az 
+        pose.orientation.x = q[0]
+        pose.orientation.y = q[1]
+        pose.orientation.z = q[2]
+        pose.orientation.w = q[3]
+        posearray.poses.append(pose)
+        # grasp_posrot is actual grasp point
+        grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,4) 
+        grasp_posrot_list.append(grasp_posrot)
+        print("nearest_inferred_grasp_point", grasp_posrot)
+        # inferred_posrot is a inferred point but not for grasping
+        inferred_posrot = np.array((inferred_grasp_point[0], inferred_grasp_point[1], inferred_grasp_point[2], inferred_grasp_point[3])) 
+        inferred_posrot_list.append(inferred_posrot)
+        
     # Save grasp_posrot and inferred_posrot
     now = datetime.datetime.now()
     walltime = str(int(time.time()*1000000000))
@@ -305,7 +312,7 @@ def inferred_point_callback(data):
     with open(filename, "wb") as ff:
         pickle.dump(inferred_posrot, ff)
         print("saved inferred point")
-    pub.publish(posestamped)
+    pub.publish(posearray)
 
 if __name__ == '__main__':
     ts = TestSystem()
@@ -315,7 +322,7 @@ if __name__ == '__main__':
     try:
         rospy.init_node('grasp_point_server')
         rospy.Subscriber('/organized_edge_detector/output', PointCloud2, inferred_point_callback, queue_size=1000)
-        pub = rospy.Publisher('/grasp_point', PoseStamped, queue_size=100)
+        pub = rospy.Publisher('/grasp_point', PoseArray, queue_size=100)
         """
         while not rospy.is_shutdown():
             data = rospy.wait_for_message('supervoxel_segmentation/output/cloud', PointCloud2)
