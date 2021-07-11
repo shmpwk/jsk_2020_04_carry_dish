@@ -79,29 +79,29 @@
   )
 
 ;; one-shot-subscribe but not use now
-(defun sub-grasp-point ()
-  (let*(
-         (msg (one-shot-subscribe "/grasp_point" geometry_msgs::PoseStamped
-                                  ;;:after-stamp (ros::time 0)))
-                                  ))
-         (cds (when msg (ros::tf-pose->coords (send msg :pose))))
-         (base->parent
-           (when msg
-               (send *tfl* :wait-for-transform *base-frame-id* (send msg :header :frame_id) (ros::time 0) 0.1)
-               (send *tfl* :lookup-transform
-                           *base-frame-id* (send msg :header :frame_id)
-                           (ros::time 0)))))
-    ;;(print (rpy-angle (send target-point :worldrot)))
-    (setq *cds* cds)
-    (when (and cds base->parent)
-      ;;(send *tfb* :send-transform
-        (send (send base->parent :copy-worldcoords) :transform cds))
-      ;;      *base-frame-id* "target_object" (send msg :header :stamp))
-    )
-  )
-
-;;(ros::subscribe "grasp_point" geometry_msgs::posestamped #'grasp-point-cb)
-
+;;(defun sub-grasp-point ()
+;;  (let*(
+;;         (msg (one-shot-subscribe "/grasp_point" geometry_msgs::PoseStamped
+;;                                  ;;:after-stamp (ros::time 0)))
+;;                                  ))
+;;         (cds (when msg (ros::tf-pose->coords (send msg :pose))))
+;;         (base->parent
+;;           (when msg
+;;               (send *tfl* :wait-for-transform *base-frame-id* (send msg :header :frame_id) (ros::time 0) 0.1)
+;;               (send *tfl* :lookup-transform
+;;                           *base-frame-id* (send msg :header :frame_id)
+;;                           (ros::time 0)))))
+;;    ;;(print (rpy-angle (send target-point :worldrot)))
+;;    (setq *cds* cds)
+;;    (when (and cds base->parent)
+;;      ;;(send *tfb* :send-transform
+;;        (send (send base->parent :copy-worldcoords) :transform cds))
+;;      ;;      *base-frame-id* "target_object" (send msg :header :stamp))
+;;    )
+;;  )
+;;
+;;;;(ros::subscribe "grasp_point" geometry_msgs::posestamped #'grasp-point-cb)
+;;
 (defun tf-grasp-point (msg)
     (let*(
          (cds (when msg (ros::tf-pose->coords (send msg :pose))))
@@ -184,7 +184,7 @@
 
 (defun grasp-target-callback (msg)
   (print "clicked")
-  (setq msgarr (one-shot-subscribe "/grasp_point" geometry_msgs::PoseArray))
+  (setq msgarr (one-shot-subscribe "/grasp_points" geometry_msgs::PoseArray))
   (unless msgarr
     (ros::ros-logerr "target point is nil !!")
     (return-from grasp-target-callback nil))
