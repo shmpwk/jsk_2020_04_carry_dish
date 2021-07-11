@@ -100,6 +100,15 @@ When using rgb image,
 ```
 $ python ~/my_ws/src/jsk_2020_04_carry_dish/scripts/test_rgb_grasp_system.py 
 ```
+
+With moveit,
+```
+$ roslaunch jsk_2020_4_carry_dish realpr2_tabletop.launch
+$ roseus euslisp/test_moveit_grasp_sequence.l 
+$ roslaunch jsk_2020_4_carry_dish gazebo_clicked_box_edge.launch use_sim:=false gui:=false
+$ python ~/my_ws/src/jsk_2020_04_carry_dish/scripts/test_multi_rgb_grasp_system_short.py
+```
+
 ### Demo
 ```
 $ roslaunch jsk_2020_4_carry_dish realpr2_tabletop.launch
