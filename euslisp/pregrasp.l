@@ -70,21 +70,18 @@
       (return nil)))
   (unless reachable
     (publish-error "out of reach...")
-      (send *pregrasp-point* :newcoords
-            (make-coords :pos (v+ (send target-point :worldpos)
-                                    *pre-pos*)
-                                    ;;(float-vector -100 0 150))
-                           ;;:rpy (float-vector -1.57 1.2 -1.54)))
-                           :rpy *grasp-rot*))
-      (send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
-      (objects (list *pr2* *box* *co-ik-target* *pregrasp-point* *box-arrow*))
-        (progn                                          
-          (setq *grasp-state* "out of reach")      
-          (publish-grasp-state)
-          (publish-info "grasp failed!")          
-          (ros::set-param (format nil "~/judge_grasp_success") 0)) 
-        (return nil)
-      (return-from grasp-target-callback nil))
+    (send *pregrasp-point* :newcoords
+          (make-coords :pos (v+ (send target-point :worldpos)
+                                  *pre-pos*)
+                                  ;;(float-vector -100 0 150))
+                         ;;:rpy (float-vector -1.57 1.2 -1.54)))
+                         :rpy *grasp-rot*))
+    (send *co-ik-target* :newcoords (send target-point :copy-worldcoords))
+    (objects (list *pr2* *box* *co-ik-target* *pregrasp-point* *box-arrow*))
+    (setq *grasp-state* "out of reach")      
+    (publish-grasp-state)
+    (publish-info "grasp failed!")          
+    (return-from grasp-target-callback nil))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   ;;(send *ri* :angle-vector-motion-plan (send pr2 :angle-vector) :total-time 5000 :ctype :rarm-controller :start-offset-time 0 :move-arm :rarm) ;;for moveit
   (send *ri* :wait-interpolation)
