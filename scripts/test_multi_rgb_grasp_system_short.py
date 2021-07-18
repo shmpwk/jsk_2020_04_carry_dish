@@ -18,6 +18,7 @@ import os
 import rospy
 from sensor_msgs.msg import PointCloud2
 from geometry_msgs.msg import PoseArray
+from geometry_msgs.msg import Pose
 import tf
 import random
 import time
@@ -181,10 +182,10 @@ class TestSystem():
 class InflateGraspPoint(object):
     def __init__(self, grasp_point):
         self.aug_grasp_point = np.zeros((10, 4))
-        self.x = grasp_point[[0]]
-        self.y = grasp_point[[1]]
-        self.z = grasp_point[[2]]
-        self.theta = grasp_point[[3]]
+        self.x = grasp_point[0][0]
+        self.y = grasp_point[0][1]
+        self.z = grasp_point[0][2]
+        self.theta = grasp_point[0][3]
         self.times = 8
 
     def calc(self):
@@ -253,7 +254,8 @@ def inferred_point_callback(data):
     psi = 0
     random_grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,1,4) #reshape(1,4) 
     print("random grasp posrost", random_grasp_posrot) 
-    random_grasp_posrot_arr = InflateGraspPoint(random_grasp_posrot.reshape(1,4))
+    random_grasp_posrot_arr = InflateGraspPoint(random_grasp_posrot.reshape(1,4)).calc()
+    print(random_grasp_posrot_arr)
     # Inference!
     inferred_posrot_list = []
     grasp_posrot_list = []
