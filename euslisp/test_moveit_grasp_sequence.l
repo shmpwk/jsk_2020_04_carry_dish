@@ -102,14 +102,14 @@
 ;;
 ;;;;(ros::subscribe "grasp_point" geometry_msgs::posestamped #'grasp-point-cb)
 ;;
-(defun tf-grasp-point (msg)
+(defun tf-grasp-point (msg header)
     (let*(
-         (cds (when msg (ros::tf-pose->coords (send msg :pose))))
+         (cds (when msg (ros::tf-pose->coords msg)))
          (base->parent
            (when msg
-               (send *tfl* :wait-for-transform *base-frame-id* (send msg :header :frame_id) (ros::time 0) 0.1)
+               (send *tfl* :wait-for-transform *base-frame-id* (send header :frame_id) (ros::time 0) 0.1)
                (send *tfl* :lookup-transform
-                           *base-frame-id* (send msg :header :frame_id)
+                           *base-frame-id* (send header :frame_id)
                            (ros::time 0)))))
     (setq *cds* cds)
     (when (and cds base->parent)
@@ -188,8 +188,10 @@
   (unless msgarr
     (ros::ros-logerr "target point is nil !!")
     (return-from grasp-target-callback nil))
-  (dolist (msg msgarr)
-    (setq target-point (tf-grasp-point(msg)))
+  (print "grasp_points subscribed!!!")
+  ;;(mapcar #'(lambda (msg) (send msgarr :poses)))
+  (dolist (point (send msgarr :poses))
+    (setq target-point (tf-grasp-point point (send msgarr :header)))
     (unless target-point
       (ros::ros-logerr "target point is nil !!")
       (return-from grasp-target-callback nil))
@@ -249,7 +251,7 @@
     (publish-grasp-state)
     (publish-info "grasp failed!")          
     (return-from grasp-target-callback nil))
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
   ;;(send *ri* :angle-vector-motion-plan (send pr2 :angle-vector) :total-time 5000 :ctype :rarm-controller :start-offset-time 0 :move-arm :rarm) ;;for moveit
   (send *ri* :wait-interpolation) 
 
@@ -258,7 +260,7 @@
   (publish-info "pre grasp pose...")
   (send *ri* :stop-grasp *rarm* :wait t)
   ;;(send *pr2* :head :look-at-hand *rarm*)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
   ;;(send *ri* :angle-vector-motion-plan (send pr2 :angle-vector) :total-time 5000 :ctype :rarm-controller :start-offset-time 0 :move-arm :rarm) ;;for moveit
   (send *ri* :wait-interpolation)
 
@@ -274,7 +276,7 @@
   (publish-info "reaching...")
   (send *pr2* *rarm* :move-end-pos *reach-pos* :world :look-at-target t)
   ;;(send *pr2* :head :look-at-hand *rarm*)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 6000)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
 
   (setq *grasp-state* "grasp-closing")
@@ -307,7 +309,7 @@
         (publish-grasp-state)
         (publish-info "grasp succeeded!")                   
         (ros::set-param (format nil "~/judge_grasp_success") 1)
-        (send *ri* :go-pos-unsafe 0 -0.65 0)
+        ;;(send *ri* :go-pos-unsafe 0 -0.65 0)
         (setq *grasp-state* "placing")
         (publish-grasp-state)
         (publish-info "placing ...")
@@ -324,7 +326,8 @@
         (publish-info "pre grasp pose")
         (setq *grasp-state* "returning")
         (pr2-pregrasp-pose)
-        (send *ri* :go-pos-unsafe 0 0.65 0))
+        ;;(send *ri* :go-pos-unsafe 0 0.65 0)
+        )
       (progn                                          
         (setq *grasp-state* "grasp failed!")      
         (publish-grasp-state)
