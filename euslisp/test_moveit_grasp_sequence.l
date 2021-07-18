@@ -15,6 +15,7 @@
 (ros::rate 10)
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
+(load "package://pr2eus_moveit/euslisp/pr2eus-moveit.l")
 
 (defun pr2-pregrasp-pose ()
   ;;(send *pr2* :reset-manip-pose)
@@ -201,7 +202,7 @@
     ;; grasping toward centripetal direction
     ;;(setq *rot* (- 1.57 (atan2  (elt grad 1) (elt grad 0))))
     (setq *rot*  (atan2  (elt grad 1) (elt grad 0)))
-    ;; pregrasp pos
+    ;; pre;;grasp pos
     (setq *pre-pos* (float-vector (elt (scale 3 grad) 0) (elt (scale 3 grad) 1) 50))
     (setq *reach-pos* (float-vector (elt (scale -1.5 grad) 0) (elt (scale -1.5 grad) 1) -80))
     ;; pre grasp rotation
@@ -218,6 +219,7 @@
           (send *ri* :stop-grasp *rarm* :wait t)
           (setq *grasping-object-p* nil))
       (setq *grasping-object-p* t))
+    (setq reachable nil)
     (when
       (send *pr2* *rarm* :inverse-kinematics
             ;;(make-coords :pos target-point :worldpos)
@@ -251,8 +253,8 @@
     (publish-grasp-state)
     (publish-info "grasp failed!")          
     (return-from grasp-target-callback nil))
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-  ;;(send *ri* :angle-vector-motion-plan (send pr2 :angle-vector) :total-time 5000 :ctype :rarm-controller :start-offset-time 0 :move-arm :rarm) ;;for moveit
+  ;;(send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+  (send *ri* :angle-vector-motion-plan (send *pr2* :angle-vector) :total-time 3000 :ctype :rarm-controller :start-offset-time 0 :move-arm :rarm) ;;for moveit
   (send *ri* :wait-interpolation) 
 
   (setq *grasp-state* "reaching")
@@ -260,8 +262,8 @@
   (publish-info "pre grasp pose...")
   (send *ri* :stop-grasp *rarm* :wait t)
   ;;(send *pr2* :head :look-at-hand *rarm*)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-  ;;(send *ri* :angle-vector-motion-plan (send pr2 :angle-vector) :total-time 5000 :ctype :rarm-controller :start-offset-time 0 :move-arm :rarm) ;;for moveit
+  ;;(send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+  (send *ri* :angle-vector-motion-plan (send *pr2* :angle-vector) :total-time 1000 :ctype :rarm-controller :start-offset-time 0 :move-arm :rarm) ;;for moveit
   (send *ri* :wait-interpolation)
 
   (send *co-endeffector-vis* :newcoords (send *pr2* :copy-worldcoords))
