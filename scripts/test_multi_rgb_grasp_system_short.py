@@ -323,7 +323,8 @@ if __name__ == '__main__':
     #subscribe edge pointcloud data
     try:
         rospy.init_node('grasp_point_server')
-        rospy.Subscriber('/organized_edge_detector/output', PointCloud2, inferred_point_callback, queue_size=1000)
+        #rospy.Subscriber('/organized_edge_detector/output', PointCloud2, inferred_point_callback, queue_size=1000)
+        rospy.Subscriber('/pcl_nodelet/hsi_filter_white', PointCloud2, inferred_point_callback, queue_size=1000)
         pub = rospy.Publisher('/grasp_points', PoseArray, queue_size=100)
         """
         while not rospy.is_shutdown():
