@@ -86,6 +86,11 @@ $ python ~/my_ws/src/jsk_2020_04_carry_dish/scripts/rgb_grasp_system_2.py
 ```
 which depends on the dataset size.
 
+You can check training loss by
+```
+$ tensorboard --logdir="Data/loss/[YOUR_FOLDER]" --load_fast=false
+```
+
 ### When inferrence,
 ```
 $ roslaunch jsk_2020_4_carry_dish realpr2_tabletop.launch
