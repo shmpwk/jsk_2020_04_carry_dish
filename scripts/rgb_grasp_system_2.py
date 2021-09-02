@@ -140,7 +140,7 @@ class MyDataset(Dataset):
                 self.depth_dataset = np.append(self.depth_dataset, ff, axis=0)
         self.depth_dataset = self.depth_dataset.reshape((10, 1, 200, 200))
         """
-        depth_path = "Data/depth_data"
+        depth_path = "Data/depth_data_1128"
         #self.depth_dataset = np.empty((0,230400))
         #self.depth_dataset = np.empty((0,16384)) #230400))
         self.depth_dataset = np.empty((0,16384*3)) #230400))
