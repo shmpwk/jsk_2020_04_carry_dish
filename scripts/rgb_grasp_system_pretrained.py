@@ -422,24 +422,6 @@ class GraspSystem():
         print("judge size", labels.size())
         return train_dataloader
 
-    def transfer(self):
-        model_ft = models.resnet18(pretrained=True)
-        for param in model_ft.parameters():
-            param.requires_grad = False
-        num_ftrs = model_ft.fc.in_features
-        model_ft.fc = nn.Linear(num_ftrs, 64)
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-        model_ft = model_ft.to(device)
-
-        criterion = nn.CrossEntropyLoss()
-
-        # Observe that all parameters are being optimized
-        optimizer_ft = optim.SGD(model_ft.parameters(), lr=0.001, momentum=0.9)
-
-        # Decay LR by a factor of 0.1 every 7 epochs
-        exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
-
     # make Net class model
     def make_model(self):
         self.model = Net()
@@ -537,7 +519,6 @@ if __name__ == '__main__':
         datasets = MyDataset()
         train_dataloader = gs.load_data(datasets)
         gs.make_model()
-        gs.transfer()
         gs.train(train_dataloader, loop_num)
         gs.save_model()
     else:
