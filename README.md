@@ -114,6 +114,7 @@ $ roslaunch jsk_2020_4_carry_dish gazebo_clicked_box_edge.launch use_sim:=false 
 $ python ~/my_ws/src/jsk_2020_04_carry_dish/scripts/test_multi_rgb_grasp_system_short.py
 $ roslaunch jsk_pr2_startup start_pr2_moveit.launch USE_KINECT:=true USE_LASER_AND_KINECT:=false
 $ roslaunch pr2_moveit_config moveit_rviz.launch config:=true
+$ roslaunch wash_dish detect_dirt.launch
 ```
 
 ### Demo
