@@ -441,7 +441,6 @@ class GraspSystem():
         # learn CPU, load GPU
         self.model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
 
-
     def save_model(self):
         now = datetime.datetime.now()  
         filename = 'Data/trained_model/model_' + now.strftime('%Y%m%d_%H%M%S') + '.pth'
