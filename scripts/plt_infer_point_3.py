@@ -13,6 +13,7 @@ import matplotlib.animation as anm
 from matplotlib.animation import PillowWriter
 from matplotlib._version import get_versions as mplv
 from scipy.spatial import distance
+from scipy.spatial.transform import Rotation as R
 #seabornでグラフをきれいにしたいだけのコード
 import seaborn as sns
 sns.set_style("darkgrid")
@@ -37,7 +38,21 @@ def update(frame, xx, yy, zz):
     if frame == 9:
         ax.quiver(Xl, Yl, Zl, Ul, Vl, Wl, color="red", linewidth=5)
         ax.scatter(gxl-cy, gyl+cx, cz-gzl, s=100, c="red")
-        #ax.scatter(ixl-cy, iyl+cx, cz-izl, s=100, c="blue")
+        r1 = R.from_euler('z', 90, degrees=True)
+        r2 = R.from_euler('y', 90, degrees=True)
+        v = np.array((Ul-Xl, Vl-Yl, Wl-Zl)).flatten()
+        rotated1 = r1.apply(v)
+        rotated2 = r2.apply(v)
+        UUU = Xl + rotated1[0]
+        VVV = Yl + rotated1[1]
+        WWW = Zl + rotated1[2]
+        UUU2 = Xl + rotated2[0]
+        VVV2 = Yl + rotated2[1]
+        WWW2 = Zl + rotated2[2]
+        ax.quiver(Xl, Yl, Zl, UUU/4, VVV/4, WWW/4, color="blue", linewidth=5)
+        ax.quiver(Xl, Yl, Zl, UUU2/6, VVV2/6, WWW2/6, color="green", linewidth=5)
+        
+       #ax.scatter(ixl-cy, iyl+cx, cz-izl, s=100, c="blue")
         plt.pause(0.7)
     elif frame == 10:
         #ax.plot(x, y, z, marker="o", s=20,  linestyle='None')
@@ -59,7 +74,21 @@ def update(frame, xx, yy, zz):
         UU = np.array(U)[:,frame]#-0.01+0.001*frame*random.uniform(0.5, 1.0)
         VV = np.array(V)[:,frame]#-0.01+0.001*frame*random.uniform(0.5, 1.0)
         WW = np.array(W)[:,frame]#+0.005-0.001*frame
-        ax.quiver(XX, YY, ZZ, UU, VV, WW, color="orange")
+        ax.quiver(XX, YY, ZZ, UU, VV, WW, color="red")
+        r1 = R.from_euler('z', 90, degrees=True)
+        r2 = R.from_euler('y', 90, degrees=True)
+        v = np.array((UU-XX, VV-YY, WW-ZZ)).flatten()
+        rotated1 = r1.apply(v)
+        rotated2 = r2.apply(v)
+        UUU = XX + rotated1[0]
+        VVV = YY + rotated1[1]
+        WWW = ZZ + rotated1[2]
+        UUU2 = XX + rotated2[0]
+        VVV2 = YY + rotated2[1]
+        WWW2 = ZZ + rotated2[2]
+        ax.quiver(XX, YY, ZZ, UUU/4, VVV/4, WWW/4, color="blue")
+        ax.quiver(XX, YY, ZZ, UUU2/6, VVV2/6, WWW2/6, color="green")
+        
 
     #.plotで描画
     #linestyle='None'にしないと初期値では線が引かれるが、3次元の散布図だと大抵ジャマになる
