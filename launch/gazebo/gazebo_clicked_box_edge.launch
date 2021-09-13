@@ -86,7 +86,7 @@
  
   <!-- extract right side point cloud -->
   <group if="$(arg dish_mode)">
-      <node name="extract_dish__pcl"
+      <node name="extract_dish_pcl"
           pkg="jsk_2020_4_carry_dish" type="bbox_divider.py">
       </node> 
   </group>
