@@ -90,6 +90,9 @@ class TestSystem():
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         model_path = 'Data/trained_model/model_20201130_134113.pth'
         self.model = torch.load(model_path)
+
+        #self.model = Net()
+        #self.model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
         self.criterion = nn.BCEWithLogitsLoss()
         self.test_optimizer = optim.Adam(self.model.parameters(), lr=0.001)
     def load_model(self):
@@ -252,6 +255,7 @@ def inferred_point_callback(data):
     theta = 0 #-1.54 
     phi = random.choice(phi_list) #1.2(recentry, 2.0)
     psi = 0
+    phi = math.pi/2
     random_grasp_posrot = np.array((Ax, Ay, Az, phi), dtype='float').reshape(1,1,4) #reshape(1,4) 
     print("random grasp posrost", random_grasp_posrot) 
     random_grasp_posrot_arr = InflateGraspPoint(random_grasp_posrot.reshape(1,4)).calc()
@@ -323,8 +327,8 @@ if __name__ == '__main__':
     #subscribe edge pointcloud data
     try:
         rospy.init_node('grasp_point_server')
-        #rospy.Subscriber('/organized_edge_detector/output', PointCloud2, inferred_point_callback, queue_size=1000)
-        rospy.Subscriber('/pcl_nodelet/hsi_filter_white/output', PointCloud2, inferred_point_callback, queue_size=1000)
+        rospy.Subscriber('/organized_edge_detector/output_curvature_edge', PointCloud2, inferred_point_callback, queue_size=1000)
+        #rospy.Subscriber('/pcl_nodelet/hsi_filter_white/output', PointCloud2, inferred_point_callback, queue_size=1000)
         pub = rospy.Publisher('/grasp_points', PoseArray, queue_size=100)
         """
         while not rospy.is_shutdown():
