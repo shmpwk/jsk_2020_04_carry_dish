@@ -11,7 +11,7 @@
   <arg unless="$(arg use_sim)" name="DEPTH_CAMERA_INFO" value="/kinect_head/depth/camera_info"/>
   <arg if="$(arg use_sim)" name="DEPTH_CAMERA_INFO" value="/head_mount_kinect/depth/camera_info"/>
   
-  <arg unless="$(arg use_sim)" name="DEPTH_TOPIC" value="/kinect_head/depth_registered/image_rect"/>
+  <arg unless="$(arg use_sim)" name="DEPTH_TOPIC" value="/kinect_head_remote/depth_registered/image_rect"/>
   <arg if="$(arg use_sim)" name="DEPTH_TOPIC" value="/head_mount_kinect/depth/image_raw"/>
 
   <arg unless="$(arg use_sim)" name="RGB_IMAGE" value="/kinect_head_remote/rgb/image_rect_color"/>
@@ -120,8 +120,8 @@
   <node name="organized_edge_detector"
          pkg="nodelet" type="nodelet"
         args="load jsk_pcl/OrganizedEdgeDetector sample_manager">
-        <remap from="~input" to="/right_box_extract_indices/output"/>
-        <!--remap from="~input" to="/selected_pointcloud"/-->
+        <!--remap from="~input" to="/right_box_extract_indices/output"/-->
+        <remap from="~input" to="/selected_pointcloud"/>
     <rosparam>
       publish_normal: true
       use_nan_boundary: true
