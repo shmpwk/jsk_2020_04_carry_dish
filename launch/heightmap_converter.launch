@@ -1,7 +1,7 @@
 <launch>
   <arg name="gui" default="true"/>
   <arg name="use_sim" default="true"/> 
-  <arg unless="$(arg use_sim)" name="DEPTH_POINTS" value="/kinect_head/depth_registered/points"/>
+  <arg unless="$(arg use_sim)" name="DEPTH_POINTS" value="/kinect_head_remote/depth_registered/points"/>
   <arg if="$(arg use_sim)" name="DEPTH_POINTS" value="/head_mount_kinect/depth_registered/points"/>
   <node name="heightmap_manager"
         pkg="nodelet" type="nodelet"
@@ -14,7 +14,7 @@
     <rosparam>
       use_projected_center: true
       fixed_frame_id: base_footprint
-      center_frame_id: segmentation_decomposer_ssdoutput00
+      center_frame_id: segmentation_decomposeroutput00
       projected_center_frame_id: heightmap_center
       resolution_x: 128
       resolution_y: 128
