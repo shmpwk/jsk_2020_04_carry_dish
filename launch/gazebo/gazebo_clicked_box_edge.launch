@@ -118,7 +118,7 @@
   </node>
 
   <node name="organized_edge_detector"
-         pkg="nodelet" type="nodelet"
+        pkg="nodelet" type="nodelet"
         args="load jsk_pcl/OrganizedEdgeDetector sample_manager">
         <remap from="~input" to="/right_box_extract_indices/output"/>
         <!--remap from="~input" to="/selected_pointcloud"/-->
