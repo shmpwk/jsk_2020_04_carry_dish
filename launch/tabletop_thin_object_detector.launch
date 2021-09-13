@@ -65,6 +65,30 @@
       keep_organized: true
     </rosparam>
   </node>
+
+  <node name="dish_edge_detector"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/OrganizedEdgeDetector $(arg manager)">
+    <remap from="~input" to="/extract_indices/output"/>
+    <rosparam>
+      publish_normal: true
+      use_nan_boundary: true
+      use_rgb: true
+    </rosparam>
+  </node>
+
+  <node name="extract_edge_indices"
+      pkg="nodelet" type="nodelet"
+      args="load jsk_pcl/ExtractIndices $(arg manager)">
+    <remap from="~input" to="/extract_indices/output" />
+    <remap from="~indices" to="/dish_edge_detector/output_rgb_edge_indices" />
+    <rosparam>
+      keep_organized: true
+      negative: true
+      max_queue_size: 1000000000
+      approximate_sync: true
+    </rosparam>
+  </node>
   <node name="multi_plane_estimate" pkg="nodelet" type="nodelet"
         args="load jsk_pcl/OrganizedMultiPlaneSegmentation $(arg manager)"
         output="screen"
