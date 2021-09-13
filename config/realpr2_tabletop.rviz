@@ -1011,7 +1011,7 @@ Visualization Manager:
       show coords: false
     - Class: rviz/Image
       Enabled: true
-      Image Topic: /kinect_head/rgb/image_rect_color
+      Image Topic: /kinect_head_remote/rgb/image_rect_color
       Max Value: 1
       Median window: 5
       Min Value: 0
