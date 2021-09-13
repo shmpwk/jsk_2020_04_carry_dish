@@ -39,8 +39,8 @@
         args="standalone jsk_pcl/AttentionClipper">
     <remap from="~input/points" to="input_relay/output" />
     <rosparam>
-      initial_pos: [0, 0.2, 1.0]
-      initial_rot: [-0.65, 0, 0]
+      initial_pos: [0, -0.05, 0.7]
+      initial_rot: [-0.4, 0, 0]
       dimension_x: 0.7
       dimension_y: 0.5
       dimension_z: 0.3
