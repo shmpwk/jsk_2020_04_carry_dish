@@ -356,6 +356,8 @@ class Net(nn.Module):
         for param in self.model_ft.parameters():
             param.requires_grad = False
         num_ftrs = self.model_ft.fc.in_features
+        print("num_ftrs")
+        print(num_ftrs)
         self.model_ft.fc = nn.Linear(num_ftrs, 8)
         
     # depth encording without concate grasp point

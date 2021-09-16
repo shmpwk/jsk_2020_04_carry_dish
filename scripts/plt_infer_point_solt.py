@@ -56,7 +56,7 @@ def update(frame, xx, yy, zz):
         plt.pause(0.7)
     elif frame == 10:
         #ax.plot(x, y, z, marker="o", s=20,  linestyle='None')
-        ax.scatter(x-cy, y+cx, cz-z, s=0.05, c="green")
+        ax.scatter(x-cy, y+cx, cz-z, s=1, c="green")
         ax.scatter(px-cy, py+cx, cz-pz, s=0.001, c="black")
         #ax.scatter(ix-cy, iy+cx, cz-iz, s=40, c="cyan")
         ax.scatter(bx-cy, by+cx, cz-bz, s=100, c="olive")
@@ -95,7 +95,7 @@ def update(frame, xx, yy, zz):
     #markerは無難に丸
 grasp_dataset = np.empty((0,4))
 
-grasp_path = "Data/plt_mayo/inferred_grasp_point"
+grasp_path = "Data/plt_solt/inferred_grasp_point"
 g_key = '.pkl'
 for g_dir_name, g_sub_dirs, g_files in sorted(os.walk(grasp_path)): 
     for gf in sorted(g_files):
@@ -118,7 +118,7 @@ gzl = grasp_dataset[9,2]
 gtl = grasp_dataset[9,3]
 grasp_dataset = np.empty((0,4))
 
-grasp_path = "Data/plt_mayo/inferred_point"
+grasp_path = "Data/plt_solt/inferred_point"
 g_key = '.pkl'
 for g_dir_name, g_sub_dirs, g_files in sorted(os.walk(grasp_path)): 
     for gf in sorted(g_files):
@@ -142,7 +142,7 @@ itl = grasp_dataset[9,3]
 
 grasp_dataset = np.empty((0,4))
 
-grasp_path = "Data/plt_mayo/all_edge_point"
+grasp_path = "Data/plt_solt/all_edge_point"
 g_key = '.pkl'
 for g_dir_name, g_sub_dirs, g_files in sorted(os.walk(grasp_path)): 
     for gf in sorted(g_files):
@@ -156,7 +156,7 @@ z = ff[1:,2]
 
 grasp_dataset = np.empty((0,4))
 
-grasp_path = "Data/plt_mayo/obj_pcl"
+grasp_path = "Data/plt_solt/obj_pcl"
 g_key = '.pkl'
 for g_dir_name, g_sub_dirs, g_files in sorted(os.walk(grasp_path)): 
     for gf in sorted(g_files):
@@ -170,7 +170,7 @@ pz = ff[1:,2]
 
 grasp_dataset = np.empty((0,7))
 
-grasp_path = "Data/plt_mayo/trans"
+grasp_path = "Data/plt_solt/trans"
 g_key = '.pkl'
 for g_dir_name, g_sub_dirs, g_files in sorted(os.walk(grasp_path)): 
     for gf in sorted(g_files):
@@ -189,7 +189,7 @@ print(cx,cy,cz,cs,ct,cu,cv)
 
 grasp_dataset = np.empty((0,3))
 
-grasp_path = "Data/plt_mayo/box_pos"
+grasp_path = "Data/plt_solt/box_pos"
 g_key = '.pkl'
 for g_dir_name, g_sub_dirs, g_files in sorted(os.walk(grasp_path)): 
     for gf in sorted(g_files):

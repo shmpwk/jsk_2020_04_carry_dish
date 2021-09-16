@@ -56,7 +56,7 @@ def update(frame, xx, yy, zz):
         plt.pause(0.7)
     elif frame == 10:
         #ax.plot(x, y, z, marker="o", s=20,  linestyle='None')
-        ax.scatter(x-cy, y+cx, cz-z, s=0.05, c="green")
+        ax.scatter(x-cy, y+cx, cz-z, s=1, c="green")
         ax.scatter(px-cy, py+cx, cz-pz, s=0.001, c="black")
         #ax.scatter(ix-cy, iy+cx, cz-iz, s=40, c="cyan")
         ax.scatter(bx-cy, by+cx, cz-bz, s=100, c="olive")
