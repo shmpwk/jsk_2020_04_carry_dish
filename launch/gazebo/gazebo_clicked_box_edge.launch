@@ -105,7 +105,8 @@
         pkg="nodelet" type="nodelet"
         args="standalone jsk_pcl/AttentionClipper">
         <remap from="~input/points" to="/selected_pointcloud" />
-        <remap from="~input/box" to="/divided_bbox" />
+        <!--remap from="~input/box" to="/divided_bbox" /-->
+        <remap from="~input/box" to="/bounding_box_marker/selected_box" />
   </node>
 
   <node name="right_box_extract_indices"
