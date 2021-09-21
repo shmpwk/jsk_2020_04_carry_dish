@@ -312,6 +312,7 @@
         (publish-info "grasp succeeded!")                   
         (ros::set-param (format nil "~/judge_grasp_success") 1)
         ;;(send *ri* :go-pos-unsafe 0 -0.65 0)
+        (send *ri* :go-pos-unsafe -0.1 0 -90)
         (setq *grasp-state* "placing")
         (publish-grasp-state)
         (publish-info "placing ...")
@@ -329,6 +330,7 @@
         (setq *grasp-state* "returning")
         (pr2-pregrasp-pose)
         ;;(send *ri* :go-pos-unsafe 0 0.65 0)
+        (send *ri* :go-pos-unsafe 0.1 0 90)
         )
       (progn                                          
         (setq *grasp-state* "grasp failed!")      
