@@ -203,8 +203,8 @@
     ;;(setq *rot* (- 1.57 (atan2  (elt grad 1) (elt grad 0))))
     (setq *rot*  (atan2  (elt grad 1) (elt grad 0)))
     ;; pre;;grasp pos
-    (setq *pre-pos* (float-vector (elt (scale 3 grad) 0) (elt (scale 3 grad) 1) 50))
-    (setq *reach-pos* (float-vector (elt (scale -1.5 grad) 0) (elt (scale -1.5 grad) 1) -80))
+    (setq *pre-pos* (float-vector (elt (scale 3 grad) 0) (elt (scale 3 grad) 1) 60))
+    (setq *reach-pos* (float-vector (elt (scale -1.5 grad) 0) (elt (scale -1.5 grad) 1) -100))
     ;; pre grasp rotation
     ;;(setq rdm (+ (/ pi 2) (elt (elt (rpy-angle (send *cds* :rot)) 0) 1)))
     (setq rdm (elt (elt (rpy-angle (send *cds* :rot)) 1) 1))
@@ -259,12 +259,12 @@
 
   (setq *grasp-state* "reaching")
   (publish-grasp-state)
-  (publish-info "pre grasp pose...")
+  ;;(publish-info "pre grasp pose...")
   (send *ri* :stop-grasp *rarm* :wait t)
   ;;(send *pr2* :head :look-at-hand *rarm*)
   ;;(send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-  (send *ri* :angle-vector-motion-plan (send *pr2* :angle-vector) :total-time 1000 :ctype :rarm-controller :start-offset-time 0 :move-arm :rarm) ;;for moveit
-  (send *ri* :wait-interpolation)
+  ;;(send *ri* :angle-vector-motion-plan (send *pr2* :angle-vector) :total-time 1000 :ctype :rarm-controller :start-offset-time 0 :move-arm :rarm) ;;for moveit
+  ;;(send *ri* :wait-interpolation)
 
   (send *co-endeffector-vis* :newcoords (send *pr2* :copy-worldcoords))
   (send *grasp-point* :newcoords 
@@ -278,7 +278,7 @@
   (publish-info "reaching...")
   (send *pr2* *rarm* :move-end-pos *reach-pos* :world :look-at-target t)
   ;;(send *pr2* :head :look-at-hand *rarm*)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
 
   (setq *grasp-state* "grasp-closing")
@@ -312,7 +312,9 @@
         (publish-info "grasp succeeded!")                   
         (ros::set-param (format nil "~/judge_grasp_success") 1)
         ;;(send *ri* :go-pos-unsafe 0 -0.65 0)
-        (send *ri* :go-pos-unsafe -0.1 0 -90)
+        (send *ri* :go-pos-unsafe -0.3 0 0)
+        (send *ri* :go-pos-unsafe 0 0 -90)
+        (send *ri* :go-pos-unsafe 0.5 0 0)
         (setq *grasp-state* "placing")
         (publish-grasp-state)
         (publish-info "placing ...")
@@ -325,12 +327,14 @@
         (send *ri* :wait-interpolation)
         (send *pr2* *rarm* :move-end-pos #f(0 0 100) :world)
         (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-        (send *ri* :wait-interpolation)
         (publish-info "pre grasp pose")
         (setq *grasp-state* "returning")
         (pr2-pregrasp-pose)
         ;;(send *ri* :go-pos-unsafe 0 0.65 0)
-        (send *ri* :go-pos-unsafe 0.1 0 90)
+        (send *ri* :go-pos-unsafe -0.5 0 0)
+        (send *ri* :go-pos-unsafe 0 0 90)
+        (send *ri* :go-pos-unsafe 0.3 0 0)
+        (send *ri* :wait-interpolation)
         )
       (progn                                          
         (setq *grasp-state* "grasp failed!")      
