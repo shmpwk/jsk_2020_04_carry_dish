@@ -41,8 +41,8 @@
     <rosparam>
       initial_pos: [0, 0.2, 1.0]
       initial_rot: [-0.65, 0, 0]
-      dimension_x: 0.7
-      dimension_y: 0.5
+      dimension_x: 1.1
+      dimension_y: 0.7
       dimension_z: 0.3
       frame_id: head_mount_kinect_rgb_optical_frame
     </rosparam>

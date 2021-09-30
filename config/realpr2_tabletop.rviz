@@ -566,7 +566,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/BoundingBoxArray
       Enabled: true
       Name: Tabletop Objects
-      Topic: /segmentation_decomposer_ssd/boxes
+      Topic: /segmentation_decomposer/boxes
       Unreliable: false
       Value: true
       alpha: 0.800000011920929

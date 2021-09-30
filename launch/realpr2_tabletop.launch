@@ -7,18 +7,19 @@
   <arg name="load_machine" default="false" />
 
   <arg name="RGB_CAMERA_INFO" value="/kinect_head/rgb/camera_info" />
-  <arg name="RGB_IMAGE" value="/kinect_head/rgb/image_rect_color" />
+  <arg name="RGB_IMAGE" value="/kinect_head/rgb/throttled/image_rect_color" />
   <arg name="RGB_IMAGE_REMOTE" value="/kinect_head_remote/rgb/image_rect_color" />
   <arg name="DEPTH_CAMERA_INFO" value="/kinect_head/depth_registered/camera_info" />
-  <arg name="DEPTH_IMAGE" value="/kinect_head/depth_registered/image_rect" />
+  <arg name="DEPTH_IMAGE" value="/kinect_head/depth_registered/throttled/image_rect" />
   <arg name="DEPTH_IMAGE_REMOTE" value="/kinect_head_remote/depth_registered/image_rect" />
   <arg name="PROSILICA_CAMERA_INFO" value="/prosilica/camera_info" />
-  <arg name="PROSILICA_IMAGE" value="/prosilica/image_raw" /> <arg name="POINT_CLOUD_REMOTE" value="/kinect_head_remote/depth_registered/points" />
+  <arg name="PROSILICA_IMAGE" value="/prosilica/image_raw" /> 
+  <arg name="POINT_CLOUD_REMOTE" value="/kinect_head_remote/depth_registered/throttled/points" />
 
   <!--include file="$(find pr2_machine)/pr2.machine" unless="$(arg load_machine)" /-->
 
   <!--include file="$(find jsk_2020_4_carry_dish)/launch/tabletop_thin_object_detector.launch"-->
-  <include file="$(find jsk_2020_4_carry_dish)/launch/tabletop_edgetpu_thin_object_detector.launch">
+  <include file="$(find jsk_2020_4_carry_dish)/launch/tabletop_thin_object_detector.launch">
     <arg name="input" value="$(arg POINT_CLOUD_REMOTE)" />
     <arg name="sensor_frame" value="/head_mount_kinect_rgb_optical_frame" />
     <arg name="manager" value="$(arg manager)" />

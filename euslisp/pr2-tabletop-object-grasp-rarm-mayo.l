@@ -88,7 +88,7 @@
       (send *pr2* *arm* :inverse-kinematics
             (make-coords :pos (v+ (send target-obj :worldpos)
                                   (float-vector -100 0 150))
-                         :rpy #f(-0.5 1.5 -1.54));;#f(0 1.2 -1.54) is success
+                         :rpy #f(0 1.0 -0.5));;#f(0 1.2 -1.54) is success
             :rotation-axis :t)
       (publish-error "out of reach...")
       (return-from grasp-target-callback nil))
@@ -107,7 +107,7 @@
     (publish-info "reaching...")
     (send *pr2* *arm* :move-end-pos #f(105 0 -150) :world) ;;#f(105 0 -150) is success
     (send *pr2* :head :look-at-hand *arm*)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
 
     (setq *grasp-state* "grasp-closing")
@@ -129,16 +129,15 @@
     (send *pr2* :head :look-at-hand *arm*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
-    (publish-info "grasp succeeded!")
 
-     (let ((grasp-result (send *ri* :start-grasp *rarm*)))
+    (let ((grasp-result (send *ri* :start-grasp *rarm*)))
       (print grasp-result)
-      (if (< 9 grasp-result)   ;;for gazebo (< 0.1 grasp-result)                          
+      (if (< 4 grasp-result)   ;;for gazebo (< 0.1 grasp-result)                          
       (progn                                                     
         (publish-info "grasp succeeded!")
         (send *ri* :go-pos-unsafe -0.3 0 0)
         (send *ri* :go-pos-unsafe 0 0 -90)
-        (send *ri* :go-pos-unsafe 0.4 0 0)
+        (send *ri* :go-pos-unsafe 0.5 0 0)
 
         (setq *grasp-state* "placing")
         (publish-grasp-state)
@@ -154,13 +153,13 @@
 
         (setq *grasp-state* "leaving")
         (publish-grasp-state)
-        (send *pr2* *arm* :move-end-pos #f(-100 0 250) :world)
+        (send *pr2* *arm* :move-end-pos #f(-160 0 50) :world)
         (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
         (send *ri* :wait-interpolation)
-        (send *ri* :go-pos-unsafe -0.4 0 0)
+
+        (send *ri* :go-pos-unsafe -0.5 0 0)
         (send *ri* :go-pos-unsafe 0 0 90)
         (send *ri* :go-pos-unsafe 0.3 0 0)
-        (send *ri* :wait-interpolation)
         (publish-info "pre grasp pose"))
       (progn                                          
         (setq *grasp-state* "grasp failed!")      
