@@ -18,9 +18,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
-from torchvision import transforms
+from torchvision import transforms, models
 from torchvision.transforms import functional as tvf
 import torch.optim as optim
+from torch.optim import lr_scheduler
 import os
 import pickle
 import matplotlib.pyplot as plt
@@ -333,21 +334,6 @@ class MyDataset(Dataset):
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        
-        """
-        This imitates alexnet. 
-        self.conv1 = nn.Conv2d(1, 96, kernel_size=11, stride=4, padding=2) #入力チャンネル数は1, 出力チャンネル数は96 
-        self.conv2 = nn.Conv2d(96, 256, kernel_size=5, padding=2)
-        self.conv3 = nn.Conv2d(256, 384, kernel_size=3, padding=1)
-        self.conv4 = nn.Conv2d(384, 384, kernel_size=3, padding=1)
-        self.conv5 = nn.Conv2d(384, 256, kernel_size=3, padding=1)
-        #self.fc1 = nn.Linear(256 * 6 * 6, 4096)
-        self.fc1 = nn.Linear(50176, 4096)
-        self.fc2 = nn.Linear(4096, 4096)
-        self.fc3 = nn.Linear(4096, 10)
-        self.fc4 = nn.Linear(10 + 4, 14)
-        self.fc5 = nn.Linear(14, 1) # output is 1 dim scalar probability
-        """
         # dynamics-net (icra2019の紐とか柔軟物を操るやつ) by Mr. Kawaharazuka
         self.conv1 = nn.Conv2d(3, 4, 3, 2, 1)
         self.cbn1 = nn.BatchNorm2d(4)
@@ -365,68 +351,23 @@ class Net(nn.Module):
         self.fc4 = nn.Linear(16, 8)
         self.fc5 = nn.Linear(8 + 4, 12)
         self.fc6 = nn.Linear(12, 1) # output is 1 dim scalar probability
-        """
-        self.conv1 = nn.Conv2d(1, 4, 3, 2, 1)
-        self.cbn1 = nn.BatchNorm2d(4)
-        self.conv2 = nn.Conv2d(4, 8, 3, 2, 1)
-        self.cbn2 = nn.BatchNorm2d(8)
-        self.conv3 = nn.Conv2d(8, 16, 3, 2, 1)
-        self.cbn3 = nn.BatchNorm2d(16)
-        self.conv4 = nn.Conv2d(16, 32, 3, 2, 1)
-        self.cbn4 = nn.BatchNorm2d(32)
-        #self.conv5 = nn.Conv2d(32, 64, 3, 2, 1)
-        #self.cbn5 = nn.BatchNorm2d(64)
-        #self.fc1 = nn.Linear(128, 64)
-        self.fc1 = nn.Linear(256, 64)
-        self.fc2 = nn.Linear(64, 16)
-        self.fc3 = nn.Linear(16, 8)
-        self.fc4 = nn.Linear(8 + 4, 12)
-        self.fc5 = nn.Linear(12, 1) # output is 1 dim scalar probability
-        """
 
+        self.model_ft = models.resnet18(pretrained=True)
+        for param in self.model_ft.parameters():
+            param.requires_grad = False
+        num_ftrs = self.model_ft.fc.in_features
+        print("num_ftrs")
+        print(num_ftrs)
+        self.model_ft.fc = nn.Linear(num_ftrs, 8)
+        
     # depth encording without concate grasp point
     def forward(self, x, y):
-        x = F.max_pool2d(F.relu(self.conv1(x)), 2)
-        x = self.cbn1(x)
-        #x = F.max_pool2d(F.relu(self.conv2(x)), 2)
-        x = F.relu(self.conv2(x))
-        x = self.cbn2(x)
-        x = F.relu(self.conv3(x))
-        x = self.cbn3(x)
-        x = F.relu(self.conv4(x))
-        x = self.cbn4(x)
-        x = F.relu(self.conv5(x))
-        x = self.cbn5(x)
-        x = x.view(-1, self.num_flat_features(x))
-        #depth_data =depth_data.view(depth_data.shape[0], -1)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
-        x = F.relu(self.fc4(x))
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        model_ft = self.model_ft.to(device)
+        x = model_ft(x) 
         z = torch.cat((x, y), dim=1)
         z = F.relu(self.fc5(z))
         z = self.fc6(z)
-        """
-        x = F.max_pool2d(F.relu(self.conv1(x)), 2)
-        x = self.cbn1(x)
-        x = F.max_pool2d(F.relu(self.conv2(x)), 2)
-        x = self.cbn2(x)
-        x = F.relu(self.conv3(x))
-        x = self.cbn3(x)
-        #x = F.relu(self.conv4(x))
-        #x = self.cbn4(x)
-        #x = F.relu(self.conv5(x))
-        #x = self.cbn5(x)
-        x = x.view(-1, self.num_flat_features(x))
-        #depth_data =depth_data.view(depth_data.shape[0], -1)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
-        z = torch.cat((x, y), dim=1)
-        z = F.relu(self.fc4(z))
-        z = self.fc5(z)
-        """
-
         return z
    
     def num_flat_features(self, x):
@@ -490,6 +431,8 @@ class GraspSystem():
         self.criterion = nn.BCEWithLogitsLoss()
         self.train_optimizer = optim.Adam(self.model.parameters(), lr=0.001)
         #self.train_optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
+        # Decay LR by a factor of 0.1 every 7 epochs
+        self.scheduler = lr_scheduler.StepLR(self.train_optimizer, step_size=7, gamma=0.1)
         summary(self.model, [(3, 128, 128), (4,)])
 
     # load traind Network model
@@ -499,7 +442,6 @@ class GraspSystem():
         self.model.load_state_dict(torch.load(model_path))
         # learn CPU, load GPU
         self.model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
-
 
     def save_model(self):
         now = datetime.datetime.now()  
@@ -533,6 +475,8 @@ class GraspSystem():
                 plt.imshow(im)
                 plt.show()
                 """
+                
+                self.scheduler.step()
                 # 勾配を0に初期化する(逆伝播に備える)
                 self.train_optimizer.zero_grad()
 
@@ -546,9 +490,9 @@ class GraspSystem():
                 writer = SummaryWriter(log_dir)
                 running_loss += loss.item()
                 writer.add_scalar("Loss/train", loss.item(), tensorboard_cnt) #(epoch + 1) * i)
-                if i % 100 == 99:    # 2 ミニバッチ毎に表示する
+                if i % 10 == 9:    # 2 ミニバッチ毎に表示する
                     print('[%d, %5d] loss: %.3f' %
-                          (epoch + 1, i + 1, running_loss / 100))
+                          (epoch + 1, i + 1, running_loss / 10))
                     running_loss = 0.0
                 tensorboard_cnt += 1
         print('Finished Training')

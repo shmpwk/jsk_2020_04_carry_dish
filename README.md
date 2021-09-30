@@ -86,6 +86,11 @@ $ python ~/my_ws/src/jsk_2020_04_carry_dish/scripts/rgb_grasp_system_2.py
 ```
 which depends on the dataset size.
 
+You can check training loss by
+```
+$ tensorboard --logdir="Data/loss/[YOUR_FOLDER]" --load_fast=false
+```
+
 ### When inferrence,
 ```
 $ roslaunch jsk_2020_4_carry_dish realpr2_tabletop.launch
@@ -100,6 +105,18 @@ When using rgb image,
 ```
 $ python ~/my_ws/src/jsk_2020_04_carry_dish/scripts/test_rgb_grasp_system.py 
 ```
+
+With moveit,
+```
+$ roslaunch jsk_2020_4_carry_dish realpr2_tabletop.launch
+$ roseus euslisp/test_moveit_grasp_sequence.l 
+$ roslaunch jsk_2020_4_carry_dish gazebo_clicked_box_edge.launch use_sim:=false gui:=false
+$ python ~/my_ws/src/jsk_2020_04_carry_dish/scripts/test_multi_rgb_grasp_system_short.py
+$ roslaunch jsk_pr2_startup start_pr2_moveit.launch USE_KINECT:=true USE_LASER_AND_KINECT:=false
+$ roslaunch pr2_moveit_config moveit_rviz.launch config:=true
+$ roslaunch wash_dish detect_dirt.launch
+```
+
 ### Demo
 ```
 $ roslaunch jsk_2020_4_carry_dish realpr2_tabletop.launch

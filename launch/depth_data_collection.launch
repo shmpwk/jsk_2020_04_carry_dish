@@ -3,10 +3,8 @@
   <arg name="collect_data" default="true" />
   <arg name="use_sim" default="true"/>
   <arg     if="$(arg use_sim)" name="rgb_name" default="/head_mount_kinect/rgb/image_raw"/>
-  <!--arg unless="$(arg use_sim)" name="rgb_name" default="/kinect_head/rgb/image_raw"/-->
   <arg unless="$(arg use_sim)" name="rgb_name" default="/kinect_head_remote/rgb/image_rect_color"/>
   <arg     if="$(arg use_sim)" name="depth_name" default="/head_mount_kinect/depth/image_raw"/>
-  <!--arg unless="$(arg use_sim)" name="depth_name" default="/kinect_head/depth/image_raw"/-->
   <arg unless="$(arg use_sim)" name="depth_name" default="/kinect_head_remote/depth_registered/image_rect"/>
   <arg name="extract_color_name" default="/extracted_depth_image_creator/output_image"/>
   <arg name="extract_depth_name" default="/extracted_depth_image_creator/output"/>

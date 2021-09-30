@@ -49,8 +49,8 @@ def update(frame, xx, yy, zz):
         UUU2 = Xl + rotated2[0]
         VVV2 = Yl + rotated2[1]
         WWW2 = Zl + rotated2[2]
-        ax.quiver(Xl, Yl, Zl, UUU/4, VVV/4, WWW/4, color="blue", linewidth=5)
-        ax.quiver(Xl, Yl, Zl, UUU2/6, VVV2/6, WWW2/6, color="green", linewidth=5)
+        ax.quiver(Xl, Yl, Zl, UUU/15, VVV/15, WWW/15, color="green", linewidth=5)
+        ax.quiver(Xl, Yl, Zl, UUU2/6, VVV2/6, WWW2/6, color="blue", linewidth=5)
         
        #ax.scatter(ixl-cy, iyl+cx, cz-izl, s=100, c="blue")
         plt.pause(0.7)
@@ -86,8 +86,8 @@ def update(frame, xx, yy, zz):
         UUU2 = XX + rotated2[0]
         VVV2 = YY + rotated2[1]
         WWW2 = ZZ + rotated2[2]
-        ax.quiver(XX, YY, ZZ, UUU/4, VVV/4, WWW/4, color="blue")
-        ax.quiver(XX, YY, ZZ, UUU2/6, VVV2/6, WWW2/6, color="green")
+        ax.quiver(XX, YY, ZZ, UUU/15, VVV/15, WWW/15, color="green")
+        ax.quiver(XX, YY, ZZ, UUU2/6, VVV2/6, WWW2/6, color="blue")
         
 
     #.plotで描画
@@ -95,7 +95,7 @@ def update(frame, xx, yy, zz):
     #markerは無難に丸
 grasp_dataset = np.empty((0,4))
 
-grasp_path = "Data/plt/inferred_grasp_point"
+grasp_path = "Data/plt_rim/inferred_grasp_point"
 g_key = '.pkl'
 for g_dir_name, g_sub_dirs, g_files in sorted(os.walk(grasp_path)): 
     for gf in sorted(g_files):
@@ -118,7 +118,7 @@ gzl = grasp_dataset[9,2]
 gtl = grasp_dataset[9,3]
 grasp_dataset = np.empty((0,4))
 
-grasp_path = "Data/plt/inferred_point"
+grasp_path = "Data/plt_rim/inferred_point"
 g_key = '.pkl'
 for g_dir_name, g_sub_dirs, g_files in sorted(os.walk(grasp_path)): 
     for gf in sorted(g_files):
@@ -142,7 +142,7 @@ itl = grasp_dataset[9,3]
 
 grasp_dataset = np.empty((0,4))
 
-grasp_path = "Data/plt/all_edge_point"
+grasp_path = "Data/plt_rim/all_edge_point"
 g_key = '.pkl'
 for g_dir_name, g_sub_dirs, g_files in sorted(os.walk(grasp_path)): 
     for gf in sorted(g_files):
@@ -156,7 +156,7 @@ z = ff[1:,2]
 
 grasp_dataset = np.empty((0,4))
 
-grasp_path = "Data/plt/obj_pcl"
+grasp_path = "Data/plt_rim/obj_pcl"
 g_key = '.pkl'
 for g_dir_name, g_sub_dirs, g_files in sorted(os.walk(grasp_path)): 
     for gf in sorted(g_files):
@@ -170,7 +170,7 @@ pz = ff[1:,2]
 
 grasp_dataset = np.empty((0,7))
 
-grasp_path = "Data/plt/trans"
+grasp_path = "Data/plt_rim/trans"
 g_key = '.pkl'
 for g_dir_name, g_sub_dirs, g_files in sorted(os.walk(grasp_path)): 
     for gf in sorted(g_files):
@@ -189,7 +189,7 @@ print(cx,cy,cz,cs,ct,cu,cv)
 
 grasp_dataset = np.empty((0,3))
 
-grasp_path = "Data/plt/box_pos"
+grasp_path = "Data/plt_rim/box_pos"
 g_key = '.pkl'
 for g_dir_name, g_sub_dirs, g_files in sorted(os.walk(grasp_path)): 
     for gf in sorted(g_files):

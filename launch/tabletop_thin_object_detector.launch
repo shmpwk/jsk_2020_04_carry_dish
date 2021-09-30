@@ -41,8 +41,8 @@
     <rosparam>
       initial_pos: [0, 0.2, 1.0]
       initial_rot: [-0.65, 0, 0]
-      dimension_x: 0.7
-      dimension_y: 0.5
+      dimension_x: 1.1
+      dimension_y: 0.7
       dimension_z: 0.3
       frame_id: head_mount_kinect_rgb_optical_frame
     </rosparam>
@@ -63,6 +63,30 @@
     <remap from="~indices" to="attention_clipper/output/point_indices" />
     <rosparam>
       keep_organized: true
+    </rosparam>
+  </node>
+
+  <node name="dish_edge_detector"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/OrganizedEdgeDetector $(arg manager)">
+    <remap from="~input" to="/extract_indices/output"/>
+    <rosparam>
+      publish_normal: true
+      use_nan_boundary: true
+      use_rgb: true
+    </rosparam>
+  </node>
+
+  <node name="extract_edge_indices"
+      pkg="nodelet" type="nodelet"
+      args="load jsk_pcl/ExtractIndices $(arg manager)">
+    <remap from="~input" to="/extract_indices/output" />
+    <remap from="~indices" to="/dish_edge_detector/output_rgb_edge_indices" />
+    <rosparam>
+      keep_organized: true
+      negative: true
+      max_queue_size: 1000000000
+      approximate_sync: true
     </rosparam>
   </node>
   <node name="multi_plane_estimate" pkg="nodelet" type="nodelet"
