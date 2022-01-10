@@ -1,14 +1,14 @@
 <launch>
-  <arg name="input" default="/camera/depth_registered/points" />
+  <arg name="input" default="/kinect_head_remote/depth_registered/points" />
   <arg name="sensor_frame" default="head_mount_kinect_rgb_optical_frame" />
   <arg name="manager" default="tabletop_object_detector_nodelet_manager" />
   <arg name="machine" default="localhost" />
   <arg name="RGB_CAMERA_INFO" value="/kinect_head/rgb/camera_info" />
 
   <arg name="launch_manager" default="true" />
-  <arg name="launch_tracking" default="true" />
-  <arg name="launch_openni" default="true" />
-  <arg name="launch_rviz" default="true" />
+  <arg name="launch_tracking" default="false" />
+  <arg name="launch_openni" default="false" />
+  <arg name="launch_rviz" default="false" />
   <arg name="publish_tf" default="true" />
 
   <machine name="localhost" address="localhost" />
@@ -61,7 +61,7 @@
       initial_rot: [-0.65, 0, 0]
       dimension_x: 0.7
       dimension_y: 0.5
-      dimension_z: 0.5
+      dimension_z: 1.0
       frame_id: head_mount_kinect_rgb_optical_frame
     </rosparam>
     <!--
@@ -157,7 +157,7 @@
       publish_tf: $(arg publish_tf)
       sort_by: -cloud_size 
       use_pca: true
-      min_size: 100000000
+      min_size: 10000
       max_size: 1000000000
     </rosparam>
   </node>
