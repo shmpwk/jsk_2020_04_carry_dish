@@ -137,9 +137,7 @@
       (if (< 4 grasp-result)   ;;for gazebo (< 0.1 grasp-result)                          
       (progn                                                     
         (publish-info "grasp succeeded!")
-        (send *ri* :go-pos-unsafe -0.3 0 0)
-        (send *ri* :go-pos-unsafe 0 0 -90)
-        (send *ri* :go-pos-unsafe 0.5 0 0)
+        (send *ri* :go-pos-unsafe 0 0.7 0)
 
         (setq *grasp-state* "placing")
         (publish-grasp-state)
@@ -160,9 +158,7 @@
         (send *ri* :wait-interpolation)
         (pr2-pregrasp-pose)
 
-        (send *ri* :go-pos-unsafe -0.5 0 0)
-        (send *ri* :go-pos-unsafe 0 0 90)
-        (send *ri* :go-pos-unsafe 0.3 0 0)
+        (send *ri* :go-pos-unsafe 0 -0.7 0)
         (publish-info "pre grasp pose"))
       (progn                                          
         (setq *grasp-state* "grasp failed!")      

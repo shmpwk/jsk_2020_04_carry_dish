@@ -105,7 +105,7 @@
     (setq *grasp-state* "grasp-approaching")
     (publish-grasp-state)
     (publish-info "reaching...")
-    (send *pr2* *arm* :move-end-pos #f(-50 -90 -70) :world) ;;#f(105 0 -150) is success
+    (send *pr2* *arm* :move-end-pos #f(-50 -90 -80) :world) ;;#f(105 0 -150) is success
     (send *pr2* :head :look-at-hand *arm*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
@@ -136,9 +136,7 @@
       (if (< 4 grasp-result)   ;;for gazebo (< 0.1 grasp-result)                          
       (progn                                                     
         (publish-info "grasp succeeded!")
-        (send *ri* :go-pos-unsafe -0.3 0 0)
-        (send *ri* :go-pos-unsafe 0 0 -90)
-        (send *ri* :go-pos-unsafe 0.5 0 0)
+        (send *ri* :go-pos-unsafe 0 0.5 0)
 
         (setq *grasp-state* "placing")
         (publish-grasp-state)
@@ -159,9 +157,10 @@
         (send *ri* :wait-interpolation)
         (pr2-pregrasp-pose)
 
-        (send *ri* :go-pos-unsafe -0.5 0 0)
-        (send *ri* :go-pos-unsafe 0 0 90)
-        (send *ri* :go-pos-unsafe 0.3 0 0)
+        ;;(send *ri* :go-pos-unsafe -0.5 0 0)
+        ;;(send *ri* :go-pos-unsafe 0 0 90)
+        ;;(send *ri* :go-pos-unsafe 0.3 0 0)
+        (send *ri* :go-pos-unsafe 0 -0.5 0)
         (publish-info "pre grasp pose"))
       (progn                                          
         (setq *grasp-state* "grasp failed!")      

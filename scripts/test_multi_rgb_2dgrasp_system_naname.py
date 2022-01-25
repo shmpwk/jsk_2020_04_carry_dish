@@ -104,7 +104,7 @@ class TestSystem():
         self.model.eval()
         #self.train_optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
         #self.test_optimizer = optim.SGD(self.model
-        summary(self.model, [(3, 128, 128), (4,)])
+        #summary(self.model, [(3, 128, 128), (4,)])
 
     def load_depth(self):
         # imageは，subscribeではなく，最新のpickleをloadする．
