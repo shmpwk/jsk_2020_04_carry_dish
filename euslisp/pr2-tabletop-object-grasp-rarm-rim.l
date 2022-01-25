@@ -136,7 +136,7 @@
       (if (< 4 grasp-result)   ;;for gazebo (< 0.1 grasp-result)                          
       (progn                                                     
         (publish-info "grasp succeeded!")
-        (send *ri* :go-pos-unsafe 0 0.6 0)
+        (send *ri* :go-pos-unsafe 0 0.5 0)
 
         (setq *grasp-state* "placing")
         (publish-grasp-state)
