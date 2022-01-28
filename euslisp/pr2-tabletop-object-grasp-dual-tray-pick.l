@@ -16,7 +16,7 @@
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 
 (defun pr2-pregrasp-pose ()
-  (send *pr2* :angle-vector #f(299.712 26.8145 7.05076 49.0149 -70.8937 92.6094 -81.3427 -6.18613 -18.0939 18.0364 -20.0459 -84.4307 -131.577 -114.592 -21.328 -3 54.75))
+  (send *pr2* :angle-vector #f(299.151 68.7446 -15.027 63.6968 -74.195 35.5057 -65.3135 -10.9574 -66.6647 -16.1054 -81.2449 -61.446 -9.63004 -66.5841 -30.6497 -2.1713 65.22))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   (send *ri* :wait-interpolation))
 

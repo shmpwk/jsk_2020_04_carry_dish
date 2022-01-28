@@ -133,7 +133,7 @@
 
     (let ((grasp-result (send *ri* :start-grasp *rarm*)))
       (print grasp-result)
-      (if (< 4 grasp-result)   ;;for gazebo (< 0.1 grasp-result)                          
+      (if (< 2 grasp-result)   ;;for gazebo (< 0.1 grasp-result)                          
       (progn                                                     
         (publish-info "grasp succeeded!")
         (send *ri* :go-pos-unsafe 0 0.5 0)
