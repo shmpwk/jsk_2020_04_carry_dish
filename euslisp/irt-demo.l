@@ -49,7 +49,7 @@
   (send *irtviewer* :draw-objects :flush nil)
   (send c :draw-on :flush t)
   (unix:sleep 1)
-  )
+  
 )
 
 ;;皿を掴みたかった（掴めてない）
