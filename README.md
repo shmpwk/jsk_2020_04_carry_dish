@@ -7,8 +7,10 @@ Grasping dishes!
 ## Start now
 
 ```
-$ sudo apt-get install ros-melodic-jskeus
-$ source /opt/ros/melodic/setup.bash
+mkdir my_ws/src -p
+cd my_ws/src
+git clone git@github.com:shmpwk/jsk_2020_04_carry_dish.git
+catkin build
 ```
 
 ## Example demo in simulator
@@ -32,7 +34,9 @@ roseus pr2-tabletop-object-grasp-dual-success.l
 
 ## Grasp learning
 ### When training,
+
 #### with real PR2 robot
+- **[Here is sample collected data](https://drive.google.com/drive/folders/1TC3_E2abqi5bCzfpjCcFwmxzDIgBsDOj)**
 ```
 $ roslaunch jsk_2020_4_carry_dish realpr2_tabletop.launch
 $ roseus euslisp/grasp_sequence.l 
@@ -47,6 +51,8 @@ $ roslaunch jsk_2020_4_carry_dish gazebo_clicked_box_edge.launch use_sim:=true g
 ```
 
 ### Train the model
+- **[Here is sample trained model](https://drive.google.com/drive/folders/1q6QLKSp9woM1LSmSZAF6cMOnG9Wt9mtz)**
+
 When the input image is rgbd
 ```
 $ python ~/my_ws/src/jsk_2020_04_carry_dish/scripts/rgbd_grasp_system.py
@@ -98,6 +104,7 @@ $ roslaunch wash_dish detect_dirt.launch
 
 
 ### Demo
+- **[Here is sample rosbag](https://drive.google.com/drive/folders/1X-iUz-DcNSpKsJFQXUTS3t0vuNs6tjXQ)**
 ```
 $ roslaunch jsk_2020_4_carry_dish realpr2_tabletop.launch
 $ roseus euslisp/grasp_move_sequence.l 
