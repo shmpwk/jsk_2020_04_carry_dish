@@ -1,36 +1,22 @@
 # jsk_2020_04_carry_dish
-This is a repository for one week project. A robot carries dishes
-## Attention
-I referred to B4 student repositories, thank you. I'm a beginner, so if you have some advise, please tell me!
+Grasping dishes!
+
+## Syetem overview
+![icra2021-crop-2](https://user-images.githubusercontent.com/42209144/154614063-7344a572-d7fa-4bbf-87f1-32e25e5c881b.svg)
+
 ## Start now
-ROS 環境で EusLisp をインストールする.
+
 ```
 $ sudo apt-get install ros-melodic-jskeus
-```
-また,実行ファイルへのパス (PATH) や, EusLisp 言語に必要な環境変数 (EUSDIR, ARCHDIR) 等をセットする。
-```
 $ source /opt/ros/melodic/setup.bash
 ```
 
 
-## demoの流れ
+## Example
 - 皿を認識
 - 皿を掴む
 - 棚に皿を運ぶ
 - 棚に置く
-
-
-## additional future task
-掴むのを失敗したとき(失敗しそうなとき)
-- 壁を使いながら皿を持ち上げる。
-- 片方の腕で失敗した際にもう片方の腕で支える。
-- 落ちそうになった時に安全な位置に戻す。
-- 人の声で割り込みの制御を行う。
-  - 人の声をトリガーとして、緊急停止ではなくお皿を安全な位置に置こうとする行動に切り替える。
-  - 人の声で簡単な指示を出して、行動決定の参考とする。
-
-
-## Example
 
 - irt-viewerのdemo
 ```
@@ -91,6 +77,9 @@ You can check training loss by
 $ tensorboard --logdir="Data/loss/[YOUR_FOLDER]" --load_fast=false
 ```
 
+![icra2021-crop-6](https://user-images.githubusercontent.com/42209144/154615025-68332814-d6a9-429f-a2ad-5667c13dd28d.svg)
+
+
 ### When inferrence,
 ```
 $ roslaunch jsk_2020_4_carry_dish realpr2_tabletop.launch
@@ -116,6 +105,8 @@ $ roslaunch jsk_pr2_startup start_pr2_moveit.launch USE_KINECT:=true USE_LASER_A
 $ roslaunch pr2_moveit_config moveit_rviz.launch config:=true
 $ roslaunch wash_dish detect_dirt.launch
 ```
+![icra2021-crop-7](https://user-images.githubusercontent.com/42209144/154615043-564296f7-0e7f-4487-89e0-bcbd7a14ad94.svg)
+
 
 ### Demo
 ```
