@@ -11,37 +11,26 @@ $ sudo apt-get install ros-melodic-jskeus
 $ source /opt/ros/melodic/setup.bash
 ```
 
+## Example demo in simulator
+- Recognize, grasp, carry and put dish
 
-## Example
-- 皿を認識
-- 皿を掴む
-- 棚に皿を運ぶ
-- 棚に置く
-
-- irt-viewerのdemo
+### irt-viewer demo
 ```
 roseus irt-demo.l
 ```
 
-- kinematics simulatorのdemo
+### kinematics simulator demo
 ```
 roseus kinematics-demo.l
 ```
 
-- gazeboで皿を掴むdemo
+### gazebo demo
 ```
 roslaunch common.launch
 roseus pr2-tabletop-object-grasp-dual-success.l
 ```
 
-  - common.launch 
-    - pr2_tabletop_scene.launch
-      - empty_world.launch
-      - tabletop.world
-    - pr2_tabletop.launch
-      - tabletop_object_detector.launch
-
-## grasp learning
+## Grasp learning
 ### When training,
 #### with real PR2 robot
 ```
